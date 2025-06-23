@@ -58,6 +58,11 @@ graph TD
         HTTP[HTTP Client]
         Doc[Document Generation]
         CLP[Command-Line Processing]
+        Web[Web Framework]
+        ASGI[ASGI Server]
+        LLM[AI/LLM Client]
+        MCP[MCP Protocol]
+        DB[Database]
     end
     
     subgraph "Core Contracts"
@@ -79,6 +84,21 @@ graph TD
     Doc --> Cache
     CLP --> Config
     CLP --> Logger
+    Web --> Config
+    Web --> Logger
+    Web --> Cache
+    ASGI --> Config
+    ASGI --> Logger
+    LLM --> Config
+    LLM --> Logger
+    LLM --> Cache
+    LLM --> HTTP
+    MCP --> Config
+    MCP --> Logger
+    MCP --> HTTP
+    DB --> Config
+    DB --> Logger
+    DB -.->|may use| Cache
     
     Config --> Result
     Config --> QiError
@@ -98,7 +118,7 @@ graph TD
     
     class Result,QiError baseClass
     class Config,Logger,Cache coreClass
-    class HTTP,Doc,CLP appClass
+    class HTTP,Doc,CLP,Web,ASGI,LLM,MCP,DB appClass
 ```
 
 ### Base Contract Usage
@@ -813,6 +833,352 @@ if (parseResult.isSuccess) {
 
 ---
 
+---
+
+## Web Framework Contract
+
+**Purpose**: Asynchronous web framework with routing, middleware, and validation. Designed for building REST APIs and web applications with Result<T> integration, automatic request/response validation, and comprehensive middleware support.
+
+**Behavior**:
+- **Asynchronous**: All request handling is non-blocking with promise/future API
+- **Middleware-Based**: Composable request/response processing pipeline
+- **Type-Safe**: Automatic request/response validation with schema enforcement
+- **Result Integration**: All handlers return Result<T> for consistent error handling
+
+**Required Operations**:
+- `createApp(config)` - Create web application instance with configuration
+- `route(method, path, handler)` - Register route handler with HTTP method and path
+- `middleware(handler)` - Register middleware for request/response processing
+- `start(port, host?)` - Start HTTP server on specified port and host
+- `stop()` - Graceful shutdown of HTTP server
+- `validateRequest(request, schema)` - Validate incoming request against schema
+
+**Input/Output Contracts**:
+- **createApp(config)**: Takes WebConfig object, returns `Result<WebApp>`
+- **route(method, path, handler)**: Takes method, path pattern, and async handler function
+- **middleware(handler)**: Takes middleware function with next() capability
+- **start(port, host?)**: Takes port number and optional host, returns `Promise<Result<Server>>`
+- **validateRequest(request, schema)**: Takes request and schema, returns `Result<ValidatedRequest>`
+
+**Examples**:
+
+```typescript
+// Create web application
+const appResult = Web.createApp({
+  cors: { origin: "*" },
+  requestValidation: true,
+  responseValidation: true
+});
+
+const app = appResult.unwrap();
+
+// Register middleware
+app.middleware(async (req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  return next();
+});
+
+// Register routes with Result<T> handlers
+app.route("GET", "/users/:id", async (req) => {
+  const userId = req.params.id;
+  const userResult = await getUserById(userId);
+  
+  return userResult.map(user => ({
+    status: 200,
+    body: user
+  }));
+});
+
+app.route("POST", "/users", async (req) => {
+  const validationResult = Web.validateRequest(req, userSchema);
+  
+  return validationResult.flatMap(validReq => 
+    createUser(validReq.body).map(user => ({
+      status: 201,
+      body: user
+    }))
+  );
+});
+
+// Start server
+const serverResult = await app.start(3000, "localhost");
+```
+
+---
+
+## ASGI Server Contract
+
+**Purpose**: High-performance ASGI server for running web applications with configurable worker processes, connection handling, and graceful shutdown. Designed for production deployment with comprehensive configuration options.
+
+**Behavior**:
+- **Asynchronous**: Non-blocking request handling with async/await support
+- **Multi-Worker**: Support for multiple worker processes for high throughput
+- **Configurable**: Extensive configuration options for performance tuning
+- **Graceful Shutdown**: Proper cleanup and connection draining on shutdown
+
+**Required Operations**:
+- `createServer(app, config)` - Create ASGI server instance with application and config
+- `start()` - Start server with configured workers and settings
+- `stop(gracefulTimeout?)` - Stop server with optional graceful shutdown timeout
+- `reload()` - Hot reload application code without dropping connections
+- `getStats()` - Get server statistics (connections, requests, workers)
+
+**Input/Output Contracts**:
+- **createServer(app, config)**: Takes ASGI app and ASGIConfig, returns `Result<ASGIServer>`
+- **start()**: Returns `Promise<Result<void>>` when server is ready
+- **stop(timeout?)**: Takes optional timeout in ms, returns `Promise<Result<void>>`
+- **reload()**: Returns `Promise<Result<void>>` after reload completion
+- **getStats()**: Returns `Result<ServerStats>` with current server metrics
+
+**Examples**:
+
+```typescript
+// Create ASGI server
+const serverResult = ASGI.createServer(webApp, {
+  host: "0.0.0.0",
+  port: 8000,
+  workers: 4,
+  workerClass: "uvicorn.workers.UvicornWorker",
+  keepAlive: 2,
+  maxConnections: 1000,
+  gracefulTimeout: 30000
+});
+
+const server = serverResult.unwrap();
+
+// Start server
+const startResult = await server.start();
+if (startResult.isSuccess) {
+  console.log("Server started successfully");
+  
+  // Monitor server stats
+  setInterval(() => {
+    const statsResult = server.getStats();
+    if (statsResult.isSuccess) {
+      const stats = statsResult.unwrap();
+      console.log(`Connections: ${stats.activeConnections}, Requests: ${stats.totalRequests}`);
+    }
+  }, 10000);
+}
+
+// Graceful shutdown on signal
+process.on('SIGTERM', async () => {
+  const stopResult = await server.stop(30000);
+  if (stopResult.isSuccess) {
+    console.log("Server shutdown gracefully");
+  }
+});
+```
+
+---
+
+## AI/LLM Client Contract
+
+**Purpose**: Unified interface for Large Language Model interactions with multiple provider support, streaming responses, and circuit breaker patterns. Designed for reliable AI integration with comprehensive error handling and provider abstraction.
+
+**Behavior**:
+- **Asynchronous**: All LLM operations are non-blocking with streaming support
+- **Provider-Agnostic**: Unified interface for OpenAI, Anthropic, Ollama, and other providers
+- **Circuit Breaker**: Automatic failure detection and recovery for unreliable AI services
+- **Streaming**: Support for real-time response streaming with backpressure handling
+
+**Required Operations**:
+- `createClient(provider, config)` - Create LLM client for specific provider
+- `chat(messages, options?)` - Send chat completion request
+- `chatStream(messages, options?)` - Stream chat completion responses
+- `complete(prompt, options?)` - Send completion request
+- `embed(text, options?)` - Generate text embeddings
+- `withCircuitBreaker(config)` - Wrap client with circuit breaker
+
+**Input/Output Contracts**:
+- **createClient(provider, config)**: Takes provider name and config, returns `Result<LLMClient>`
+- **chat(messages, options?)**: Takes message array and options, returns `Promise<Result<ChatResponse>>`
+- **chatStream(messages, options?)**: Takes messages and options, returns `Promise<Result<Stream<ChatChunk>>>`
+- **complete(prompt, options?)**: Takes prompt string and options, returns `Promise<Result<CompletionResponse>>`
+- **embed(text, options?)**: Takes text and options, returns `Promise<Result<EmbeddingResponse>>`
+
+**Examples**:
+
+```typescript
+// Create LLM client with circuit breaker
+const clientResult = LLM.createClient("ollama", {
+  baseUrl: "http://localhost:11434",
+  model: "llama2",
+  timeout: 30000
+});
+
+const client = clientResult.unwrap()
+  .withCircuitBreaker({
+    failureThreshold: 5,
+    recoveryTimeout: 60000,
+    monitoringPeriod: 10000
+  });
+
+// Chat completion
+const chatResult = await client.chat([
+  { role: "system", content: "You are a helpful assistant." },
+  { role: "user", content: "What is the capital of France?" }
+], {
+  temperature: 0.7,
+  maxTokens: 150
+});
+
+if (chatResult.isSuccess) {
+  const response = chatResult.unwrap();
+  console.log(response.message.content);
+}
+
+// Streaming chat
+const streamResult = await client.chatStream([
+  { role: "user", content: "Tell me a story about dragons" }
+]);
+
+if (streamResult.isSuccess) {
+  const stream = streamResult.unwrap();
+  
+  for await (const chunk of stream) {
+    if (chunk.delta?.content) {
+      process.stdout.write(chunk.delta.content);
+    }
+  }
+}
+```
+
+---
+
+## MCP Protocol Contract
+
+**Purpose**: Model Context Protocol client and server implementation with Result<T> integration and circuit breaker patterns. Designed for reliable MCP communication with comprehensive error handling and protocol validation.
+
+**Behavior**:
+- **Asynchronous**: All MCP operations are non-blocking with WebSocket/HTTP support
+- **Protocol-Compliant**: Full implementation of MCP specification
+- **Circuit Breaker**: Resilience patterns for unreliable MCP connections
+- **Type-Safe**: Schema validation for all MCP messages and responses
+
+**Required Operations**:
+- `createServer(config)` - Create MCP server instance
+- `createClient(config)` - Create MCP client instance
+- `registerTool(name, handler)` - Register tool handler on server
+- `callTool(name, arguments)` - Call tool on server from client
+- `listTools()` - List available tools
+- `start()` - Start MCP server or connect client
+
+**Input/Output Contracts**:
+- **createServer/Client(config)**: Takes MCPConfig, returns `Result<MCPServer/Client>`
+- **registerTool(name, handler)**: Takes tool name and async handler
+- **callTool(name, args)**: Takes tool name and arguments, returns `Promise<Result<ToolResponse>>`
+- **listTools()**: Returns `Promise<Result<ToolInfo[]>>`
+- **start()**: Returns `Promise<Result<void>>`
+
+**Examples**:
+
+```typescript
+// Create MCP server
+const serverResult = MCP.createServer({
+  transport: "websocket",
+  port: 8080,
+  host: "localhost"
+});
+
+const server = serverResult.unwrap();
+
+// Register tools
+server.registerTool("list_files", async (args) => {
+  const pathResult = await validatePath(args.path);
+  return pathResult.flatMap(validPath => 
+    listDirectoryFiles(validPath).map(files => ({
+      files: files.map(f => ({ name: f.name, type: f.type }))
+    }))
+  );
+});
+
+server.registerTool("read_file", async (args) => {
+  return readFileContent(args.path).map(content => ({
+    content,
+    encoding: "utf-8"
+  }));
+});
+
+// Start server
+const startResult = await server.start();
+
+// Create MCP client
+const clientResult = MCP.createClient({
+  serverUrl: "ws://localhost:8080",
+  timeout: 10000
+}).withCircuitBreaker({
+  failureThreshold: 3,
+  recoveryTimeout: 30000
+});
+
+const client = clientResult.unwrap();
+
+// Use tools
+const toolsResult = await client.listTools();
+const callResult = await client.callTool("list_files", { path: "/home/user" });
+```
+
+---
+
+## Database Contract
+
+**Purpose**: Unified database interface supporting multiple backends (SQLite, PostgreSQL) with Result<T> integration, connection pooling, and transaction support. Designed for reliable data persistence with comprehensive error handling.
+
+**Behavior**:
+- **Asynchronous**: All database operations are non-blocking
+- **Backend-Agnostic**: Unified interface for SQLite, PostgreSQL, and other databases
+- **Transaction Support**: ACID transactions with rollback capabilities
+- **Connection Pooling**: Efficient connection management and reuse
+
+**Required Operations**:
+- `connect(config)` - Establish database connection
+- `query(sql, params?)` - Execute SQL query with optional parameters
+- `execute(sql, params?)` - Execute SQL statement (INSERT, UPDATE, DELETE)
+- `transaction(operations)` - Execute operations within transaction
+- `close()` - Close database connection and cleanup resources
+
+**Input/Output Contracts**:
+- **connect(config)**: Takes DatabaseConfig, returns `Promise<Result<Database>>`
+- **query(sql, params?)**: Takes SQL and parameters, returns `Promise<Result<QueryResult>>`
+- **execute(sql, params?)**: Takes SQL and parameters, returns `Promise<Result<ExecuteResult>>`
+- **transaction(operations)**: Takes async operation array, returns `Promise<Result<TransactionResult>>`
+- **close()**: Returns `Promise<Result<void>>`
+
+**Examples**:
+
+```typescript
+// Connect to database
+const dbResult = await Database.connect({
+  type: "sqlite",
+  path: "./data.db",
+  pool: { min: 1, max: 10 }
+});
+
+const db = dbResult.unwrap();
+
+// Simple query
+const usersResult = await db.query(
+  "SELECT * FROM users WHERE active = ?", 
+  [true]
+);
+
+// Transaction with multiple operations
+const transactionResult = await db.transaction([
+  { sql: "INSERT INTO users (name, email) VALUES (?, ?)", params: ["John", "john@example.com"] },
+  { sql: "UPDATE accounts SET balance = balance + ? WHERE user_id = ?", params: [1000, userId] },
+  { sql: "INSERT INTO audit_log (action, user_id) VALUES (?, ?)", params: ["user_created", userId] }
+]);
+
+if (transactionResult.isSuccess) {
+  console.log("User created and account funded successfully");
+} else {
+  console.error("Transaction failed:", transactionResult.error.message);
+}
+```
+
+---
+
 ## Class-Level Contracts Summary
 
 QiCore v4.0 provides **language-agnostic behavioral contracts** for the following classes:
@@ -825,8 +1191,13 @@ QiCore v4.0 provides **language-agnostic behavioral contracts** for the followin
 6. **HTTP Client**: Asynchronous HTTP with circuit breaker and streaming
 7. **Document Generation**: Template processing with multi-format and streaming support
 8. **Command-Line Processing**: Type-safe argument parsing with help generation
+9. **Web Framework**: Asynchronous web framework with Result<T> integration
+10. **ASGI Server**: High-performance ASGI server with multi-worker support
+11. **AI/LLM Client**: Unified LLM interface with circuit breaker patterns
+12. **MCP Protocol**: Model Context Protocol with resilience patterns
+13. **Database**: Unified database interface with transaction support
 
-**Total: 8 Class-Level Contracts** providing:
+**Total: 13 Class-Level Contracts** providing:
 
 - **Pure Behavioral Specifications**: What functions do, not how they're implemented
 - **Language Independence**: Adaptable to TypeScript, Python, Haskell, etc.

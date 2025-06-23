@@ -96,7 +96,7 @@ This document verifies the complete implementation of QiCore v4.0 across all sta
 - **Design Analysis**: ✅ Composable CLI pattern
 - **Implementations**:
   - TypeScript: ✅ Commander.js with Result returns
-  - Python: ✅ Click with type annotations
+  - Python: ✅ typer with type annotations
   - Haskell: ✅ optparse-applicative
 - **Tests**: ✅ Parsing and error handling verified
 

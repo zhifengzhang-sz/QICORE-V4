@@ -19,6 +19,9 @@ graph TD
             HTTP[HTTP Component]
             Document[Document Component]
             CLP[CLP Component]
+            Web[Web Component<br/>Framework + ASGI]
+            AI[AI Component<br/>LLM + MCP]
+            DB[Database Component]
         end
         
         subgraph "Core Component"
@@ -32,6 +35,10 @@ graph TD
         HTTP --> CoreComp
         Document --> CoreComp
         CLP --> CoreComp
+        Web --> CoreComp
+        AI --> CoreComp
+        AI --> HTTP
+        DB --> CoreComp
         
         CoreComp --> BaseComp
         
@@ -39,7 +46,7 @@ graph TD
         classDef core fill:#f3e5f5,stroke:#4a148c,stroke-width:3px
         classDef base fill:#e1f5fe,stroke:#01579b,stroke-width:3px
         
-        class HTTP,Document,CLP component
+        class HTTP,Document,CLP,Web,AI,DB component
         class CoreComp core
         class BaseComp base
     end
@@ -339,6 +346,150 @@ CLPComponent provides:
 - **Hierarchical Commands**: Nested command support
 - **Auto Documentation**: Help and usage generation
 - **POSIX Compliance**: Standard option parsing
+
+---
+
+## Web Component
+
+**Purpose**: Asynchronous web framework with routing, middleware, and Result<T> integration
+
+### Component Interface
+
+```
+WebComponent provides:
+  Web server operations:
+    - createApp(config) → Result<WebApp>
+    - route(method, path, handler) → void
+    - middleware(handler) → void
+    - start(port, host) → async Result<Server>
+    - stop() → async Result<void>
+    - validateRequest(request, schema) → Result<ValidatedRequest>
+    
+  ASGI server operations:
+    - createServer(app, config) → Result<ASGIServer>
+    - start() → async Result<void>
+    - stop(timeout) → async Result<void>
+    - reload() → async Result<void>
+    - getStats() → Result<ServerStats>
+```
+
+### Included Contracts
+- **Web Framework**: Async web framework with Result<T> integration
+- **ASGI Server**: High-performance ASGI server with multi-worker support
+
+### Dependencies
+- **Base Component**: Uses Result<T> and QiError
+- **Core Component**:
+  - Uses Configuration for server settings
+  - Uses Logger for request/response logging
+  - May use Cache for response caching
+
+### Exported Types
+- `WebApp`: Web application instance
+- `WebConfig`: Web application configuration
+- `ASGIServer`: ASGI server instance
+- `ASGIConfig`: ASGI server configuration
+- `ServerStats`: Server performance metrics
+
+### Component Guarantees
+- **Result<T> Integration**: All handlers return Result<T>
+- **Middleware Pipeline**: Composable request/response processing
+- **Production Ready**: Multi-worker support with graceful shutdown
+- **Type Safety**: Request/response validation with schemas
+
+---
+
+## AI Component
+
+**Purpose**: Unified AI/LLM interface and MCP protocol implementation with circuit breaker patterns
+
+### Component Interface
+
+```
+AIComponent provides:
+  LLM operations:
+    - createClient(provider, config) → Result<LLMClient>
+    - chat(messages, options) → async Result<ChatResponse>
+    - chatStream(messages, options) → async Result<Stream<ChatChunk>>
+    - complete(prompt, options) → async Result<CompletionResponse>
+    - embed(text, options) → async Result<EmbeddingResponse>
+    - withCircuitBreaker(config) → LLMClient
+    
+  MCP operations:
+    - createServer(config) → Result<MCPServer>
+    - createClient(config) → Result<MCPClient>
+    - registerTool(name, handler) → void
+    - callTool(name, arguments) → async Result<ToolResponse>
+    - listTools() → async Result<ToolInfo[]>
+    - start() → async Result<void>
+```
+
+### Included Contracts
+- **AI/LLM Client**: Unified LLM interface with circuit breaker patterns
+- **MCP Protocol**: Model Context Protocol with resilience patterns
+
+### Dependencies
+- **Base Component**: Uses Result<T> and QiError
+- **Core Component**:
+  - Uses Configuration for AI provider settings
+  - Uses Logger for AI interaction logging
+  - Uses Cache for response caching
+- **HTTP Component**: Uses HTTP client for cloud LLM providers
+
+### Exported Types
+- `LLMClient`: LLM client instance
+- `LLMConfig`: LLM client configuration
+- `MCPServer`: MCP server instance
+- `MCPClient`: MCP client instance
+- `ChatResponse`: LLM chat completion response
+- `ToolResponse`: MCP tool execution response
+
+### Component Guarantees
+- **Provider Agnostic**: Unified interface for all LLM providers
+- **Circuit Breaker**: Built-in resilience for unreliable AI services
+- **Streaming Support**: Real-time response streaming
+- **Protocol Compliance**: Full MCP specification implementation
+
+---
+
+## Database Component
+
+**Purpose**: Unified database interface with transaction support and Result<T> integration
+
+### Component Interface
+
+```
+DatabaseComponent provides:
+  Database operations:
+    - connect(config) → async Result<Database>
+    - query(sql, params) → async Result<QueryResult>
+    - execute(sql, params) → async Result<ExecuteResult>
+    - transaction(operations) → async Result<TransactionResult>
+    - close() → async Result<void>
+```
+
+### Included Contracts
+- **Database**: Unified database interface with transaction support
+
+### Dependencies
+- **Base Component**: Uses Result<T> and QiError
+- **Core Component**:
+  - Uses Configuration for database settings
+  - Uses Logger for query logging
+  - May use Cache for query result caching
+
+### Exported Types
+- `Database`: Database connection instance
+- `DatabaseConfig`: Database configuration
+- `QueryResult`: Query execution result
+- `ExecuteResult`: Statement execution result
+- `TransactionResult`: Transaction execution result
+
+### Component Guarantees
+- **Backend Agnostic**: Support for SQLite, PostgreSQL, and others
+- **Transaction Support**: ACID transactions with rollback
+- **Connection Pooling**: Efficient connection management
+- **Result<T> Integration**: No exception-based error handling
 
 ---
 

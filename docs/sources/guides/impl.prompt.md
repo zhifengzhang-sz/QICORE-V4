@@ -179,6 +179,71 @@ Create `impl/qi.v4.[LANG].template.md` and `impl/qi.v4.[LANG].impl.md` for each 
   [Language-specific CLP implementation]
   ```
 
+- **Web Framework** implementing Request/Response Pipeline Pattern:
+  ```[language]
+  // Direct implementation of IO monad pattern:
+  // Request → Middleware₁ → Middleware₂ → ... → Handler → Response
+  
+  [Language-specific Web Framework implementation]
+  
+  // Verify: Implements all 8 operations from design
+  // - route, mount, group, param (routing patterns)
+  // - use, compose (middleware patterns)
+  // - static, errorHandler (static/error patterns)
+  ```
+
+- **ASGI Server** implementing Server Lifecycle Pattern:
+  ```[language]
+  // Direct implementation of continuation monad pattern:
+  // STOPPED → STARTING → RUNNING → STOPPING → STOPPED
+  
+  [Language-specific ASGI Server implementation]
+  
+  // Verify: Implements all 6 operations from design
+  // - start, shutdown (lifecycle patterns)
+  // - accept, reject (connection patterns)
+  // - workers, health (worker/monitor patterns)
+  ```
+
+- **AI/LLM Client** implementing Configuration Reader Pattern:
+  ```[language]
+  // Direct implementation of reader monad pattern:
+  // LLMClient = Config → IO(Result<Response>)
+  
+  [Language-specific AI/LLM Client implementation]
+  
+  // Verify: Implements all 7 operations from design
+  // - chat, chatStream, generate (chat patterns)
+  // - embedding, withConfig (embedding/config patterns)
+  // - withCircuitBreaker, streamGenerate (circuit breaker integration)
+  ```
+
+- **MCP Protocol** implementing Message Transformation Pattern:
+  ```[language]
+  // Direct implementation of protocol functor pattern:
+  // InternalMessage ↔ WireMessage ↔ ExternalMessage
+  
+  [Language-specific MCP Protocol implementation]
+  
+  // Verify: Implements all 6 operations from design
+  // - connect, disconnect (connection patterns)
+  // - send, receive (messaging patterns)
+  // - listResources, callTool (resource/tool patterns)
+  ```
+
+- **Database** implementing Transaction Composition Pattern:
+  ```[language]
+  // Direct implementation of transaction monad pattern:
+  // Transaction<A> = Connection → IO(Result<A>)
+  
+  [Language-specific Database implementation]
+  
+  // Verify: Implements all 8 operations from design
+  // - create, read, update, delete (CRUD patterns)
+  // - begin, commit (transaction patterns)
+  // - migrate, pool (migration/pool patterns)
+  ```
+
 ### 5. Pattern Verification
 
 **For each implementation, show it preserves the design pattern**:
@@ -265,6 +330,36 @@ result = getUserById(123)
   - [ ] Input consumption with remainder
   - [ ] Combinator composition
   - [ ] Error position tracking
+
+- [ ] Request/Response Pipeline Pattern
+  - [ ] IO monad threading through middleware
+  - [ ] Function composition for request processing
+  - [ ] Type-safe parameter extraction
+  - [ ] All 8 Web Framework operations
+
+- [ ] Server Lifecycle Pattern
+  - [ ] State machine for server states
+  - [ ] Graceful connection management
+  - [ ] Worker/process management
+  - [ ] All 6 ASGI Server operations
+
+- [ ] Configuration Reader Pattern
+  - [ ] Reader monad for dependency injection
+  - [ ] Circuit breaker integration
+  - [ ] Streaming API support
+  - [ ] All 7 AI/LLM operations
+
+- [ ] Message Transformation Pattern
+  - [ ] Protocol functor for serialization
+  - [ ] Bidirectional message conversion
+  - [ ] Connection pooling and management
+  - [ ] All 6 MCP Protocol operations
+
+- [ ] Transaction Composition Pattern
+  - [ ] Transaction monad for ACID properties
+  - [ ] Connection pooling with lifecycle
+  - [ ] Migration and schema management
+  - [ ] All 8 Database operations
 ```
 
 ### 2. Design-to-Code Mapping

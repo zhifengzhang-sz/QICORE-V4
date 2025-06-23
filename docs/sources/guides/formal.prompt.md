@@ -180,7 +180,98 @@ Create `objective/formal/qi.v4.formal.spec.md` that provides:
   
   Continue with all operations...
 
-#### **Application Components: ALL HTTP operations + ALL Document operations + ALL CLP operations**
+#### **Application Components: ALL HTTP operations + ALL Document operations + ALL CLP operations + ALL Web Framework operations + ALL ASGI Server operations + ALL AI/LLM operations + ALL MCP Protocol operations + ALL Database operations**
+
+- **Web Framework as IO monad** using IO monad pattern from common.md:
+  
+  **Request/Response Type**:
+  $$\text{WebApp} = \text{Request} \rightarrow \text{IO}(\text{Result}\langle\text{Response}\rangle)$$
+  
+  **Routing operations**:
+  - `route`: $\text{route}: \text{Method} \times \text{Path} \times \text{Handler} \rightarrow \text{Route}$
+  - `mount`: $\text{mount}: \text{Path} \times \text{WebApp} \rightarrow \text{Route}$
+  - `group`: $\text{group}: \text{Path} \times \text{List}\langle\text{Route}\rangle \rightarrow \text{Route}$
+  - `param`: $\text{param}: \text{Request} \times \text{String} \rightarrow \text{Result}\langle\text{String}\rangle$
+  
+  **Middleware operations**:
+  - `use`: $\text{use}: \text{Middleware} \times \text{WebApp} \rightarrow \text{WebApp}$
+  - `compose`: $\text{compose}: \text{List}\langle\text{Middleware}\rangle \rightarrow \text{Middleware}$
+  
+  **Static/Error operations**:
+  - `static`: $\text{static}: \text{Path} \times \text{Directory} \rightarrow \text{Route}$
+  - `errorHandler`: $\text{errorHandler}: (\text{QiError} \rightarrow \text{Response}) \rightarrow \text{Middleware}$
+
+- **ASGI Server as continuation monad** using continuation monad pattern from common.md:
+  
+  **Server Lifecycle Type**:
+  $$\text{ASGIServer} = \text{Config} \rightarrow \text{IO}(\text{Result}\langle\text{ServerHandle}\rangle)$$
+  
+  **Lifecycle operations**:
+  - `start`: $\text{start}: \text{Config} \times \text{WebApp} \rightarrow \text{IO}(\text{Result}\langle\text{ServerHandle}\rangle)$
+  - `shutdown`: $\text{shutdown}: \text{ServerHandle} \rightarrow \text{IO}(\text{Result}\langle()\rangle)$
+  
+  **Connection operations**:
+  - `accept`: $\text{accept}: \text{ServerHandle} \rightarrow \text{IO}(\text{Result}\langle\text{Connection}\rangle)$
+  - `reject`: $\text{reject}: \text{Connection} \times \text{String} \rightarrow \text{IO}(\text{Result}\langle()\rangle)$
+  
+  **Worker/Monitor operations**:
+  - `workers`: $\text{workers}: \text{Int} \rightarrow \text{Config}$
+  - `health`: $\text{health}: \text{ServerHandle} \rightarrow \text{IO}(\text{Result}\langle\text{HealthStatus}\rangle)$
+
+- **AI/LLM Client as reader monad** using reader monad pattern from common.md:
+  
+  **Client Configuration Type**:
+  $$\text{LLMClient} = \text{Config} \rightarrow \text{IO}(\text{Result}\langle\text{Response}\rangle)$$
+  
+  **Chat operations**:
+  - `chat`: $\text{chat}: \text{Messages} \rightarrow \text{LLMClient}$
+  - `chatStream`: $\text{chatStream}: \text{Messages} \rightarrow \text{Stream}(\text{Result}\langle\text{Chunk}\rangle)$
+  - `generate`: $\text{generate}: \text{Prompt} \rightarrow \text{LLMClient}$
+  
+  **Embedding/Config operations**:
+  - `embedding`: $\text{embedding}: \text{Text} \rightarrow \text{LLMClient}$
+  - `withConfig`: $\text{withConfig}: \text{Config} \times \text{LLMClient} \rightarrow \text{LLMClient}$
+  
+  **Circuit breaker integration**:
+  - `withCircuitBreaker`: $\text{withCircuitBreaker}: \text{CircuitBreakerConfig} \times \text{LLMClient} \rightarrow \text{LLMClient}$
+  - `streamGenerate`: $\text{streamGenerate}: \text{Prompt} \rightarrow \text{Stream}(\text{Result}\langle\text{Chunk}\rangle)$
+
+- **MCP Protocol as protocol functor** using protocol functor pattern from common.md:
+  
+  **Message Transformation Type**:
+  $$\text{MCPProtocol}: \text{Message}_A \rightarrow \text{Message}_B$$
+  
+  **Connection operations**:
+  - `connect`: $\text{connect}: \text{ServerInfo} \rightarrow \text{IO}(\text{Result}\langle\text{Connection}\rangle)$
+  - `disconnect`: $\text{disconnect}: \text{Connection} \rightarrow \text{IO}(\text{Result}\langle()\rangle)$
+  
+  **Messaging operations**:
+  - `send`: $\text{send}: \text{Connection} \times \text{Message} \rightarrow \text{IO}(\text{Result}\langle\text{Response}\rangle)$
+  - `receive`: $\text{receive}: \text{Connection} \rightarrow \text{IO}(\text{Result}\langle\text{Message}\rangle)$
+  
+  **Resource/Tool operations**:
+  - `listResources`: $\text{listResources}: \text{Connection} \rightarrow \text{IO}(\text{Result}\langle\text{List}\langle\text{Resource}\rangle\rangle)$
+  - `callTool`: $\text{callTool}: \text{Connection} \times \text{ToolCall} \rightarrow \text{IO}(\text{Result}\langle\text{ToolResult}\rangle)$
+
+- **Database as transaction monad** using transaction monad pattern from common.md:
+  
+  **Transaction Type**:
+  $$\text{Transaction}\langle T \rangle = \text{Connection} \rightarrow \text{IO}(\text{Result}\langle T \rangle)$$
+  
+  **CRUD operations**:
+  - `create`: $\text{create}: \text{Table} \times \text{Data} \rightarrow \text{Transaction}\langle\text{ID}\rangle$
+  - `read`: $\text{read}: \text{Table} \times \text{Query} \rightarrow \text{Transaction}\langle\text{List}\langle\text{Row}\rangle\rangle$
+  - `update`: $\text{update}: \text{Table} \times \text{ID} \times \text{Data} \rightarrow \text{Transaction}\langle\text{Int}\rangle$
+  - `delete`: $\text{delete}: \text{Table} \times \text{ID} \rightarrow \text{Transaction}\langle\text{Int}\rangle$
+  
+  **Transaction operations**:
+  - `begin`: $\text{begin}: \text{Connection} \rightarrow \text{IO}(\text{Result}\langle\text{Transaction}\rangle)$
+  - `commit`: $\text{commit}: \text{Transaction} \rightarrow \text{IO}(\text{Result}\langle()\rangle)$
+  
+  **Migration/Pool operations**:
+  - `migrate`: $\text{migrate}: \text{Connection} \times \text{Schema} \rightarrow \text{IO}(\text{Result}\langle()\rangle)$
+  - `pool`: $\text{pool}: \text{Config} \rightarrow \text{IO}(\text{Result}\langle\text{ConnectionPool}\rangle)$
+
 Continue with mathematical formalization of all operations...
 
 ### 4. Component Composition Laws
@@ -193,7 +284,10 @@ Based on the 5-component hierarchy from component contracts:
 ### 5. Required Patterns (from common.md)
 - **Error Recovery**: Explicit patterns for all contracts using `Result.orElse` and retry with backoff
 - **Circuit Breaker Pattern**: State machine with CLOSED(failures) → OPEN(timestamp) → HALF_OPEN(successes) states
-- **Stream Processing Pattern**: Lazy evaluation, backpressure, resource management for HTTP and Document
+- **Stream Processing Pattern**: Lazy evaluation, backpressure, resource management for HTTP, Document, Web responses, and AI streaming
+- **Request/Response Pattern**: IO monad for Web Framework operations with middleware composition
+- **Connection Management Pattern**: Connection pooling for ASGI Server and Database with health monitoring
+- **Protocol Message Pattern**: Protocol functor for MCP message transformation and serialization
 
 ### 6. Formal Verification Conditions
 - **Categorical law verification** for all contracts
@@ -241,6 +335,16 @@ Specify realistic performance for each operation class using the baseline exampl
 ### 4.2 Document Generation with Streaming (Complete with all operations)
 [Use LaTeX notation for all mathematical expressions]
 ### 4.3 Command-Line Processing (Complete with all operations)
+[Use LaTeX notation for all mathematical expressions]
+### 4.4 Web Framework with IO Monad (Complete with all operations)
+[Use LaTeX notation for all mathematical expressions]
+### 4.5 ASGI Server with Continuation Monad (Complete with all operations)
+[Use LaTeX notation for all mathematical expressions]
+### 4.6 AI/LLM Client with Reader Monad (Complete with all operations)
+[Use LaTeX notation for all mathematical expressions]
+### 4.7 MCP Protocol with Protocol Functor (Complete with all operations)
+[Use LaTeX notation for all mathematical expressions]
+### 4.8 Database with Transaction Monad (Complete with all operations)
 [Use LaTeX notation for all mathematical expressions]
 
 ## 5. Component Composition Laws
@@ -330,6 +434,41 @@ Before submitting, verify every item is mathematically formalized with LaTeX not
 - [ ] Parser combinator structure
 - [ ] Validation as coproduct
 - [ ] Help generation formalized
+
+**Web Framework Contract Verification:**
+- [ ] All 8 Web Framework operations with signatures
+- [ ] IO monad structure for request/response
+- [ ] Middleware composition laws
+- [ ] Static file serving formalized
+- [ ] Error handling as functor composition
+
+**ASGI Server Contract Verification:**
+- [ ] All 6 ASGI Server operations with signatures
+- [ ] Continuation monad for server lifecycle
+- [ ] Connection management state machine
+- [ ] Worker configuration formalized
+- [ ] Health monitoring as effect
+
+**AI/LLM Client Contract Verification:**
+- [ ] All 7 AI/LLM operations with signatures
+- [ ] Reader monad for configuration dependency
+- [ ] Streaming operations as coalgebras
+- [ ] Circuit breaker integration
+- [ ] Embedding operations formalized
+
+**MCP Protocol Contract Verification:**
+- [ ] All 6 MCP Protocol operations with signatures
+- [ ] Protocol functor for message transformation
+- [ ] Connection state management
+- [ ] Resource and tool operations
+- [ ] Message serialization laws
+
+**Database Contract Verification:**
+- [ ] All 8 Database operations with signatures
+- [ ] Transaction monad structure
+- [ ] ACID property formalization
+- [ ] Connection pooling as resource management
+- [ ] Migration operations formalized
 
 **Cross-Cutting Verification:**
 - [ ] All mathematical expressions in LaTeX

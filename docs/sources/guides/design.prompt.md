@@ -212,7 +212,7 @@ Create `design/qi.v4.design.analysis.md` that provides:
   - **Eviction patterns**: LRU/FIFO state machines
   - **Atomic patterns**: getOrSet for race-free updates
 
-#### **Application Component Design Patterns - ALL HTTP operations + ALL Document operations + ALL CLP operations**
+#### **Application Component Design Patterns - ALL HTTP operations + ALL Document operations + ALL CLP operations + ALL Web Framework operations + ALL ASGI Server operations + ALL AI/LLM operations + ALL MCP Protocol operations + ALL Database operations**
 - **HTTP Design Patterns** using state machines and stream coalgebras from common.md:
   
   **Circuit Breaker State Machine**:
@@ -255,6 +255,76 @@ Create `design/qi.v4.design.analysis.md` that provides:
   - **Help generation patterns**: Automatic documentation from config
   - **Command hierarchy patterns**: Nested command structures
   - **Error reporting patterns**: Position and context in parse errors
+
+- **Web Framework Design Patterns** using IO monad and request/response patterns from common.md:
+  
+  **Request/Response Pipeline Pattern**:
+  ```
+  Request → Middleware₁ → Middleware₂ → ... → Handler → Response
+  (Function composition with IO monad threading)
+  ```
+  
+  - **Routing patterns**: Pattern matching on HTTP method and path
+  - **Middleware composition patterns**: Function composition with early termination
+  - **Parameter extraction patterns**: Type-safe path and query parameter binding
+  - **Static file patterns**: File system streaming with caching headers
+  - **Error handling patterns**: Uniform error response transformation
+
+- **ASGI Server Design Patterns** using continuation monad and connection management from common.md:
+  
+  **Server Lifecycle Pattern**:
+  ```
+  STOPPED → STARTING → RUNNING → STOPPING → STOPPED
+  (State machine with graceful transitions)
+  ```
+  
+  - **Connection acceptance patterns**: Backpressure with connection limits
+  - **Worker management patterns**: Process/thread pool with health monitoring
+  - **Graceful shutdown patterns**: Connection draining with timeout
+  - **Health monitoring patterns**: Periodic connection and resource checks
+  - **ASGI protocol patterns**: Message-based communication with apps
+
+- **AI/LLM Client Design Patterns** using reader monad and circuit breaker patterns from common.md:
+  
+  **Configuration Reader Pattern**:
+  ```
+  LLMClient = Config → IO(Result<Response>)
+  (Reader monad for dependency injection)
+  ```
+  
+  - **Chat completion patterns**: Message history management with streaming
+  - **Embedding patterns**: Batch processing with token limits
+  - **Streaming patterns**: Async generators with backpressure
+  - **Configuration patterns**: Model selection and parameter validation
+  - **Circuit breaker integration**: Service degradation with fallbacks
+
+- **MCP Protocol Design Patterns** using protocol functor and message transformation from common.md:
+  
+  **Message Transformation Pattern**:
+  ```
+  InternalMessage ↔ WireMessage ↔ ExternalMessage
+  (Bidirectional protocol functor with serialization)
+  ```
+  
+  - **Connection management patterns**: Connection pooling with reconnection
+  - **Message serialization patterns**: Type-safe protocol encoding/decoding
+  - **Resource enumeration patterns**: Dynamic capability discovery
+  - **Tool invocation patterns**: Type-safe remote procedure calls
+  - **Protocol versioning patterns**: Backward-compatible message evolution
+
+- **Database Design Patterns** using transaction monad and connection pooling from common.md:
+  
+  **Transaction Composition Pattern**:
+  ```
+  Transaction<A> = Connection → IO(Result<A>)
+  (Transaction monad with ACID properties)
+  ```
+  
+  - **CRUD patterns**: Type-safe query building with result mapping
+  - **Transaction patterns**: Nested transactions with rollback semantics
+  - **Connection pooling patterns**: Resource sharing with lifecycle management
+  - **Migration patterns**: Schema evolution with rollback capabilities
+  - **Query optimization patterns**: Lazy loading with relationship management
 
 ### 4. Systematic Application of Polynomial Functors
 For each operation class:
@@ -312,6 +382,11 @@ For each operation using tier model from common.md:
 ### 4.1 HTTP Resilience Patterns (Complete with all operations)
 ### 4.2 Document Streaming Patterns (Complete with all operations)
 ### 4.3 Command-Line Parser Patterns (Complete with all operations)
+### 4.4 Web Framework Request/Response Patterns (Complete with all operations)
+### 4.5 ASGI Server Lifecycle Patterns (Complete with all operations)
+### 4.6 AI/LLM Client Configuration Patterns (Complete with all operations)
+### 4.7 MCP Protocol Message Patterns (Complete with all operations)
+### 4.8 Database Transaction Patterns (Complete with all operations)
 
 ## 5. Component Integration Patterns
 ### 5.1 Cross-Component Interfaces
@@ -370,6 +445,11 @@ Before submitting, verify every operation has language-agnostic design pattern:
 - [ ] All HTTP operations have resilience patterns
 - [ ] All Document operations have streaming patterns  
 - [ ] All CLP operations have parser combinator patterns
+- [ ] All Web Framework operations have IO monad patterns
+- [ ] All ASGI Server operations have continuation monad patterns
+- [ ] All AI/LLM operations have reader monad patterns
+- [ ] All MCP Protocol operations have protocol functor patterns
+- [ ] All Database operations have transaction monad patterns
 - [ ] Circuit breaker uses exact state machine pattern from common.md
 - [ ] Streaming uses coalgebraic structures from common.md
 

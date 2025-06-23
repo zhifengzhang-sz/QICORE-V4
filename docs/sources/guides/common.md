@@ -29,14 +29,19 @@
 ### Categorical Structures
 
 The specification employs the following categorical constructions:
-- **Monads**: For error handling (Result) and stateful operations (Cache)
+- **Monads**: For error handling (Result) and stateful operations (Cache, Database)
 - **Functors**: For type transformations and component boundaries
 - **Natural Transformations**: For cross-language behavioral consistency
 - **Monoids**: For configuration merging with precedence
 - **Effect Interfaces**: For logging and other side effects
 - **Monad Transformers**: For async operations composition
-- **Stream Coalgebras**: For streaming operations in HTTP and Document generation
-- **State Machines**: For circuit breaker pattern
+- **Stream Coalgebras**: For streaming operations in HTTP, Document generation, and Web responses
+- **State Machines**: For circuit breaker pattern and connection management
+- **IO Monads**: For web framework request/response handling and ASGI server lifecycle
+- **Reader Monad**: For dependency injection in web applications and AI client configuration
+- **Protocol Functors**: For MCP message transformation and serialization
+- **Transaction Monads**: For database operations with ACID properties
+- **Continuation Monads**: For async/await patterns in server operations
 
 ## Performance Tier Model
 
@@ -65,6 +70,11 @@ Cache get (memory)      10μs      100μs   500μs       1ms
 HTTP circuit check      <1ms      <1ms    <1ms        <1ms
 Config validation       100μs     1ms     5ms         10ms
 Template compilation    1ms       10ms    50ms        100ms
+Web request handling    100μs     1ms     5ms         10ms
+ASGI connection         10μs      100μs   500μs       1ms
+AI/LLM API call         10ms      50ms    100ms       200ms
+MCP message parsing     10μs      100μs   500μs       1ms
+Database query          1ms       10ms    50ms        100ms
 ```
 
 ## Component Architecture
@@ -84,6 +94,11 @@ Template compilation    1ms       10ms    50ms        100ms
 - **HTTP**: 7 operations (5 basic + 1 streaming + 1 circuit breaker)
 - **Document**: 6 operations (3 basic + 1 streaming + 1 batch + 1 validation)
 - **CLP**: 5 operations (2 parsing + 1 validation + 2 help)
+- **Web Framework**: 8 operations (4 routing + 2 middleware + 1 static + 1 error handling)
+- **ASGI Server**: 6 operations (2 lifecycle + 2 connection + 1 worker + 1 monitoring)
+- **AI/LLM Client**: 7 operations (3 chat + 1 streaming + 1 embedding + 1 config + 1 circuit breaker)
+- **MCP Protocol**: 6 operations (2 connection + 2 messaging + 1 resource + 1 tool)
+- **Database**: 8 operations (4 CRUD + 2 transaction + 1 migration + 1 connection pool)
 - **Depends on**: Base + Core Components
 
 ## Required Patterns
@@ -102,15 +117,36 @@ State machine with three states:
 - **HALF_OPEN(successes)**: Testing recovery, counting successes
 
 ### Stream Processing Pattern
-For HTTP and Document streaming:
+For HTTP, Document, Web response, and AI streaming:
 - **Lazy Evaluation**: Elements produced on demand
 - **Backpressure**: Consumer controls flow rate
 - **Resource Management**: Proper cleanup on termination
 - **Error Propagation**: Errors terminate stream gracefully
 
+### Request/Response Pattern
+For Web Framework operations:
+- **IO Monad**: Request processing in functional context
+- **Middleware Composition**: Function composition for request pipeline
+- **Error Handling**: Unified error responses via Result<T>
+- **Resource Cleanup**: Automatic cleanup via RAII patterns
+
+### Connection Management Pattern
+For ASGI Server and Database:
+- **Connection Pooling**: Resource sharing with lifecycle management
+- **Health Monitoring**: Connection state validation
+- **Graceful Shutdown**: Clean termination of active connections
+- **Backpressure**: Flow control for incoming connections
+
+### Protocol Message Pattern
+For MCP Protocol operations:
+- **Message Serialization**: Bidirectional protocol transformations
+- **Type Safety**: Protocol compliance via type system
+- **Error Recovery**: Protocol-level error handling
+- **Versioning**: Backward-compatible protocol evolution
+
 ## Operation Coverage Requirements
 
-### Total Operation Count: 64 Operations
+### Total Operation Count: 99 Operations
 
 **Base Component (22 operations):**
 - Result: 8 operations (unit, bind, map, flatMap, unwrap, unwrapOr, match, orElse)
@@ -122,10 +158,15 @@ For HTTP and Document streaming:
 - Logger: 7 operations (1 factory + 5 levels + 1 performance)
 - Cache: 9 operations (2 factories + 7 cache operations)
 
-**Application Components (17 operations):**
+**Application Components (52 operations):**
 - HTTP: 7 operations (5 basic + 1 streaming + 1 circuit breaker)
 - Document: 6 operations (3 basic + 1 streaming + 1 batch + 1 validation)
 - CLP: 5 operations (2 parsing + 1 validation + 2 help)
+- Web Framework: 8 operations (4 routing + 2 middleware + 1 static + 1 error handling)
+- ASGI Server: 6 operations (2 lifecycle + 2 connection + 1 worker + 1 monitoring)
+- AI/LLM Client: 7 operations (3 chat + 1 streaming + 1 embedding + 1 config + 1 circuit breaker)
+- MCP Protocol: 6 operations (2 connection + 2 messaging + 1 resource + 1 tool)
+- Database: 8 operations (4 CRUD + 2 transaction + 1 migration + 1 connection pool)
 
 ## Language-Specific Context
 
