@@ -18,9 +18,9 @@ Transform language-agnostic design patterns into concrete Python implementations
 ## Input Requirements
 
 ### Required Design Inputs
-- **Design Patterns**: `design/qi.v4.design.analysis.md` (99 operations)
-- **Package Research**: `research/qi.v4.py.packages.md` (vetted Python packages)
-- **Wrapper Specifications**: `research/qi.v4.py.wrappers.md` (interface wrappers)
+- **Design Patterns**: `build/design/qi.v4.design.analysis.md` (99 operations)
+- **Package Research**: `build/research/qi.v4.py.packages.md` (vetted Python packages)
+- **Wrapper Specifications**: `build/research/qi.v4.py.wrappers.md` (interface wrappers)
 
 ### Required Methodology Files
 - **Python Implementation Guide**: `sources/guides/impl.py.prompt.md`
@@ -30,7 +30,7 @@ Transform language-agnostic design patterns into concrete Python implementations
 
 ### Primary Outputs
 
-#### 1. Python Code Template (`impl/qi.v4.py.template.md`)
+#### 1. Python Code Template (`build/impl/qi.v4.py.template.md`)
 **Format**: Markdown with runnable Python examples
 
 **Required Sections**:
@@ -42,7 +42,7 @@ Transform language-agnostic design patterns into concrete Python implementations
 - Type Safety Verification
 - Package Dependencies
 
-#### 2. Python Implementation Guide (`impl/qi.v4.py.impl.md`)
+#### 2. Python Implementation Guide (`build/impl/qi.v4.py.impl.md`)
 **Format**: Markdown implementation guide
 
 **Required Sections**:
@@ -162,9 +162,9 @@ src/
 ## Integration Points
 
 ### Upstream Dependencies
-- **Stage 2**: Design patterns must be complete
-- **Stage 4**: Python package research must be complete
-- **Mathematical Foundations**: `common.md` available
+- **Stage 3**: Design patterns must be complete (`build/design/qi.v4.design.analysis.md`)
+- **Stage 4**: Python package research must be complete (`build/research/qi.v4.py.*`)
+- **Mathematical Foundations**: `sources/guides/common.md` available
 
 ### Downstream Consumers
 - Verification processes will validate implementation
