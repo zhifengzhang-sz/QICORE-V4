@@ -15,9 +15,9 @@
 - **Optional**: `agent/build/inst.formal.yaml` (workflow automation)
 
 ### **Stage 2: Mathematical → Design Patterns**  
-- **Use**: `sources/guides/design.prompt.md` + `sources/guides/common.md`
+- **Use**: `sources/guides/design.prompt.md` + `sources/guides/common.md` + `sources/guides/mathematical-contracts.md`
 - **Input**: `build/objective/formal/qi.v4.formal.spec.md`
-- **Mathematical Contracts**: Uses abstract mathematical contracts from `sources/guides/common.md` 
+- **Mathematical Contracts**: Uses abstract mathematical contracts from `sources/guides/mathematical-contracts.md` 
 - **Output**: `build/design/qi.v4.design.analysis.md`
 - **Optional**: `docs/agent/inst.stage2.design.yaml` (workflow automation)
 
@@ -53,11 +53,12 @@
 - `sources/guides/impl.prompt.md` - Stage 3 language-agnostic implementation
 - `sources/guides/package-research-methodology.md` - Stage 4 package research methodology (INTEGRATED)
 - `sources/guides/impl.[LANG].prompt.md` - Stage 5 language-specific implementation (e.g., `impl.py.prompt.md`)
-- `sources/guides/common.md` - Shared mathematical foundations and abstract mathematical model contracts
+- `sources/guides/common.md` - Shared mathematical foundations
+- `sources/guides/mathematical-contracts.md` - Abstract mathematical contracts for Stage 2
 
 **Workflow Automation (Optional):**
 - `docs/agent/inst.formal.yaml` - Stage 1 workflow
-- `docs/agent/inst.stage2.design.yaml` - Stage 2 workflow (uses mathematical contracts from common.md)
+- `docs/agent/inst.stage2.design.yaml` - Stage 2 workflow (uses mathematical-contracts.md)
 - `docs/agent/inst.research.[LANG].yaml` - Stage 4 package research workflow (NEW)
 - `docs/agent/inst.impl.[LANG].yaml` - Stage 5 implementation workflow
 
@@ -65,14 +66,14 @@
 
 ### Manual Process
 1. **Stage 1**: Use `sources/guides/formal.prompt.md` + `sources/guides/common.md` to transform your NL contracts to mathematical spec
-2. **Stage 2**: Use `sources/guides/design.prompt.md` + `sources/guides/common.md` (includes mathematical contracts) + formal spec to create design patterns
+2. **Stage 2**: Use `sources/guides/design.prompt.md` + `sources/guides/common.md` + `sources/guides/mathematical-contracts.md` + formal spec to create design patterns
 3. **Stage 3**: Use `sources/guides/impl.prompt.md` + `sources/guides/common.md` to create language-agnostic implementation templates
 4. **Stage 4**: Use `sources/guides/package-research-methodology.md` + `sources/guides/common.md` to research packages and design wrappers
 5. **Stage 5**: Use `sources/guides/impl.[LANG].prompt.md` with package research outputs and your target language code (`ts`, `py`, `rs`, `hs`, or `go`)
 
 ### Automated Process (Optional)
 1. **Stage 1**: Run `docs/agent/inst.formal.yaml` workflow
-2. **Stage 2**: Run `docs/agent/inst.stage2.design.yaml` workflow (uses mathematical contracts from common.md)
+2. **Stage 2**: Run `docs/agent/inst.stage2.design.yaml` workflow (uses mathematical-contracts.md)
 3. **Stage 3**: Run `docs/agent/inst.impl.yaml` workflow  
 4. **Stage 4**: Run `docs/agent/inst.research.[LANG].yaml` workflow (NEW)
 5. **Stage 5**: Run `docs/agent/inst.impl.[LANG].yaml` workflow (e.g., `inst.impl.ts.yaml` for TypeScript)
@@ -92,7 +93,8 @@ docs/
 │   ├── guides/               # Core methodologies
 │   │   ├── formal.prompt.md
 │   │   ├── design.prompt.md
-│   │   ├── package-research-methodology.md  # NEW: Stage 3 methodology
+│   │   ├── mathematical-contracts.md    # Mathematical contracts for Stage 2
+│   │   ├── package-research-methodology.md  # Stage 4 methodology
 │   │   ├── impl.py.prompt.md    # Language-specific implementation
 │   │   ├── impl.ts.prompt.md    # Language-specific implementation
 │   │   └── common.md
@@ -103,7 +105,7 @@ docs/
 │       └── README.md
 ├── agent/                     # Workflow automation files
 │   ├── inst.formal.yaml
-│   ├── inst.stage2.design.yaml      # Uses mathematical contracts from common.md
+│   ├── inst.stage2.design.yaml      # Uses mathematical-contracts.md
 │   ├── inst.research.[LANG].yaml   # NEW: Package research workflows  
 │   └── inst.impl.[LANG].yaml
 └── build/                     # Generated outputs from design process
@@ -111,12 +113,12 @@ docs/
     │   └── qi.v4.formal.spec.md
     ├── design/               # Stage 2 output: Design patterns
     │   └── qi.v4.design.analysis.md
-    ├── research/             # Stage 3 output: Package research (NEW)
+    ├── research/             # Stage 4 output: Package research (NEW)
     │   ├── qi.v4.py.packages.md
     │   ├── qi.v4.py.wrappers.md
     │   ├── qi.v4.ts.packages.md
     │   └── qi.v4.ts.wrappers.md
-    └── impl/                 # Stage 4 output: Implementation templates
+    └── impl/                 # Stage 5 output: Implementation templates
         ├── qi.v4.ts.template.md
         ├── qi.v4.ts.impl.md
         └── [other languages...]

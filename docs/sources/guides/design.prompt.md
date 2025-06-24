@@ -15,7 +15,7 @@ You are applying category theory to systematic software design analysis, focusin
 **CONTRACT DERIVATION APPROACH**: Every design pattern must follow this systematic derivation:
 
 ### Step 1: Identify Abstract Contract
-Reference the appropriate abstract contract from `guides/common.md` Mathematical Model Contracts section:
+Reference the appropriate abstract contract from `guides/mathematical-contracts.md`:
 - **Abstract Monad Contract** for error handling, async operations, state management
 - **Abstract Functor Contract** for data transformations, component boundaries  
 - **Abstract Monoid Contract** for configuration merging, accumulation patterns
@@ -65,10 +65,11 @@ Keep design patterns practical and implementation-focused using mathematical gui
 
 You will be provided with:
 - `objective/formal/qi.v4.formal.spec.md` - Formal categorical specification with LaTeX notation
-- `guides/common.md` - Mathematical foundations, categorical structures, and mathematical model contracts
+- `guides/mathematical-contracts.md` - Abstract mathematical model contracts for design derivation
+- `guides/common.md` - Mathematical foundations and categorical structures
 - `guides/qi.v4.framework.md` - Development process methodology
 
-**CRITICAL**: The `guides/common.md` now includes a **Mathematical Model Contracts** section that provides abstract mathematical interface contracts. Use these contracts as the foundation for deriving concrete design patterns.
+**CRITICAL**: The `guides/mathematical-contracts.md` provides abstract mathematical interface contracts that serve as the foundation for deriving concrete design patterns.
 
 ## Task
 
