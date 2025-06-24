@@ -21,7 +21,7 @@ These contracts serve as **verification points** and **design constraints** for 
 Stage 1: sources/nl + sources/guides/formal.prompt.md + sources/guides/common.md 
          → build/objective/formal.spec.md (concrete mathematical models)
 
-Stage 2: sources/guides/design.prompt.md + sources/guides/common.md + sources/guides/mathematical-contracts.md + build/objective/formal.spec.md
+Stage 2: sources/guides/design.prompt.md + sources/guides/common.md + build/guides/mathematical-contracts.md + build/objective/formal.spec.md
          → build/design/*.md (design patterns derived from both abstract contracts and concrete models)
 
 Stage 3+: Design patterns → Implementation

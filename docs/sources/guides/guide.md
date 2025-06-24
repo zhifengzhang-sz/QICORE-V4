@@ -7,7 +7,7 @@
 ## The 5-Stage Process (Enhanced)
 
 ### **Stage 1: Natural Language → Mathematical Formalization**
-- **Use**: `sources/guides/formal.prompt.md` + `sources/guides/common.md` + `sources/guides/mathematical-contracts.md`
+- **Use**: `sources/guides/formal.prompt.md` + `sources/guides/common.md` + `build/guides/mathematical-contracts.md`
 - **Input**: 
   - `sources/nl/qi.v4.class.contracts.md` 
   - `sources/nl/qi.v4.component.contracts.md`
@@ -16,7 +16,7 @@
 - **Optional**: `sources/agent/build/inst.formal.yaml` (workflow automation)
 
 ### **Stage 2: Mathematical → Design Patterns**  
-- **Use**: `sources/guides/design.prompt.md` + `sources/guides/common.md` + `sources/guides/mathematical-contracts.md`
+- **Use**: `sources/guides/design.prompt.md` + `sources/guides/common.md` + `build/guides/mathematical-contracts.md`
 - **Input**: `build/objective/formal/qi.v4.formal.spec.md`
 - **Mathematical Contracts**: Uses abstract mathematical contracts as design constraints
 - **Output**: `build/design/qi.v4.design.analysis.md`
@@ -24,14 +24,14 @@
 - **Optional**: `docs/sources/agent/build/inst.design.yaml` (workflow automation)
 
 ### **Stage 3: Design → Language-Agnostic Implementation**
-- **Use**: `sources/guides/impl.prompt.md` + `sources/guides/common.md` + `sources/guides/mathematical-contracts.md`
+- **Use**: `sources/guides/impl.prompt.md` + `sources/guides/common.md` + `build/guides/mathematical-contracts.md`
 - **Input**: `build/design/qi.v4.design.analysis.md`
 - **Output**: `build/impl/qi.v4.impl.template.md`
 - **Purpose**: Create language-agnostic templates that satisfy mathematical contracts
 - **Optional**: Manual process (no workflow automation)
 
 ### **Stage 4: Package Research → Wrapper Design**
-- **Use**: `sources/guides/package-research-methodology.md` + `sources/guides/common.md` + `sources/guides/mathematical-contracts.md`
+- **Use**: `sources/guides/package-research-methodology.md` + `sources/guides/common.md` + `build/guides/mathematical-contracts.md`
 - **Input**: `build/impl/qi.v4.impl.template.md` + Target Language
 - **Process**: Research packages that can implement required mathematical contracts
 - **Output**: `build/research/qi.v4.[LANG].packages.md` + `build/research/qi.v4.[LANG].wrappers.md`
@@ -47,7 +47,7 @@
   - `build/impl/qi.v4.impl.template.md`
   - `build/research/qi.v4.[LANG].packages.md`
   - `build/research/qi.v4.[LANG].wrappers.md`
-  - `sources/guides/mathematical-contracts.md`
+  - `build/guides/mathematical-contracts.md`
 - **Target Language**: Specify one of: `ts` (TypeScript), `py` (Python), `rs` (Rust), `hs` (Haskell), `go` (Go)
 - **Output**: `build/impl/qi.v4.[LANG].impl.md`
 - **Purpose**: Implement concrete types that satisfy mathematical contracts using chosen packages
@@ -56,7 +56,7 @@
 ## Essential Files
 
 **Transformation Methodologies:**
-- `sources/guides/mathematical-contracts.md` - Abstract mathematical contracts used in ALL stages
+- `build/guides/mathematical-contracts.md` - Abstract mathematical contracts used in ALL stages
 - `sources/guides/formal.prompt.md` - Stage 1 transformation methodology
 - `sources/guides/design.prompt.md` - Stage 2 transformation methodology
 - `sources/guides/impl.prompt.md` - Stage 3 language-agnostic implementation
@@ -76,7 +76,7 @@
 
 ### Manual Process
 1. **Stage 1**: Use `sources/guides/formal.prompt.md` + `sources/guides/common.md` to transform your NL contracts to mathematical spec
-2. **Stage 2**: Use `sources/guides/design.prompt.md` + `sources/guides/common.md` + `sources/guides/mathematical-contracts.md` + formal spec to create design patterns
+2. **Stage 2**: Use `sources/guides/design.prompt.md` + `sources/guides/common.md` + `build/guides/mathematical-contracts.md` + formal spec to create design patterns
 3. **Stage 3**: Use `sources/guides/impl.prompt.md` + `sources/guides/common.md` to create language-agnostic implementation templates
 4. **Stage 4**: Use `sources/guides/package-research-methodology.md` + `sources/guides/common.md` to research packages and design wrappers
 5. **Stage 5**: Use `sources/guides/impl.[LANG].prompt.md` with package research outputs and your target language code (`ts`, `py`, `rs`, `hs`, or `go`)
@@ -103,7 +103,6 @@ docs/
 │   ├── guides/               # Core methodologies
 │   │   ├── formal.prompt.md
 │   │   ├── design.prompt.md
-│   │   ├── mathematical-contracts.md    # Mathematical contracts for Stage 2
 │   │   ├── package-research-methodology.md  # Stage 4 methodology
 │   │   ├── impl.py.prompt.md    # Language-specific implementation
 │   │   ├── impl.ts.prompt.md    # Language-specific implementation
@@ -121,6 +120,12 @@ docs/
 │           ├── inst.impl.hs.yaml
 │           └── inst.impl.go.yaml
 └── build/                     # Generated outputs from design process
+    ├── guides/               # Core mathematical contracts
+    │   └── mathematical-contracts.md    # Mathematical contracts for all stages
+    ├── package/              # Language-specific package research
+    │   ├── py.md
+    │   ├── ts.md
+    │   └── hs.md
     ├── objective/formal/      # Stage 1 output: Mathematical specs
     │   └── qi.v4.formal.spec.md
     ├── design/               # Stage 2 output: Design patterns

@@ -260,6 +260,6 @@ assertPerformance b = do
 
 ## Related Files
 
-- `package/hs.md` - Package selection research
+- `build/package/hs.md` - Package selection research
 - `mathematical-contracts.md` - Abstract mathematical models
 - `inst.impl.hs.yaml` - Implementation workflow 

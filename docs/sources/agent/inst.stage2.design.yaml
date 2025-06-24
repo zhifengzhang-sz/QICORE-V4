@@ -32,7 +32,7 @@ inputs:
         role: "Shared mathematical foundations"
         description: "Mathematical foundations, performance models, and categorical structures"
       
-      - path: "qicore-v4/docs/sources/guides/mathematical-contracts.md"
+      - path: "qicore-v4/docs/build/guides/mathematical-contracts.md"
         role: "Abstract mathematical model contracts"
         description: "Abstract interface contracts for design pattern derivation"
     
@@ -61,7 +61,7 @@ process:
   contract_derivation:
     description: "Analyze how concrete models derive from abstract contracts"
     inputs:
-      - "sources/guides/mathematical-contracts.md"
+      - "build/guides/mathematical-contracts.md"
       - "build/objective/formal/qi.v4.formal.spec.md"
     outputs:
       - "Derivation mappings between abstract contracts and concrete models"

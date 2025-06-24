@@ -30,13 +30,13 @@
 **Issue**: Mathematical models were explicitly defined in formal spec but formed an implicit reusable interface contract layer that wasn't extracted.
 
 **Solution Implemented**:
-- **Created `sources/guides/mathematical-contracts.md`**: Extracted abstract mathematical contracts from existing `common.md`
+- **Created `build/guides/mathematical-contracts.md`**: Extracted abstract mathematical contracts from existing `common.md`
 - **Updated `sources/guides/design.prompt.md`**: Integrated mathematical contracts as input for design pattern derivation
 - **Clear Contract Hierarchy**: Made explicit the flow from abstract contracts → concrete models → design patterns
 - **Created Proper Stage 2 Workflow**: Added `docs/agent/inst.stage2.design.yaml` with complete input specifications
 
 **Changes Made**:
-1. **New File**: `qicore-v4/docs/sources/guides/mathematical-contracts.md`
+1. **New File**: `qicore-v4/docs/build/guides/mathematical-contracts.md`
    - Abstract mathematical models (Monad, Functor, Monoid, Effect, State Machine, Stream Coalgebra)
    - Contract usage flow showing integration with design stage
    - Performance constraints per language tier
@@ -79,7 +79,7 @@
 ```
 Stage 1: sources/nl + sources/guides/formal.prompt.md + sources/guides/common.md → build/objective/formal.spec.md
 
-Stage 2: sources/guides/design.prompt.md + sources/guides/common.md + sources/guides/mathematical-contracts.md + build/objective/formal.spec.md → build/design/design.analysis.md
+Stage 2: sources/guides/design.prompt.md + sources/guides/common.md + build/guides/mathematical-contracts.md + build/objective/formal.spec.md → build/design/design.analysis.md
 
 Stage 3: sources/guides/impl.prompt.md + sources/guides/common.md + build/design/design.analysis.md → build/impl/impl.template.md
 
@@ -138,7 +138,7 @@ docs/agent/inst.impl.[LANG].yaml - Stage 5 implementation workflow
    - Corrected file paths throughout (sources/, docs/agent/)
    - Enhanced manual process with complete input specifications
 
-2. **`qicore-v4/docs/sources/guides/mathematical-contracts.md`** (NEW)
+2. **`qicore-v4/docs/build/guides/mathematical-contracts.md`** (NEW)
    - Extracted abstract mathematical contracts
    - Defined contract usage flow with correct process notation
    - Specified verification requirements
