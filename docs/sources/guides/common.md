@@ -26,6 +26,118 @@
 - **Fong & Spivak's "Seven Sketches in Compositionality"**: https://arxiv.org/abs/1803.05316
 - **Bartosz Milewski's "Category Theory for Programmers"**: https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/
 
+### Mathematical Model Contracts
+
+> **Abstract Interface Layer for Design Stage Derivation**  
+> **Purpose**: Formal mathematical contracts that design patterns must satisfy  
+> **Usage**: Referenced by design.prompt.md to create concrete design patterns
+
+The following abstract mathematical models define interface contracts that all implementations must satisfy. These contracts bridge formal specifications to practical design patterns.
+
+#### Abstract Monad Contract
+```haskell
+class Monad m where
+  return :: a -> m a           -- Unit operation (pure value injection)
+  (>>=) :: m a -> (a -> m b) -> m b  -- Bind operation (sequential composition)
+  
+  -- Laws that must be preserved by all implementations:
+  -- Left Identity:   return a >>= f  ≡  f a
+  -- Right Identity:  m >>= return   ≡  m  
+  -- Associativity:   (m >>= f) >>= g  ≡  m >>= (\x -> f x >>= g)
+```
+
+**Design Derivation**: Error handling (Result), async operations (Promise), state management (IO)
+
+#### Abstract Functor Contract
+```haskell
+class Functor f where
+  fmap :: (a -> b) -> f a -> f b   -- Structure-preserving transformation
+  
+  -- Laws that must be preserved:
+  -- Identity:     fmap id ≡ id
+  -- Composition:  fmap (f . g) ≡ fmap f . fmap g
+```
+
+**Design Derivation**: Data transformations, component boundaries, API mappings
+
+#### Abstract Monoid Contract
+```haskell
+class Monoid a where
+  mempty :: a                  -- Identity element
+  mappend :: a -> a -> a       -- Associative binary operation
+  
+  -- Laws that must be preserved:
+  -- Left Identity:   mappend mempty x ≡ x
+  -- Right Identity:  mappend x mempty ≡ x
+  -- Associativity:   mappend x (mappend y z) ≡ mappend (mappend x y) z
+```
+
+**Design Derivation**: Configuration merging, accumulation patterns, parallel composition
+
+#### Abstract Effect Interface Contract
+```haskell
+class Effect e where
+  perform :: e a -> IO a       -- Execute effect in IO context
+  pure :: a -> e a            -- Lift pure value to effect
+  
+  -- Laws for effect composition:
+  -- Effect order preservation
+  -- Resource cleanup guarantees
+  -- Error propagation rules
+```
+
+**Design Derivation**: Logging operations, IO operations, side effect management
+
+#### Abstract State Machine Contract
+```haskell
+data StateMachine s i o where
+  Transition :: s -> i -> (s, o)  -- State transition function
+  Initial :: s                     -- Initial state
+  
+  -- Laws for state transitions:
+  -- Deterministic: same input + state → same output + state
+  -- Total: defined for all valid state/input combinations
+```
+
+**Design Derivation**: Circuit breaker pattern, connection states, protocol handlers
+
+#### Abstract Stream Contract
+```haskell
+data Stream a where
+  Empty :: Stream a
+  Cons :: a -> Stream a -> Stream a
+  
+  -- Laws for stream operations:
+  -- Lazy evaluation: elements computed on demand
+  -- Backpressure: consumer controls production rate
+  -- Resource safety: cleanup on termination
+```
+
+**Design Derivation**: HTTP streaming, document processing, large data handling
+
+### Contract Hierarchy
+
+```
+Abstract Contracts (mathematical-contracts)
+    ↓ (specialized by formal.spec.md)
+Concrete Mathematical Models  
+    ↓ (implemented via design.prompt.md)
+Design Patterns
+    ↓ (realized in impl.prompt.md)
+Language-Agnostic Implementation Templates
+    ↓ (specialized via impl.[LANG].prompt.md)
+Language-Specific Code
+```
+
+### Contract Compliance Verification
+
+All design patterns derived from these contracts must:
+
+1. **Preserve Mathematical Laws**: Monad laws, monoid laws, functor laws
+2. **Maintain Type Safety**: Proper categorical structure
+3. **Enable Composition**: Natural transformations between components
+4. **Support Performance Tiers**: Meet language-specific performance requirements
+
 ### Categorical Structures
 
 The specification employs the following categorical constructions:

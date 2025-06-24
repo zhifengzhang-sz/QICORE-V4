@@ -1,0 +1,204 @@
+name: "Stage 2: Mathematical to Design Patterns"
+version: "1.0.0"
+description: "Transform formal mathematical specifications into practical design patterns using abstract mathematical contracts"
+domain: "design_transformation"
+category: "stage_2_workflow"
+
+# ============================================================================
+# STAGE 2 TRANSFORMATION OBJECTIVE
+# ============================================================================
+
+objective: |
+  Transform mathematical formal specifications into practical design patterns by:
+  
+  1. **Abstract Contract Application**: Use mathematical-contracts.md for derivation guidance
+  2. **Concrete Model Integration**: Apply concrete models from formal.spec.md
+  3. **Pattern Derivation**: Generate language-agnostic design patterns 
+  4. **Law Preservation**: Ensure mathematical laws are maintained in patterns
+  5. **Cross-Language Consistency**: Create patterns applicable across all target languages
+
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
+
+inputs:
+  required:
+    methodology_files:
+      - path: "qicore-v4/docs/sources/guides/design.prompt.md"
+        role: "Stage 2 transformation methodology"
+        description: "Core methodology for deriving design patterns from formal specifications"
+      
+      - path: "qicore-v4/docs/sources/guides/common.md"
+        role: "Shared mathematical foundations"
+        description: "Mathematical foundations, performance models, and categorical structures"
+      
+      - path: "qicore-v4/docs/sources/guides/mathematical-contracts.md"
+        role: "Abstract mathematical model contracts"
+        description: "Abstract interface contracts for design pattern derivation"
+    
+    build_inputs:
+      - path: "build/objective/formal/qi.v4.formal.spec.md"
+        role: "Concrete mathematical models"
+        description: "Formal categorical specification with concrete mathematical models"
+
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
+
+outputs:
+  primary:
+    - path: "build/design/qi.v4.design.analysis.md"
+      description: "Language-agnostic design patterns derived from mathematical contracts"
+      format: "markdown"
+      
+# ============================================================================
+# TRANSFORMATION PROCESS
+# ============================================================================
+
+process:
+  
+  # Step 1: Contract Derivation Analysis
+  contract_derivation:
+    description: "Analyze how concrete models derive from abstract contracts"
+    inputs:
+      - "sources/guides/mathematical-contracts.md"
+      - "build/objective/formal/qi.v4.formal.spec.md"
+    outputs:
+      - "Derivation mappings between abstract contracts and concrete models"
+    
+    tasks:
+      - "Map concrete Result<T> monad to abstract Monad contract"
+      - "Map concrete Configuration monoid to abstract Monoid contract" 
+      - "Map concrete logging effects to abstract Effect Interface contract"
+      - "Map concrete circuit breaker to abstract State Machine contract"
+      - "Map concrete streaming to abstract Stream Coalgebra contract"
+      - "Verify law preservation in all derivations"
+  
+  # Step 2: Design Pattern Generation
+  pattern_generation:
+    description: "Generate practical design patterns from contract derivations"
+    inputs:
+      - "Contract derivation mappings"
+      - "sources/guides/design.prompt.md"
+      - "sources/guides/common.md"
+    outputs:
+      - "Language-agnostic design patterns"
+    
+    tasks:
+      - "Create railway-oriented programming pattern from Result monad derivation"
+      - "Create configuration merging pattern from Configuration monoid derivation"
+      - "Create effect handling patterns from logging effect derivation"
+      - "Create resilience patterns from circuit breaker state machine derivation"
+      - "Create streaming patterns from stream coalgebra derivation"
+      - "Ensure all patterns preserve mathematical laws"
+  
+  # Step 3: Cross-Language Consistency
+  consistency_verification:
+    description: "Ensure patterns work across all target languages"
+    inputs:
+      - "Generated design patterns"
+      - "sources/guides/common.md (performance tier model)"
+    outputs:
+      - "Cross-language consistency verification"
+    
+    tasks:
+      - "Verify patterns work for native languages (Rust, C++)"
+      - "Verify patterns work for VM languages (Go, Java)"
+      - "Verify patterns work for functional languages (Haskell)"
+      - "Verify patterns work for interpreted languages (Python, JavaScript)"
+      - "Specify tier-appropriate performance characteristics"
+
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
+
+quality_requirements:
+  
+  mathematical_rigor:
+    - "All design patterns must explicitly reference their abstract contract source"
+    - "All patterns must show how concrete models derive from abstract contracts"
+    - "All patterns must preserve mathematical laws (monad, functor, monoid laws)"
+    - "All patterns must include verification conditions"
+  
+  practical_applicability:
+    - "All patterns must be language-agnostic (no language-specific constructs)"
+    - "All patterns must be implementable across all target language tiers"
+    - "All patterns must include realistic performance expectations per tier"
+    - "All patterns must address production concerns (error handling, resilience)"
+  
+  completeness:
+    - "Every operation from formal.spec.md must have corresponding design pattern"
+    - "Every abstract contract from mathematical-contracts.md must be utilized"
+    - "Every pattern must include implementation guidance"
+    - "Every pattern must specify cross-language consistency requirements"
+
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
+
+success_criteria:
+  
+  derivation_traceability:
+    - "[ ] Every design pattern explicitly references its abstract contract"
+    - "[ ] Every concrete model derivation is documented"
+    - "[ ] All mathematical law preservation is verified"
+    - "[ ] Contract inheritance hierarchy is clear"
+  
+  pattern_completeness:
+    - "[ ] Railway-oriented programming pattern (Result monad)"
+    - "[ ] Configuration merging pattern (Configuration monoid)"
+    - "[ ] Effect handling pattern (Logging effect interface)"
+    - "[ ] Resilience pattern (Circuit breaker state machine)"
+    - "[ ] Streaming pattern (Stream coalgebra)"
+    - "[ ] All 99 operations from formal spec have design patterns"
+  
+  cross_language_readiness:
+    - "[ ] Patterns verified for all 4 language tiers"
+    - "[ ] Performance characteristics specified per tier"
+    - "[ ] Implementation guidance provided for each pattern"
+    - "[ ] Verification conditions specified for each pattern"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  
+  upstream_dependencies:
+    - "Stage 1: formal.spec.md must be complete with all 99 operations"
+    - "mathematical-contracts.md must define all abstract contracts"
+    - "common.md must provide mathematical foundations"
+  
+  downstream_consumers:
+    - "Stage 3: impl.prompt.md will use design patterns for language-agnostic templates"
+    - "Stage 5: impl.[LANG].prompt.md will use patterns for language-specific implementation"
+    - "Verification processes will use patterns to validate implementations"
+
+# ============================================================================
+# EXECUTION INSTRUCTIONS
+# ============================================================================
+
+execution:
+  
+  preparation:
+    - "Verify all input files exist and are complete"
+    - "Ensure mathematical-contracts.md defines all required abstract contracts"
+    - "Confirm formal.spec.md contains all 99 operations with mathematical formalization"
+  
+  transformation:
+    - "Follow design.prompt.md methodology exactly"
+    - "Use mathematical-contracts.md for all derivation decisions"
+    - "Apply common.md foundations throughout"
+    - "Preserve all mathematical properties and laws"
+  
+  validation:
+    - "Verify every pattern has clear abstract contract derivation"
+    - "Confirm all patterns preserve mathematical laws"
+    - "Validate patterns work across all language tiers"
+    - "Ensure complete operation coverage"
+  
+  output_generation:
+    - "Generate build/design/qi.v4.design.analysis.md"
+    - "Include all derivation mappings and justifications"
+    - "Document all cross-language consistency requirements"
+    - "Provide clear integration guidance for downstream stages" 

@@ -12,6 +12,36 @@ You are applying category theory to systematic software design analysis, focusin
 
 ## Mathematical Modeling Methodology
 
+**CONTRACT DERIVATION APPROACH**: Every design pattern must follow this systematic derivation:
+
+### Step 1: Identify Abstract Contract
+Reference the appropriate abstract contract from `guides/common.md` Mathematical Model Contracts section:
+- **Abstract Monad Contract** for error handling, async operations, state management
+- **Abstract Functor Contract** for data transformations, component boundaries  
+- **Abstract Monoid Contract** for configuration merging, accumulation patterns
+- **Abstract Effect Interface Contract** for logging, IO operations, side effects
+- **Abstract State Machine Contract** for circuit breaker, connection states
+- **Abstract Stream Contract** for HTTP streaming, large data processing
+
+### Step 2: Apply Concrete Specialization
+Use the formal specification to specialize the abstract contract:
+- **Example**: Abstract Monad Contract → Result<T, QiError> specialization
+- **Specify**: Concrete types, error handling strategy, performance characteristics
+- **Preserve**: All mathematical laws from the abstract contract
+
+### Step 3: Derive Design Pattern
+Create practical implementation pattern:
+- **Railway-Oriented Programming** from Result Monad specialization
+- **Configuration Merging Pipeline** from Monoid specialization  
+- **Component Boundary Mappings** from Functor specialization
+
+### Step 4: Verify Contract Compliance
+Ensure the design pattern:
+- **Preserves Laws**: All abstract contract laws maintained
+- **Enables Composition**: Natural transformations between components
+- **Meets Performance**: Language-tier specific requirements from common.md
+- **Supports Patterns**: Required patterns (circuit breaker, streaming, etc.)
+
 **CRITICAL: Every design pattern must explicitly reference and apply the categorical structures from `guides/common.md`:**
 
 - **Monads** for Result<T> error handling - apply monad laws to design patterns
@@ -23,10 +53,11 @@ You are applying category theory to systematic software design analysis, focusin
 - **Performance Tiers** - apply language-tier specific targets from common.md
 
 **Example: Applying monad laws to Result design:**
-1. Reference monad laws from common.md (left identity, right identity, associativity)
-2. Design railway-oriented programming pattern preserving these laws
-3. Ensure error recovery patterns maintain monadic structure
-4. Specify performance characteristics per language tier from common.md
+1. Reference Abstract Monad Contract from common.md (left identity, right identity, associativity)
+2. Specialize to Result<T, QiError> from formal specification
+3. Design railway-oriented programming pattern preserving monad laws
+4. Ensure error recovery patterns maintain monadic structure
+5. Specify performance characteristics per language tier from common.md
 
 Keep design patterns practical and implementation-focused using mathematical guidance from common.md.
 
@@ -34,8 +65,10 @@ Keep design patterns practical and implementation-focused using mathematical gui
 
 You will be provided with:
 - `objective/formal/qi.v4.formal.spec.md` - Formal categorical specification with LaTeX notation
-- `guides/common.md` - Mathematical foundations and categorical structures  
+- `guides/common.md` - Mathematical foundations, categorical structures, and mathematical model contracts
 - `guides/qi.v4.framework.md` - Development process methodology
+
+**CRITICAL**: The `guides/common.md` now includes a **Mathematical Model Contracts** section that provides abstract mathematical interface contracts. Use these contracts as the foundation for deriving concrete design patterns.
 
 ## Task
 
@@ -55,14 +88,23 @@ Create `design/qi.v4.design.analysis.md` that provides:
 ```
 
 ### 2. Mathematical Foundations Applied to Design
-**Using categorical structures from formal specification and `guides/common.md`:**
-- Design patterns derived from monad laws (railway-oriented programming)
-- Configuration patterns from monoid laws (identity and associativity)
-- Component boundary patterns from functor laws
-- Effect patterns from simple effect interfaces (not free monads)
-- Resilience patterns from state machine theory
-- Streaming patterns from coalgebraic structures
-- Performance patterns from language tier model
+**Using abstract contracts from `guides/mathematical-contracts.md` and concrete models from formal specification:**
+
+#### Contract Derivation Strategy
+For each design pattern, explicitly show:
+1. **Abstract Contract**: Reference from `mathematical-contracts.md` (e.g., Monad, Functor, Monoid)
+2. **Concrete Specialization**: How the formal spec specializes the abstract contract
+3. **Design Pattern**: The practical pattern that implements the specialized contract
+4. **Law Preservation**: How the pattern maintains contract laws
+5. **Performance Profile**: Tier-specific characteristics
+
+#### Design Pattern Categories from Abstract Contracts
+- **Monad-derived patterns**: Railway-oriented programming from Result Monad contract
+- **Functor-derived patterns**: Component boundaries from Functor contract
+- **Monoid-derived patterns**: Configuration merging from Monoid contract
+- **Effect-derived patterns**: Logging and IO from Effect Interface contract
+- **State Machine patterns**: Circuit breaker from State Machine contract
+- **Stream Coalgebra patterns**: Lazy processing from Stream contract
 
 ### 3. COMPLETE OPERATION COVERAGE - Design Patterns for Every Operation
 
@@ -86,7 +128,14 @@ Create `design/qi.v4.design.analysis.md` that provides:
 - **Functor Composition**: Layered transformations
 
 #### **Base Component Design Patterns - ALL Result operations + ALL QiError operations + ALL 8 error categories**
-- **Result<T> Design Patterns** using monad theory from common.md:
+- **Result<T> Design Patterns** derived from abstract Monad contract:
+  
+  **Contract Derivation**:
+  1. **Abstract Contract**: Monad from `mathematical-contracts.md`
+  2. **Concrete Specialization**: Result<T, QiError> from formal specification 
+  3. **Design Pattern**: Railway-Oriented Programming
+  4. **Law Preservation**: Maintains left identity, right identity, associativity
+  5. **Performance Profile**: < tier_multiplier × 1μs per bind operation
   
   **Railway-Oriented Programming Pattern**:
   ```
@@ -97,10 +146,11 @@ Create `design/qi.v4.design.analysis.md` that provides:
   
   - **Factory patterns**: Unit/return operations for monad construction
     ```
-    Pattern: Monad Unit
+    Pattern: Monad Unit (implements return :: a -> Result<a>)
     success(value) creates Success container
     failure(error) creates Failure container
     fromTryCatch wraps potentially failing operations
+    Contract compliance: Satisfies monad unit laws
     ```
   
   - **Functor mapping pattern**: Structure-preserving transformations
