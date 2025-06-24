@@ -5,16 +5,16 @@ stage: 1
 
 inputs:
   required_files:
-    - path: "objective/nl/qi.v4.class.contracts.md"
+    - path: "sources/nl/qi.v4.class.contracts.md"
       description: "8 class-level behavioral contracts"
     
-    - path: "objective/nl/qi.v4.component.contracts.md" 
+    - path: "sources/nl/qi.v4.component.contracts.md" 
       description: "5 component-level organization"
     
-    - path: "guides/common.md"
+    - path: "sources/guides/common.md"
       description: "Mathematical foundations and categorical structures"
     
-    - path: "guides/formal.prompt.md"
+    - path: "sources/guides/formal.prompt.md"
       description: "Stage 1 transformation instructions and methodology"
 
 outputs:
@@ -33,7 +33,7 @@ outputs:
     - "Dependencies and References"
 
 validation:
-  method: "Generate verification report using success criteria from guides/formal.prompt.md"
+  method: "Generate verification report using success criteria from sources/guides/formal.prompt.md"
   
   verification_report:
     target_file: "stage1-verification-report.md"
@@ -66,6 +66,6 @@ validation:
       [Pass/Fail with specific issues if any]
 
 execution:
-  instructions_source: "guides/formal.prompt.md"
+  instructions_source: "sources/guides/formal.prompt.md"
   context_instruction: "Follow methodology and requirements from formal.prompt.md exactly"
   verification_method: "Generate systematic verification report against success criteria" 

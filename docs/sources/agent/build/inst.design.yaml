@@ -5,17 +5,20 @@ stage: 2
 
 inputs:
   required_files:
-    - path: "objective/formal/qi.v4.formal.spec.md"
+    - path: "build/objective/formal/qi.v4.formal.spec.md"
       description: "Formal mathematical specification from Stage 1"
     
-    - path: "guides/common.md"
+    - path: "sources/guides/common.md"
       description: "Mathematical foundations and categorical structures"
     
-    - path: "guides/design.prompt.md"
+    - path: "sources/guides/mathematical-contracts.md"
+      description: "Abstract mathematical model contracts for design derivation"
+    
+    - path: "sources/guides/design.prompt.md"
       description: "Stage 2 transformation instructions and methodology"
 
 outputs:
-  target_file: "design/qi.v4.design.analysis.md"
+  target_file: "build/design/qi.v4.design.analysis.md"
   description: "Design analysis with complete operation coverage and implementation patterns"
   
   required_sections:
@@ -28,7 +31,7 @@ outputs:
     - "Dependencies and References"
 
 validation:
-  method: "Generate verification report using success criteria from guides/design.prompt.md"
+  method: "Generate verification report using success criteria from sources/guides/design.prompt.md"
   
   verification_report:
     target_file: "stage2-verification-report.md"
@@ -61,6 +64,6 @@ validation:
       [Pass/Fail with specific issues if any]
 
 execution:
-  instructions_source: "guides/design.prompt.md"
+  instructions_source: "sources/guides/design.prompt.md"
   context_instruction: "Follow methodology and requirements from design.prompt.md exactly"
   verification_method: "Generate systematic verification report against success criteria" 

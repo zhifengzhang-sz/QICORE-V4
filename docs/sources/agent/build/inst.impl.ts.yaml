@@ -1,7 +1,7 @@
-name: "Stage 3: Design to TypeScript Implementation"
-description: "Transform design patterns into concrete TypeScript implementations"
+name: "Stage 5: Design to TypeScript Implementation"
+description: "Transform design patterns into concrete TypeScript implementations using researched packages"
 version: "v4.0.1"
-stage: 3
+stage: 5
 language: "TypeScript"
 
 inputs:
@@ -9,11 +9,17 @@ inputs:
     - path: "design/qi.v4.design.analysis.md"
       description: "Design analysis with complete operation coverage from Stage 2"
     
-    - path: "guides/common.md"
+    - path: "research/qi.v4.ts.packages.md"
+      description: "TypeScript package research results from Stage 4"
+    
+    - path: "research/qi.v4.ts.wrappers.md"
+      description: "TypeScript wrapper specifications from Stage 4"
+    
+    - path: "sources/guides/common.md"
       description: "Mathematical foundations and categorical structures"
     
-    - path: "guides/impl.prompt.md"
-      description: "Stage 3 transformation instructions and methodology"
+    - path: "sources/guides/impl.ts.prompt.md"
+      description: "Stage 5 TypeScript-specific transformation instructions"
 
 outputs:
   target_files:
@@ -33,7 +39,7 @@ outputs:
       - "clp/ (Command-line processing)"
 
 validation:
-  method: "Generate verification report using success criteria from guides/impl.prompt.md"
+  method: "Generate verification report using success criteria from sources/guides/impl.prompt.md"
   
   verification_report:
     target_file: "stage3-typescript-verification-report.md"
@@ -66,6 +72,6 @@ validation:
       [Pass/Fail with specific issues if any]
 
 execution:
-  instructions_source: "guides/impl.prompt.md"
+  instructions_source: "sources/guides/impl.prompt.md"
   context_instruction: "Follow TypeScript-specific methodology and requirements from impl.prompt.md exactly"
   verification_method: "Generate systematic verification report against success criteria" 
