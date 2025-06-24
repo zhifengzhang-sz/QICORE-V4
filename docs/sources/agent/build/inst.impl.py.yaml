@@ -1,33 +1,80 @@
 name: "Stage 5: Design to Python Implementation"
-description: "Transform design patterns into concrete Python implementations using researched packages"
 version: "v4.0.1"
-stage: 5
-language: "Python"
+description: "Transform design patterns into concrete Python implementations using researched packages"
+domain: "implementation_transformation"
+category: "stage_5_workflow"
+
+# ============================================================================
+# STAGE 5 TRANSFORMATION OBJECTIVE
+# ============================================================================
+
+objective: |
+  Transform language-agnostic design patterns into concrete Python implementations by:
+  
+  1. **Pattern Implementation**: Map design patterns to Python idioms and packages
+  2. **Mathematical Law Preservation**: Ensure categorical laws are preserved in Python
+  3. **Performance Optimization**: Apply Python-specific optimizations within tier constraints
+  4. **Type Safety**: Leverage Python type hints and runtime checks effectively
+  5. **Package Integration**: Integrate researched packages while maintaining abstractions
+
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
 
 inputs:
-  required_files:
-    - path: "design/qi.v4.design.analysis.md"
-      description: "Design analysis with complete operation coverage from Stage 2"
+  required:
+    design_inputs:
+      - path: "design/qi.v4.design.analysis.md"
+        role: "Design pattern specifications"
+        description: "Language-agnostic design patterns to implement"
+        operations_count: 99
     
-    - path: "research/qi.v4.py.packages.md"
-      description: "Python package research results from Stage 4"
+    research_inputs:
+      - path: "research/qi.v4.py.packages.md"
+        role: "Python package research"
+        description: "Vetted Python packages matching design patterns"
+      
+      - path: "research/qi.v4.py.wrappers.md"
+        role: "Python wrapper specifications"
+        description: "Interface wrappers for external packages"
     
-    - path: "research/qi.v4.py.wrappers.md"
-      description: "Python wrapper specifications from Stage 4"
-    
-    - path: "sources/guides/common.md"
-      description: "Mathematical foundations and categorical structures"
-    
-    - path: "sources/guides/impl.py.prompt.md"
-      description: "Stage 5 Python-specific transformation instructions"
+    methodology_files:
+      - path: "sources/guides/impl.py.prompt.md"
+        role: "Stage 5 Python methodology"
+        description: "Python-specific implementation methodology"
+      
+      - path: "sources/guides/common.md"
+        role: "Shared foundations"
+        description: "Mathematical foundations and categorical structures"
+
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
 
 outputs:
-  target_files:
+  primary:
     - path: "impl/qi.v4.py.template.md"
       description: "Python code template with runnable examples"
-      
+      format: "markdown"
+      required_sections:
+        - "Base Component Implementation"
+        - "Core Component Implementation"
+        - "Application Component Implementation"
+        - "Integration Examples"
+        - "Performance Benchmarks"
+        - "Type Safety Verification"
+        - "Package Dependencies"
+    
     - path: "impl/qi.v4.py.impl.md"
-      description: "Python implementation guide with step-by-step instructions"
+      description: "Python implementation guide"
+      format: "markdown"
+      required_sections:
+        - "Implementation Strategy"
+        - "Package Integration Guide"
+        - "Type System Usage"
+        - "Performance Optimization Guide"
+        - "Testing Strategy"
+        - "Deployment Considerations"
 
   project_structure:
     base_path: "src/"
@@ -38,40 +85,179 @@ outputs:
       - "document/ (Document generation with streaming)"
       - "clp/ (Command-line processing)"
 
-validation:
-  method: "Generate verification report using success criteria from sources/guides/impl.prompt.md"
+# ============================================================================
+# TRANSFORMATION PROCESS
+# ============================================================================
+
+transformation_process:
   
-  verification_report:
-    target_file: "stage3-python-verification-report.md"
-    required_sections:
-      - "Operation Implementation Verification"
-      - "Template Code Quality Verification"
-      - "Implementation Guide Completeness Verification"
-      - "Mathematical Property Preservation Verification"
-      - "Success Criteria Compliance"
-    
-    format: |
-      # Stage 3 Python Verification Report
-      
-      ## Operation Implementation Verification
-      [Check every operation from design analysis has Python implementation]
-      
-      ## Template Code Quality Verification
-      [Verify all code is concrete, runnable, and follows Python best practices]
-      
-      ## Implementation Guide Completeness Verification
-      [Confirm step-by-step instructions are complete and executable]
-      
-      ## Mathematical Property Preservation Verification
-      [Validate categorical laws preserved in Python code structure]
-      
-      ## Success Criteria Compliance
-      [Complete checklist from impl.prompt.md]
-      
-      ## Overall Assessment
-      [Pass/Fail with specific issues if any]
+  step_1_pattern_analysis:
+    description: "Analyze design patterns for Python implementation"
+    actions:
+      - "Map Result monad to Python Optional/Either pattern"
+      - "Map Configuration monoid to Python dict merging"
+      - "Map Logger effect to structured logging with context vars"
+      - "Map Cache state to LRU implementation with asyncio"
+      - "Map circuit breaker to async state machine"
+      - "Map streaming to async generators with backpressure"
+  
+  step_2_package_integration:
+    description: "Integrate researched Python packages"
+    actions:
+      - "Select packages matching mathematical properties"
+      - "Create thin wrappers preserving abstractions"
+      - "Implement missing functionality"
+      - "Ensure version compatibility"
+      - "Document integration points"
+  
+  step_3_type_system:
+    description: "Apply Python type system effectively"
+    actions:
+      - "Use Generic[T] for parametric polymorphism"
+      - "Apply Protocol for structural typing"
+      - "Implement runtime type checks where needed"
+      - "Document type constraints clearly"
+      - "Set up mypy configuration"
+  
+  step_4_optimization:
+    description: "Optimize within interpreted tier constraints"
+    actions:
+      - "Apply async/await for I/O-bound operations"
+      - "Use __slots__ for memory optimization"
+      - "Implement caching and memoization"
+      - "Batch operations where possible"
+      - "Profile and optimize hot paths"
+
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
+
+quality_assurance:
+  
+  pattern_implementation:
+    - "All design patterns correctly implemented"
+    - "Mathematical laws preserved in Python code"
+    - "Type safety maintained throughout"
+    - "Performance within tier constraints"
+  
+  package_integration:
+    - "All packages properly integrated"
+    - "Version conflicts resolved"
+    - "Abstractions maintained"
+    - "Dependencies documented"
+  
+  code_quality:
+    - "PEP 8 compliance"
+    - "Documentation complete"
+    - "Tests comprehensive"
+    - "Examples runnable"
+
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
+
+success_criteria:
+  
+  implementation_coverage:
+    - "[ ] Result: 8/8 operations implemented"
+    - "[ ] QiError: 6/6 operations + 8/8 categories"
+    - "[ ] Configuration: 9/9 operations implemented"
+    - "[ ] Logger: 7/7 operations implemented"
+    - "[ ] Cache: 9/9 operations implemented"
+    - "[ ] HTTP: 7/7 operations implemented"
+    - "[ ] Document: 6/6 operations implemented"
+    - "[ ] CLP: 5/5 operations implemented"
+    - "[ ] Web Framework: 8/8 operations implemented"
+    - "[ ] ASGI: 5/5 operations implemented"
+    - "[ ] MCP: 6/6 operations implemented"
+    - "[ ] Database: 5/5 operations implemented"
+    - "[ ] AI Client: 5/5 operations implemented"
+    - "[ ] Total: 99/99 operations implemented"
+  
+  quality_metrics:
+    - "[ ] All mypy checks pass"
+    - "[ ] All tests pass"
+    - "[ ] Performance targets met"
+    - "[ ] Documentation complete"
+    - "[ ] Examples runnable"
+    - "[ ] PEP 8 compliant"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  
+  upstream_dependencies:
+    - "Stage 2: design patterns must be complete"
+    - "Stage 4: Python package research must be complete"
+    - "common.md mathematical foundations available"
+  
+  downstream_consumers:
+    - "Verification processes will validate implementation"
+    - "Documentation will reference implementation"
+    - "Examples will use implementation"
+
+# ============================================================================
+# EXECUTION INSTRUCTIONS
+# ============================================================================
 
 execution:
-  instructions_source: "sources/guides/impl.prompt.md"
-  context_instruction: "Follow Python-specific methodology and requirements from impl.prompt.md exactly"
-  verification_method: "Generate systematic verification report against success criteria" 
+  
+  preparation:
+    - "Verify design patterns are complete"
+    - "Ensure package research is complete"
+    - "Set up Python development environment"
+  
+  implementation:
+    - "Follow impl.py.prompt.md methodology"
+    - "Implement patterns in order of dependency"
+    - "Maintain mathematical properties"
+    - "Document as you implement"
+  
+  validation:
+    - "Run mypy checks"
+    - "Execute test suite"
+    - "Verify performance targets"
+    - "Check documentation coverage"
+  
+  output_generation:
+    - "Generate implementation templates"
+    - "Create implementation guide"
+    - "Include all required sections"
+    - "Add examples and benchmarks"
+
+# ============================================================================
+# VERIFICATION REPORT
+# ============================================================================
+
+verification_report:
+  target_file: "stage5-python-verification-report.md"
+  required_sections:
+    - "Implementation Coverage Verification"
+    - "Pattern Preservation Verification"
+    - "Type Safety Verification"
+    - "Performance Verification"
+    - "Package Integration Verification"
+    - "Success Criteria Compliance"
+  
+  format: |
+    # Stage 5 Python Implementation Verification Report
+    
+    ## Implementation Coverage Verification
+    [Verify all 99 operations implemented]
+    
+    ## Pattern Preservation Verification
+    [Confirm design patterns correctly implemented]
+    
+    ## Type Safety Verification
+    [Validate type system usage and mypy results]
+    
+    ## Performance Verification
+    [Confirm performance within tier constraints]
+    
+    ## Package Integration Verification
+    [Verify package integration and abstractions]
+    
+    ## Success Criteria Compliance
+    [Complete checklist from impl.py.prompt.md] 

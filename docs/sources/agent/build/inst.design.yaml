@@ -1,69 +1,255 @@
-name: "Stage 2: Formal Specification to Design Analysis"
-description: "Transform formal mathematical specification into design patterns and implementation strategies"
-version: "v4.0.1"
-stage: 2
+name: "Stage 3: Design Patterns to Language-Agnostic Implementation"
+version: "1.0.0"
+description: "Transform design patterns into language-agnostic implementation templates using abstract mathematical contracts"
+domain: "design_transformation"
+category: "stage_3_workflow"
+
+# ============================================================================
+# STAGE 3 TRANSFORMATION OBJECTIVE
+# ============================================================================
+
+objective: |
+  Transform design patterns into language-agnostic implementation templates by:
+  
+  1. **Abstract Contract Application**: Use mathematical-contracts.md for derivation guidance
+  2. **Concrete Model Integration**: Apply concrete models from formal.spec.md
+  3. **Pattern Derivation**: Generate language-agnostic design patterns 
+  4. **Law Preservation**: Ensure mathematical laws are maintained in patterns
+  5. **Cross-Language Consistency**: Create patterns applicable across all target languages
+
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
 
 inputs:
-  required_files:
-    - path: "build/objective/formal/qi.v4.formal.spec.md"
-      description: "Formal mathematical specification from Stage 1"
+  required:
+    build_inputs:
+      - path: "build/objective/formal/qi.v4.formal.spec.md"
+        role: "Concrete mathematical models"
+        description: "Formal categorical specification with concrete mathematical models"
+        operations_count: 99
     
-    - path: "sources/guides/common.md"
-      description: "Mathematical foundations and categorical structures"
-    
-    - path: "sources/guides/mathematical-contracts.md"
-      description: "Abstract mathematical model contracts for design derivation"
-    
-    - path: "sources/guides/design.prompt.md"
-      description: "Stage 2 transformation instructions and methodology"
+    methodology_files:
+      - path: "sources/guides/design.prompt.md"
+        role: "Stage 3 transformation methodology"
+        description: "Core methodology for deriving design patterns from formal specifications"
+      
+      - path: "sources/guides/common.md"
+        role: "Shared mathematical foundations"
+        description: "Mathematical foundations, performance models, and categorical structures"
+      
+      - path: "sources/guides/mathematical-contracts.md"
+        role: "Abstract mathematical model contracts"
+        description: "Abstract interface contracts for design pattern derivation"
+
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
 
 outputs:
-  target_file: "build/design/qi.v4.design.analysis.md"
-  description: "Design analysis with complete operation coverage and implementation patterns"
-  
-  required_sections:
-    - "Mathematical Foundations Applied to Design"
-    - "Base Component Design Patterns"
-    - "Core Component Design Patterns"  
-    - "Application Component Design Patterns"
-    - "Component Integration Patterns"
-    - "Performance Optimization Strategies"
-    - "Dependencies and References"
+  primary:
+    - path: "build/design/qi.v4.design.analysis.md"
+      description: "Language-agnostic design patterns derived from mathematical contracts"
+      format: "markdown"
+      required_sections:
+        - "Mathematical Foundations Applied to Design"
+        - "Base Component Design Patterns"
+        - "Core Component Design Patterns"
+        - "Application Component Design Patterns"
+        - "Component Integration Patterns"
+        - "Performance Optimization Strategies"
+        - "Cross-Language Implementation Guidelines"
+        - "Dependencies and References"
 
-validation:
-  method: "Generate verification report using success criteria from sources/guides/design.prompt.md"
+# ============================================================================
+# TRANSFORMATION PROCESS
+# ============================================================================
+
+transformation_process:
   
-  verification_report:
-    target_file: "stage2-verification-report.md"
-    required_sections:
-      - "Operation Coverage Verification"
-      - "Design Pattern Completeness Verification"
-      - "Mathematical Consistency Verification"
-      - "Performance Specification Verification" 
-      - "Success Criteria Compliance"
-    
-    format: |
-      # Stage 2 Verification Report
-      
-      ## Operation Coverage Verification
-      [Check every operation from formal spec has design pattern]
-      
-      ## Design Pattern Completeness Verification
-      [Verify each operation has pattern + performance + implementation strategy]
-      
-      ## Mathematical Consistency Verification
-      [Confirm categorical laws preserved from formal spec]
-      
-      ## Performance Specification Verification
-      [Validate tier-based targets for all operations]
-      
-      ## Success Criteria Compliance
-      [Complete checklist from design.prompt.md]
-      
-      ## Overall Assessment
-      [Pass/Fail with specific issues if any]
+  step_1_contract_analysis:
+    description: "Analyze mathematical contracts and formal specifications"
+    actions:
+      - "Load abstract contracts from mathematical-contracts.md"
+      - "Load concrete models from formal.spec.md"
+      - "Map concrete models to abstract contracts"
+      - "Identify derivation paths from abstract to concrete"
+      - "Document contract inheritance hierarchy"
+  
+  step_2_pattern_derivation:
+    description: "Derive design patterns from mathematical structures"
+    actions:
+      - "Result Monad → Railway-Oriented Programming pattern"
+      - "Configuration Monoid → Right-biased merge pipeline"
+      - "Logger Effect → Structured logging with context propagation"
+      - "Cache State Monad → LRU eviction with TTL management"
+      - "Circuit Breaker State Machine → Resilience pattern"
+      - "Stream Coalgebra → Lazy evaluation with backpressure"
+  
+  step_3_cross_language_adaptation:
+    description: "Ensure patterns work across all language paradigms"
+    actions:
+      - "Adapt monadic patterns for non-functional languages"
+      - "Provide OOP alternatives for functional patterns"
+      - "Define procedural equivalents where needed"
+      - "Maintain behavioral consistency across paradigms"
+      - "Account for language-specific performance characteristics"
+  
+  step_4_performance_optimization:
+    description: "Apply tier-based performance strategies"
+    actions:
+      - "Define optimization strategies per language tier"
+      - "Native: Zero-copy, inline optimizations"
+      - "VM-based: JIT-friendly patterns, memory pooling"
+      - "Functional: Lazy evaluation, memoization"
+      - "Interpreted: Minimize allocations, batch operations"
+
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
+
+quality_assurance:
+  
+  contract_compliance:
+    - "Every pattern explicitly references its abstract contract"
+    - "All mathematical laws are preserved in patterns"
+    - "Contract derivation is clearly documented"
+    - "No patterns violate contract constraints"
+  
+  pattern_completeness:
+    - "All 99 operations have corresponding patterns"
+    - "Each pattern includes implementation strategy"
+    - "Performance characteristics specified per tier"
+    - "Error handling patterns comprehensive"
+  
+  cross_language_validation:
+    - "Patterns tested conceptually across paradigms"
+    - "Behavioral equivalence maintained"
+    - "Performance targets realistic per tier"
+    - "Natural transformations preserve semantics"
+
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
+
+success_criteria:
+  
+  derivation_traceability:
+    - "[ ] Every design pattern explicitly references its abstract contract"
+    - "[ ] Every concrete model derivation is documented"
+    - "[ ] All mathematical law preservation is verified"
+    - "[ ] Contract inheritance hierarchy is clear"
+  
+  pattern_completeness:
+    - "[ ] Railway-oriented programming pattern (Result monad)"
+    - "[ ] Configuration merging pattern (Configuration monoid)"
+    - "[ ] Effect handling pattern (Logging effect interface)"
+    - "[ ] State management pattern (Cache state monad)"
+    - "[ ] Resilience pattern (Circuit breaker state machine)"
+    - "[ ] Streaming pattern (Stream coalgebra)"
+    - "[ ] All 99 operations from formal spec have design patterns"
+  
+  operation_coverage:
+    - "[ ] Result: 8/8 operations with patterns"
+    - "[ ] QiError: 6/6 operations + 8/8 categories"
+    - "[ ] Configuration: 9/9 operations with patterns"
+    - "[ ] Logger: 7/7 operations with patterns"
+    - "[ ] Cache: 9/9 operations with patterns"
+    - "[ ] HTTP: 7/7 operations with patterns"
+    - "[ ] Document: 6/6 operations with patterns"
+    - "[ ] CLP: 5/5 operations with patterns"
+    - "[ ] Web Framework: 8/8 operations with patterns"
+    - "[ ] ASGI: 5/5 operations with patterns"
+    - "[ ] MCP: 6/6 operations with patterns"
+    - "[ ] Database: 5/5 operations with patterns"
+    - "[ ] AI Client: 5/5 operations with patterns"
+    - "[ ] Total: 99/99 operations with patterns"
+  
+  cross_language_readiness:
+    - "[ ] Patterns verified for all 4 language tiers"
+    - "[ ] Performance characteristics specified per tier"
+    - "[ ] Implementation guidance provided for each pattern"
+    - "[ ] Verification conditions specified for each pattern"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  
+  upstream_dependencies:
+    - "Stage 2: design patterns must be complete with all 99 operations"
+    - "mathematical-contracts.md must define all abstract contracts"
+    - "common.md must provide mathematical foundations"
+  
+  downstream_consumers:
+    - "Stage 4: package research will find packages matching patterns"
+    - "Stage 5: impl.[LANG].prompt.md will implement patterns in specific languages"
+    - "Verification processes will validate pattern implementation"
+
+# ============================================================================
+# EXECUTION INSTRUCTIONS
+# ============================================================================
 
 execution:
-  instructions_source: "sources/guides/design.prompt.md"
-  context_instruction: "Follow methodology and requirements from design.prompt.md exactly"
-  verification_method: "Generate systematic verification report against success criteria" 
+  
+  preparation:
+    - "Verify formal.spec.md contains all 99 operations"
+    - "Ensure mathematical-contracts.md defines required contracts"
+    - "Confirm common.md foundations are available"
+  
+  transformation:
+    - "Follow design.prompt.md methodology exactly"
+    - "Use CONTRACT DERIVATION APPROACH for every pattern"
+    - "Apply common.md mathematical structures throughout"
+    - "Preserve all mathematical properties and laws"
+  
+  validation:
+    - "Verify every pattern has clear abstract contract derivation"
+    - "Confirm all patterns preserve mathematical laws"
+    - "Validate patterns work across all language tiers"
+    - "Ensure complete operation coverage (99/99)"
+  
+  output_generation:
+    - "Generate build/design/qi.v4.design.analysis.md"
+    - "Include all derivation mappings and justifications"
+    - "Document all cross-language consistency requirements"
+    - "Provide clear integration guidance for downstream stages"
+
+# ============================================================================
+# VERIFICATION REPORT
+# ============================================================================
+
+verification_report:
+  target_file: "stage3-verification-report.md"
+  required_sections:
+    - "Contract Derivation Verification"
+    - "Operation Coverage Verification (99 operations)"
+    - "Design Pattern Completeness"
+    - "Mathematical Consistency"
+    - "Performance Specification Validation"
+    - "Success Criteria Compliance"
+  
+  format: |
+    # Stage 3 Verification Report
+    
+    ## Contract Derivation Verification
+    [Verify each pattern derives from abstract contract]
+    
+    ## Operation Coverage Verification
+    [List all 99 operations and confirm pattern assignment]
+    
+    ## Design Pattern Completeness
+    [Verify pattern + performance + implementation strategy]
+    
+    ## Mathematical Consistency
+    [Confirm laws preserved from formal spec to patterns]
+    
+    ## Performance Specification Validation
+    [Validate tier-based targets for all patterns]
+    
+    ## Success Criteria Compliance
+    [Complete checklist from design.prompt.md]
+    
+    ## Overall Assessment
+    [Pass/Fail with specific issues if any]

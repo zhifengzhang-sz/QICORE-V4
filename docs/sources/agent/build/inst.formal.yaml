@@ -1,71 +1,251 @@
-name: "Stage 1: Natural Language to Formal Specification"
-description: "Transform natural language contracts into formal mathematical specification"
-version: "v4.0.1"
-stage: 1
+name: "Stage 1: Natural Language to Mathematical Formalization"
+version: "1.0.0"
+description: "Transform natural language contracts into formal mathematical specifications using category theory"
+domain: "formal_transformation"
+category: "stage_1_workflow"
+
+# ============================================================================
+# STAGE 1 TRANSFORMATION OBJECTIVE
+# ============================================================================
+
+objective: |
+  Transform natural language contracts into formal mathematical specifications by:
+  
+  1. **Contract Analysis**: Parse and understand natural language contracts
+  2. **Mathematical Modeling**: Apply category theory to create formal models
+  3. **Abstract Contract Satisfaction**: Ensure models satisfy mathematical-contracts.md
+  4. **Complete Coverage**: Formalize ALL operations from both class and component contracts
+  5. **Performance Specification**: Define realistic tier-based performance constraints
+
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
 
 inputs:
-  required_files:
-    - path: "sources/nl/qi.v4.class.contracts.md"
-      description: "8 class-level behavioral contracts"
+  required:
+    natural_language_contracts:
+      - path: "qicore-v4/docs/sources/nl/qi.v4.class.contracts.md"
+        role: "Class contract definitions"
+        description: "Natural language descriptions of base and core class behaviors"
+        operations_count: 50
+      
+      - path: "qicore-v4/docs/sources/nl/qi.v4.component.contracts.md"
+        role: "Component contract definitions"
+        description: "Natural language descriptions of application component behaviors"
+        operations_count: 49
     
-    - path: "sources/nl/qi.v4.component.contracts.md" 
-      description: "5 component-level organization"
-    
-    - path: "sources/guides/common.md"
-      description: "Mathematical foundations and categorical structures"
-    
-    - path: "sources/guides/formal.prompt.md"
-      description: "Stage 1 transformation instructions and methodology"
+    methodology_files:
+      - path: "qicore-v4/docs/sources/guides/formal.prompt.md"
+        role: "Stage 1 transformation methodology"
+        description: "Core methodology for transforming NL contracts to mathematical specifications"
+      
+      - path: "qicore-v4/docs/sources/guides/common.md"
+        role: "Shared mathematical foundations"
+        description: "Categorical structures, performance models, and required patterns"
+      
+      - path: "qicore-v4/docs/sources/guides/mathematical-contracts.md"
+        role: "Abstract mathematical contracts"
+        description: "Abstract models that concrete specifications must satisfy"
+
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
 
 outputs:
-  target_file: "objective/formal/qi.v4.formal.spec.md"
-  description: "Formal mathematical specification with category theory formalization"
-  
-  required_sections:
-    - "Mathematical Foundations"
-    - "Base Component Formalization"  
-    - "Core Component Formalization"
-    - "Application Component Formalization"
-    - "Component Composition Laws"
-    - "Verification Conditions"
-    - "Cross-Language Behavioral Specifications"
-    - "Performance Specifications by Language Tier"
-    - "Dependencies and References"
+  primary:
+    - path: "build/objective/formal/qi.v4.formal.spec.md"
+      description: "Complete formal mathematical specification with LaTeX notation"
+      format: "markdown"
+      required_sections:
+        - "Mathematical Foundations"
+        - "Base Component Formalization"
+        - "Core Component Formalization"
+        - "Application Component Formalization"
+        - "Component Composition Laws"
+        - "Required Patterns"
+        - "Verification Conditions"
+        - "Performance Specifications by Language Tier"
 
-validation:
-  method: "Generate verification report using success criteria from sources/guides/formal.prompt.md"
+# ============================================================================
+# TRANSFORMATION PROCESS
+# ============================================================================
+
+transformation_process:
   
-  verification_report:
-    target_file: "stage1-verification-report.md"
-    required_sections:
-      - "Operation Coverage Verification"
-      - "Mathematical Consistency Verification" 
-      - "Pattern Implementation Verification"
-      - "Performance Specification Verification"
-      - "Success Criteria Compliance"
-    
-    format: |
-      # Stage 1 Verification Report
-      
-      ## Operation Coverage Verification
-      [Check every operation from class contracts is formalized]
-      
-      ## Mathematical Consistency Verification  
-      [Verify categorical laws and structures from common.md]
-      
-      ## Pattern Implementation Verification
-      [Confirm required patterns (circuit breaker, streaming, error recovery)]
-      
-      ## Performance Specification Verification
-      [Validate tier-based performance targets]
-      
-      ## Success Criteria Compliance
-      [Complete checklist from formal.prompt.md]
-      
-      ## Overall Assessment
-      [Pass/Fail with specific issues if any]
+  step_1_contract_analysis:
+    description: "Analyze natural language contracts to extract behaviors"
+    actions:
+      - "Parse qi.v4.class.contracts.md for Result and QiError operations"
+      - "Parse qi.v4.class.contracts.md for Config, Logger, and Cache operations"
+      - "Parse qi.v4.component.contracts.md for HTTP, Document, CLP operations"
+      - "Parse qi.v4.component.contracts.md for remaining application components"
+      - "Total operations to formalize: 99 (50 class + 49 component)"
+  
+  step_2_mathematical_modeling:
+    description: "Apply category theory to create formal models"
+    actions:
+      - "Map Result<T> to monad structure with laws"
+      - "Map Configuration to monoid structure with laws"
+      - "Map Logger to effect interface (simple, not free monad)"
+      - "Map Cache to state monad structure"
+      - "Map HTTP patterns to circuit breaker state machine"
+      - "Map streaming operations to stream coalgebra"
+  
+  step_3_contract_satisfaction:
+    description: "Ensure models satisfy abstract mathematical contracts"
+    actions:
+      - "Verify Result monad satisfies abstract Monad contract"
+      - "Verify Configuration satisfies abstract Monoid contract"
+      - "Verify Logger satisfies abstract Effect Interface contract"
+      - "Verify Cache satisfies abstract State Machine contract"
+      - "Verify streaming satisfies abstract Stream contract"
+  
+  step_4_performance_specification:
+    description: "Define tier-based performance constraints"
+    actions:
+      - "Apply language tier multipliers from common.md"
+      - "Native (Rust, C++): 1× baseline"
+      - "VM-based (Go, Java): 10× baseline"
+      - "Functional (Haskell): 50× baseline"
+      - "Interpreted (Python, JavaScript): 100× baseline"
+      - "Set realistic performance bounds per operation class"
+
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
+
+quality_assurance:
+  
+  mathematical_rigor:
+    - "All operations have formal type signatures"
+    - "All structures include required mathematical laws"
+    - "LaTeX notation used throughout for precision"
+    - "Categorical properties explicitly defined"
+  
+  completeness_validation:
+    - "All 99 operations from NL contracts formalized"
+    - "All 8 error categories included in QiError"
+    - "All required patterns from common.md included"
+    - "All performance tiers specified"
+  
+  abstract_contract_compliance:
+    - "Each concrete model references its abstract contract"
+    - "All abstract contract laws are preserved"
+    - "Performance constraints respect contract requirements"
+    - "Cross-language consistency ensured through contracts"
+
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
+
+success_criteria:
+  
+  operation_coverage:
+    - "[ ] Result: 8/8 operations formalized"
+    - "[ ] QiError: 6/6 operations + 8/8 error categories"
+    - "[ ] Configuration: 9/9 operations formalized"
+    - "[ ] Logger: 7/7 operations formalized"
+    - "[ ] Cache: 9/9 operations formalized"
+    - "[ ] HTTP: 7/7 operations formalized"
+    - "[ ] Document: 6/6 operations formalized"
+    - "[ ] CLP: 5/5 operations formalized"
+    - "[ ] Web Framework: 8/8 operations formalized"
+    - "[ ] ASGI: 5/5 operations formalized"
+    - "[ ] MCP: 6/6 operations formalized"
+    - "[ ] Database: 5/5 operations formalized"
+    - "[ ] AI Client: 5/5 operations formalized"
+    - "[ ] Total: 99/99 operations formalized"
+  
+  mathematical_structures:
+    - "[ ] Monad laws for Result<T>"
+    - "[ ] Monoid laws for Configuration"
+    - "[ ] Effect interface for Logger"
+    - "[ ] State monad for Cache"
+    - "[ ] Circuit breaker state machine"
+    - "[ ] Stream coalgebra for streaming"
+    - "[ ] Natural transformations for cross-component"
+  
+  verification_readiness:
+    - "[ ] Formal verification conditions specified"
+    - "[ ] Performance bounds per language tier"
+    - "[ ] Cross-language behavioral specifications"
+    - "[ ] Component composition laws defined"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  
+  upstream_dependencies:
+    - "Natural language contracts must be complete"
+    - "mathematical-contracts.md must define abstract models"
+    - "common.md must provide categorical foundations"
+  
+  downstream_consumers:
+    - "Stage 2: design.prompt.md will use formal spec for pattern derivation"
+    - "Verification processes will validate against formal spec"
+    - "All implementation stages reference formal spec"
+
+# ============================================================================
+# EXECUTION INSTRUCTIONS
+# ============================================================================
 
 execution:
-  instructions_source: "sources/guides/formal.prompt.md"
-  context_instruction: "Follow methodology and requirements from formal.prompt.md exactly"
-  verification_method: "Generate systematic verification report against success criteria" 
+  
+  preparation:
+    - "Verify all natural language contracts are complete"
+    - "Ensure mathematical-contracts.md is available"
+    - "Confirm common.md foundations are understood"
+  
+  transformation:
+    - "Follow formal.prompt.md methodology exactly"
+    - "Apply category theory from common.md"
+    - "Ensure abstract contract satisfaction"
+    - "Use LaTeX notation for all mathematics"
+  
+  validation:
+    - "Verify all 99 operations are formalized"
+    - "Confirm all mathematical laws are stated"
+    - "Validate performance specifications are realistic"
+    - "Check abstract contract compliance"
+  
+  output_generation:
+    - "Generate build/objective/formal/qi.v4.formal.spec.md"
+    - "Include all required sections"
+    - "Ensure LaTeX formatting throughout"
+    - "Add dependencies and references section"
+
+# ============================================================================
+# VERIFICATION REPORT
+# ============================================================================
+
+verification_report:
+  target_file: "stage1-verification-report.md"
+  required_sections:
+    - "Operation Coverage Verification (99 operations)"
+    - "Mathematical Structure Verification"
+    - "Abstract Contract Compliance"
+    - "Performance Specification Validation"
+    - "Success Criteria Checklist"
+  
+  format: |
+    # Stage 1 Verification Report
+    
+    ## Operation Coverage Verification
+    [List all 99 operations and confirm formalization]
+    
+    ## Mathematical Structure Verification
+    [Verify all required structures with laws]
+    
+    ## Abstract Contract Compliance
+    [Confirm each model satisfies its abstract contract]
+    
+    ## Performance Specification Validation
+    [Validate tier-based performance bounds]
+    
+    ## Success Criteria Checklist
+    [Complete checklist from formal.prompt.md]
+    
+    ## Overall Assessment
+    [Pass/Fail with specific issues if any]
