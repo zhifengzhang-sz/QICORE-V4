@@ -1,0 +1,71 @@
+name: "Stage 1: Natural Language to Formal Specification"
+description: "Transform natural language contracts into formal mathematical specification"
+version: "v4.0.1"
+stage: 1
+
+inputs:
+  required_files:
+    - path: "objective/nl/qi.v4.class.contracts.md"
+      description: "8 class-level behavioral contracts"
+    
+    - path: "objective/nl/qi.v4.component.contracts.md" 
+      description: "5 component-level organization"
+    
+    - path: "guides/common.md"
+      description: "Mathematical foundations and categorical structures"
+    
+    - path: "guides/formal.prompt.md"
+      description: "Stage 1 transformation instructions and methodology"
+
+outputs:
+  target_file: "objective/formal/qi.v4.formal.spec.md"
+  description: "Formal mathematical specification with category theory formalization"
+  
+  required_sections:
+    - "Mathematical Foundations"
+    - "Base Component Formalization"  
+    - "Core Component Formalization"
+    - "Application Component Formalization"
+    - "Component Composition Laws"
+    - "Verification Conditions"
+    - "Cross-Language Behavioral Specifications"
+    - "Performance Specifications by Language Tier"
+    - "Dependencies and References"
+
+validation:
+  method: "Generate verification report using success criteria from guides/formal.prompt.md"
+  
+  verification_report:
+    target_file: "stage1-verification-report.md"
+    required_sections:
+      - "Operation Coverage Verification"
+      - "Mathematical Consistency Verification" 
+      - "Pattern Implementation Verification"
+      - "Performance Specification Verification"
+      - "Success Criteria Compliance"
+    
+    format: |
+      # Stage 1 Verification Report
+      
+      ## Operation Coverage Verification
+      [Check every operation from class contracts is formalized]
+      
+      ## Mathematical Consistency Verification  
+      [Verify categorical laws and structures from common.md]
+      
+      ## Pattern Implementation Verification
+      [Confirm required patterns (circuit breaker, streaming, error recovery)]
+      
+      ## Performance Specification Verification
+      [Validate tier-based performance targets]
+      
+      ## Success Criteria Compliance
+      [Complete checklist from formal.prompt.md]
+      
+      ## Overall Assessment
+      [Pass/Fail with specific issues if any]
+
+execution:
+  instructions_source: "guides/formal.prompt.md"
+  context_instruction: "Follow methodology and requirements from formal.prompt.md exactly"
+  verification_method: "Generate systematic verification report against success criteria" 

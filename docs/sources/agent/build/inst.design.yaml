@@ -1,0 +1,66 @@
+name: "Stage 2: Formal Specification to Design Analysis"
+description: "Transform formal mathematical specification into design patterns and implementation strategies"
+version: "v4.0.1"
+stage: 2
+
+inputs:
+  required_files:
+    - path: "objective/formal/qi.v4.formal.spec.md"
+      description: "Formal mathematical specification from Stage 1"
+    
+    - path: "guides/common.md"
+      description: "Mathematical foundations and categorical structures"
+    
+    - path: "guides/design.prompt.md"
+      description: "Stage 2 transformation instructions and methodology"
+
+outputs:
+  target_file: "design/qi.v4.design.analysis.md"
+  description: "Design analysis with complete operation coverage and implementation patterns"
+  
+  required_sections:
+    - "Mathematical Foundations Applied to Design"
+    - "Base Component Design Patterns"
+    - "Core Component Design Patterns"  
+    - "Application Component Design Patterns"
+    - "Component Integration Patterns"
+    - "Performance Optimization Strategies"
+    - "Dependencies and References"
+
+validation:
+  method: "Generate verification report using success criteria from guides/design.prompt.md"
+  
+  verification_report:
+    target_file: "stage2-verification-report.md"
+    required_sections:
+      - "Operation Coverage Verification"
+      - "Design Pattern Completeness Verification"
+      - "Mathematical Consistency Verification"
+      - "Performance Specification Verification" 
+      - "Success Criteria Compliance"
+    
+    format: |
+      # Stage 2 Verification Report
+      
+      ## Operation Coverage Verification
+      [Check every operation from formal spec has design pattern]
+      
+      ## Design Pattern Completeness Verification
+      [Verify each operation has pattern + performance + implementation strategy]
+      
+      ## Mathematical Consistency Verification
+      [Confirm categorical laws preserved from formal spec]
+      
+      ## Performance Specification Verification
+      [Validate tier-based targets for all operations]
+      
+      ## Success Criteria Compliance
+      [Complete checklist from design.prompt.md]
+      
+      ## Overall Assessment
+      [Pass/Fail with specific issues if any]
+
+execution:
+  instructions_source: "guides/design.prompt.md"
+  context_instruction: "Follow methodology and requirements from design.prompt.md exactly"
+  verification_method: "Generate systematic verification report against success criteria" 
