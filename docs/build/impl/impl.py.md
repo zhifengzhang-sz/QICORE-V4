@@ -17,10 +17,11 @@ Transform language-agnostic design patterns into concrete Python implementations
 
 ## Input Requirements
 
-### Required Design Inputs
-- **Design Patterns**: `build/design/qi.v4.design.analysis.md` (99 operations)
+### Required Stage Inputs
+- **Language-Agnostic Template**: `build/impl/qi.v4.impl.template.md` (from Stage 3)
 - **Package Research**: `build/research/qi.v4.py.packages.md` (vetted Python packages)
 - **Wrapper Specifications**: `build/research/qi.v4.py.wrappers.md` (interface wrappers)
+- **Mathematical Contracts**: `build/guides/mathematical-contracts.md` (Stage 2 output)
 
 ### Required Methodology Files
 - **Python Implementation Guide**: `sources/guides/impl.py.prompt.md`
@@ -28,10 +29,10 @@ Transform language-agnostic design patterns into concrete Python implementations
 
 ## Output Specifications
 
-### Primary Outputs
+### Primary Output
 
-#### 1. Python Code Template (`build/impl/qi.v4.py.template.md`)
-**Format**: Markdown with runnable Python examples
+#### Python Implementation (`build/impl/qi.v4.py.impl.md`)
+**Format**: Markdown implementation specification
 
 **Required Sections**:
 - Base Component Implementation
@@ -41,11 +42,6 @@ Transform language-agnostic design patterns into concrete Python implementations
 - Performance Benchmarks
 - Type Safety Verification
 - Package Dependencies
-
-#### 2. Python Implementation Guide (`build/impl/qi.v4.py.impl.md`)
-**Format**: Markdown implementation guide
-
-**Required Sections**:
 - Implementation Strategy
 - Package Integration Guide
 - Type System Usage
@@ -162,9 +158,10 @@ src/
 ## Integration Points
 
 ### Upstream Dependencies
-- **Stage 3**: Design patterns must be complete (`build/design/qi.v4.design.analysis.md`)
+- **Stage 3**: Language-agnostic template must be complete (`build/impl/qi.v4.impl.template.md`)
 - **Stage 4**: Python package research must be complete (`build/research/qi.v4.py.*`)
-- **Mathematical Foundations**: `sources/guides/common.md` available
+- **Stage 2**: Mathematical contracts must be available (`build/guides/mathematical-contracts.md`)
+- **Methodology**: `sources/guides/impl.py.prompt.md` and `sources/guides/common.md`
 
 ### Downstream Consumers
 - Verification processes will validate implementation
@@ -191,10 +188,10 @@ src/
 4. Check documentation coverage
 
 ### Output Generation Phase
-1. Generate implementation templates
-2. Create implementation guide
-3. Include all required sections
-4. Add examples and benchmarks
+1. Generate Python implementation specification
+2. Include all required sections (implementation + guide)
+3. Add runnable examples and benchmarks
+4. Document package integration strategy
 
 ## Verification Report
 

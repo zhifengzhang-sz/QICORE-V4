@@ -64,7 +64,7 @@ _site/
 
 # Generated build directories and files
 !docs/build/
-!gdocs/sources/agent/build/
+!docs/sources/agent/build/
 
 # Specific generated files (for reference)
 # docs/build/design/qi.v4.design.analysis.md

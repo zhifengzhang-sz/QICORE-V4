@@ -23,20 +23,23 @@ objective: |
 
 inputs:
   required:
-    design_inputs:
-      - path: "design/qi.v4.design.analysis.md"
-        role: "Design pattern specifications"
-        description: "Language-agnostic design patterns to implement"
+    stage_inputs:
+      - path: "build/impl/qi.v4.impl.template.md"
+        role: "Language-agnostic implementation template"
+        description: "Stage 3 output: language-agnostic templates"
         operations_count: 99
-    
-    research_inputs:
-      - path: "research/qi.v4.py.packages.md"
-        role: "Python package research"
-        description: "Vetted Python packages matching design patterns"
       
-      - path: "research/qi.v4.py.wrappers.md"
+      - path: "build/research/qi.v4.py.packages.md"
+        role: "Python package research"
+        description: "Stage 4 output: vetted Python packages"
+      
+      - path: "build/research/qi.v4.py.wrappers.md"
         role: "Python wrapper specifications"
-        description: "Interface wrappers for external packages"
+        description: "Stage 4 output: interface wrappers for external packages"
+      
+      - path: "build/guides/mathematical-contracts.md"
+        role: "Mathematical contracts"
+        description: "Stage 2 output: abstract mathematical contracts"
     
     methodology_files:
       - path: "sources/guides/impl.py.prompt.md"
@@ -53,8 +56,8 @@ inputs:
 
 outputs:
   primary:
-    - path: "impl/qi.v4.py.template.md"
-      description: "Python code template with runnable examples"
+    - path: "build/impl/qi.v4.py.impl.md"
+      description: "Python implementation specification (combines template + guide)"
       format: "markdown"
       required_sections:
         - "Base Component Implementation"
@@ -64,11 +67,6 @@ outputs:
         - "Performance Benchmarks"
         - "Type Safety Verification"
         - "Package Dependencies"
-    
-    - path: "impl/qi.v4.py.impl.md"
-      description: "Python implementation guide"
-      format: "markdown"
-      required_sections:
         - "Implementation Strategy"
         - "Package Integration Guide"
         - "Type System Usage"
@@ -189,9 +187,10 @@ success_criteria:
 integration:
   
   upstream_dependencies:
-    - "Stage 2: design patterns must be complete"
+    - "Stage 3: language-agnostic template must be complete"
     - "Stage 4: Python package research must be complete"
-    - "common.md mathematical foundations available"
+    - "Stage 2: mathematical contracts must be available"
+    - "Methodology files: impl.py.prompt.md and common.md available"
   
   downstream_consumers:
     - "Verification processes will validate implementation"
