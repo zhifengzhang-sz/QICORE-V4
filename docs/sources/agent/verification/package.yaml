@@ -1,0 +1,271 @@
+# Package Research Verification
+# Version: 1.0
+# Purpose: Verify Stage 4 package research is complete and selection-only
+
+process:
+  name: "QiCore v4.0 Package Research Verification"
+  overview: |
+    Verify that package research correctly selects packages for each language
+    WITHOUT including implementation code (selection-only stage).
+
+parameters:
+  language:
+    description: "Target language to verify package research"
+    required: true
+    values: ["py", "ts", "hs"]
+
+prerequisites:
+  required_inputs:
+    - path: "impl/qi.v4.impl.template.md"
+      description: "Implementation template from Stage 3"
+    
+    - path: "package/${language}.md"
+      description: "Package research file to verify"
+    
+    - path: "guides/mathematical-contracts.md"
+      description: "Mathematical contracts for compliance checking"
+
+verification_criteria:
+  component_coverage:
+    expected_components: 13
+    description: "Verify package research covers all components"
+    target_file: "build/package/${language}.md"
+    
+    component_requirements:
+      - "Must have exactly 13 numbered component sections"
+      - "Each component must have package selection with rationale"
+      - "Each component must reference template requirements"
+      - "Each component must evaluate multiple package options"
+      - "Each component must document selection criteria"
+    
+    verification_method: "content_analysis"
+    verification_rules:
+      - "Count numbered sections matching '### [number]. '"
+      - "Verify each component has package selection"
+      - "Check selection rationale is provided"
+      - "Ensure multiple options were evaluated"
+      - "Verify criteria consistency across components"
+
+  selection_only_compliance:
+    - criterion: "NO implementation code present"
+      check: "! grep -E '```(py|python|ts|typescript|js|javascript|hs|haskell)' package/${language}.md"
+      required: true
+      critical: true
+      description: "Stage 4 is selection-only, no code allowed"
+    
+    - criterion: "NO code examples in package sections"
+      check: "! grep -E 'example.*code|code.*example|implementation.*example'"
+      required: true
+    
+    - criterion: "NO wrapper implementations"
+      check: "! grep -E 'wrapper|adapter|facade.*implementation'"
+      required: true
+    
+    - criterion: "Selection rationale only"
+      check: "grep -i 'rationale' && grep -i 'selection' && grep -i 'because'"
+      required: true
+
+  contract_compliance:
+    - criterion: "Mathematical contract satisfaction documented"
+      contracts: ["Result<T>", "QiError", "Configuration", "Logging", "Cache", "HTTP", "Document", "CLP"]
+      check: "verify each contract has compliance analysis"
+      required: true
+    
+    - criterion: "Monad law compliance for Result packages"
+      check: "grep -i 'monad.*law' && grep -i 'result.*monad'"
+      required: true
+    
+    - criterion: "Monoid compliance for Configuration packages"
+      check: "grep -i 'monoid.*law' && grep -i 'configuration.*merge'"
+      required: true
+    
+    - criterion: "Performance tier alignment"
+      language_tiers:
+        py: "interpreted (< 100 microseconds)"
+        ts: "interpreted (< 100 microseconds)"
+        hs: "functional (< 50 microseconds)"
+      check: "verify packages align with ${language} performance tier"
+      required: true
+
+  package_quality_criteria:
+    - criterion: "Mature packages selected (active maintenance)"
+      check: "grep -i 'maintenance' && grep -E 'active|maintained|recent'"
+      required: true
+    
+    - criterion: "Well-documented packages preferred"
+      check: "grep -i 'documentation' && grep -E 'well.*documented|good.*docs'"
+      required: true
+    
+    - criterion: "Performance characteristics documented"
+      check: "grep -i 'performance' && grep -E 'benchmark|speed|efficiency'"
+      required: true
+    
+    - criterion: "Community adoption considered"
+      check: "grep -i 'adoption' && grep -E 'popular|widely.*used|community'"
+      required: true
+    
+    - criterion: "License compatibility verified"
+      check: "grep -i 'license' && grep -E 'MIT|Apache|BSD|compatible'"
+      required: true
+
+  research_methodology:
+    - criterion: "Multiple package options evaluated"
+      check: "grep -i 'alternatives' && grep -E 'compared|evaluated|considered'"
+      required: true
+    
+    - criterion: "Selection criteria applied consistently"
+      check: "grep -i 'criteria' && grep -i 'consistent.*selection'"
+      required: true
+    
+    - criterion: "Package ecosystem integration considered"
+      check: "grep -i 'ecosystem' && grep -i 'integration'"
+      required: true
+    
+    - criterion: "Dependency management addressed"
+      check: "grep -i 'dependencies' && grep -E 'minimal|lightweight|compatible'"
+      required: true
+
+  language_specific_verification:
+    python:
+      - criterion: "PyPI packages selected"
+        check: "grep -i 'pypi' || grep -E 'pip install|python.*package'"
+        required: true
+      
+      - criterion: "Type hint compatibility"
+        check: "grep -i 'type.*hint' && grep -i 'typing'"
+        required: true
+      
+      - criterion: "Python 3.8+ compatibility"
+        check: "grep -E 'python.*3\\.[89]|python.*3\\.1[0-9]'"
+        required: true
+    
+    typescript:
+      - criterion: "npm packages selected"
+        check: "grep -i 'npm' || grep -E 'npm install|node.*package'"
+        required: true
+      
+      - criterion: "TypeScript type definitions available"
+        check: "grep -i 'type.*definition' && grep -E '@types|\.d\\.ts'"
+        required: true
+      
+      - criterion: "ES2020+ compatibility"
+        check: "grep -E 'ES20[2-9][0-9]|ESNext|modern.*javascript'"
+        required: true
+    
+    haskell:
+      - criterion: "Hackage packages selected"
+        check: "grep -i 'hackage' || grep -E 'cabal install|stack.*package'"
+        required: true
+      
+      - criterion: "GHC compatibility specified"
+        check: "grep -i 'ghc' && grep -E '[89]\\.[0-9]|[0-9]{2}\\.[0-9]'"
+        required: true
+      
+      - criterion: "Mathematical library integration"
+        check: "grep -E 'category.*theory|algebraic|mathematical.*library'"
+        required: true
+
+  traceability:
+    - criterion: "Template requirements traced to packages"
+      check: "grep -i 'template.*requirement' && grep -i 'satisfies'"
+      required: true
+    
+    - criterion: "Mathematical contracts referenced"
+      check: "grep -i 'mathematical.*contract' && grep -i 'compliance'"
+      required: true
+    
+    - criterion: "Design patterns supported"
+      check: "grep -i 'design.*pattern' && grep -i 'supports'"
+      required: true
+
+validation_process:
+  stages:
+    - name: "Component Coverage Check"
+      action: "Verify all 13 components have package research"
+      failure_action: "Add missing component package research"
+      critical: true
+    
+    - name: "Selection-Only Compliance Check"
+      action: "Verify NO implementation code present"
+      failure_action: "Remove all implementation code"
+      critical: true
+    
+    - name: "Contract Compliance Check"
+      action: "Verify packages satisfy mathematical contracts"
+      failure_action: "Document contract compliance for each package"
+    
+    - name: "Package Quality Check"
+      action: "Verify mature, well-documented packages selected"
+      failure_action: "Replace low-quality package selections"
+    
+    - name: "Research Methodology Check"
+      action: "Verify consistent selection criteria applied"
+      failure_action: "Apply consistent methodology"
+    
+    - name: "Language-Specific Check"
+      action: "Verify language ecosystem integration"
+      failure_action: "Fix language-specific issues"
+    
+    - name: "Traceability Check"
+      action: "Verify packages trace to template requirements"
+      failure_action: "Add traceability documentation"
+
+output:
+  report_path: "verification/package-${language}-verification-report.md"
+  format: |
+    # Package Research Verification Report: ${language}
+    Date: [timestamp]
+    
+    ## Summary
+    - Language: ${language}
+    - Pass/Fail: [status]
+    - Components Covered: [x/13]
+    - Criteria Met: [x/y]
+    
+    ## Component Coverage
+    - Components researched: [x/13]
+    - Package selections: [x/13]
+    - Selection rationales: [x/13]
+    
+    ## Selection-Only Compliance
+    - No implementation code: [pass/fail]
+    - No code examples: [pass/fail]
+    - No wrapper implementations: [pass/fail]
+    - Selection rationale only: [pass/fail]
+    
+    ## Contract Compliance
+    - Mathematical contracts: [pass/fail]
+    - Monad law compliance: [pass/fail]
+    - Monoid compliance: [pass/fail]
+    - Performance tier alignment: [pass/fail]
+    
+    ## Package Quality
+    - Mature packages: [pass/fail]
+    - Well-documented: [pass/fail]
+    - Performance characteristics: [pass/fail]
+    - Community adoption: [pass/fail]
+    - License compatibility: [pass/fail]
+    
+    ## Research Methodology
+    - Multiple options evaluated: [pass/fail]
+    - Consistent criteria: [pass/fail]
+    - Ecosystem integration: [pass/fail]
+    - Dependency management: [pass/fail]
+    
+    ## Language-Specific (${language})
+    - Package manager integration: [pass/fail]
+    - Type system compatibility: [pass/fail]
+    - Version compatibility: [pass/fail]
+    
+    ## Traceability
+    - Template requirements: [pass/fail]
+    - Mathematical contracts: [pass/fail]
+    - Design patterns: [pass/fail]
+    
+    ## Required Actions
+    [list of fixes needed]
+
+execution:
+  automated: true
+  language_specific: true
+  cache_key: "package_${language}_${file_hash}"

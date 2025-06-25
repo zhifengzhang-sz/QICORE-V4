@@ -1,10 +1,10 @@
-# Stage 3: TypeScript-Specific Implementation Prompt
+# Stage 5: TypeScript-Specific Implementation Prompt
 
 > **AI Prompt for generating TypeScript templates from design patterns**  
 > **Based on**: Design patterns from Stage 2 and package research  
 > **Generates**: `impl/qi.v4.typescript.template.md` with complete package integration  
 > Version: v4.0.1  
-> Date: December 26, 2024  
+> Date: June 25, 2025  
 > Status: TypeScript Implementation Prompt  
 > Purpose: Generate production-ready TypeScript templates using researched packages
 
@@ -87,6 +87,11 @@ import Database from 'better-sqlite3'
 // Document Generation - handlebars (mature) or mustache
 import Handlebars from 'handlebars'
 // OR: import * as Mustache from 'mustache'
+
+// Command-Line Processing - commander.js (type-safe) or yargs
+import { Command, Option, Argument } from 'commander'
+// OR: import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 ```
 
 ## TypeScript-Specific Implementation Guidelines
@@ -132,6 +137,61 @@ interface ImmutableConfig {
 import { pipe } from 'fp-ts/function'
 import * as TE from 'fp-ts/TaskEither'
 import * as E from 'fp-ts/Either'
+```
+
+### Mathematical Properties Preservation
+
+**CRITICAL: All implementations must preserve mathematical laws from design analysis:**
+
+#### Monad Laws (Result<T> - section 2.1)
+```typescript
+// Left Identity: return(x).flatMap(f) ≡ f(x)
+// Right Identity: m.flatMap(return) ≡ m  
+// Associativity: (m.flatMap(f)).flatMap(g) ≡ m.flatMap(x => f(x).flatMap(g))
+
+// Implementation must verify these laws hold
+function verifyMonadLaws(): void {
+    // Test left identity
+    const leftId = Result.success(5).flatMap(x => Result.success(x * 2))
+    assert.deepEqual(leftId, Result.success(10))
+    
+    // Test right identity  
+    const rightId = Result.success(5).flatMap(Result.success)
+    assert.deepEqual(rightId, Result.success(5))
+    
+    // Test associativity - implementation validates these properties
+}
+```
+
+#### Monoid Laws (Configuration - section 3.1)
+```typescript
+// Identity Element: config.merge(empty) ≡ config ≡ empty.merge(config)
+// Associativity: (a.merge(b)).merge(c) ≡ a.merge(b.merge(c))
+
+// Implementation must preserve these properties
+function verifyMonoidLaws(): void {
+    const emptyConfig = Configuration.empty()
+    const config = Configuration.fromObject({ key: "value" })
+    
+    assert.deepEqual(config.merge(emptyConfig), config)
+    assert.deepEqual(emptyConfig.merge(config), config)
+    // Associativity testing in implementation
+}
+```
+
+#### Functor Laws (Components - sections 2.1, 3.x, 4.x)
+```typescript
+// Identity: map(id) ≡ id
+// Composition: map(f).map(g) ≡ map(compose(g, f))
+
+// All component transformations must preserve these laws
+function verifyFunctorLaws(): void {
+    const result = Result.success(5)
+    const identity = <T>(x: T): T => x
+    
+    assert.deepEqual(result.map(identity), result)  // Identity law
+    // Composition law verification in implementation
+}
 ```
 
 ## Contract Implementation Specifications
@@ -378,6 +438,32 @@ import * as E from 'fp-ts/Either'
 // - Safe string handling
 // - Custom helpers for logic
 // - Streaming for large documents
+```
+
+#### Command-Line Processing Contract
+```typescript
+// Package: commander>=9.4.0 or yargs>=17.6.0
+// Pattern: Parser Combinator Pattern from design analysis (section 4.3)
+// Performance: < 1ms parsing (interpreted tier)
+
+[Language-specific Command-Line Processing implementation template]
+// Must implement ALL 3 operations from design analysis:
+// - parse(args, config) - Recursive descent parser
+// - validate(args, config) - Schema-based validation  
+// - generateHelp(config) - Tree traversal formatter
+
+// Key Commander.js features:
+// - Declarative command definition
+// - Type-safe option parsing
+// - Subcommand support
+// - Auto-generated help
+// - Integration with zod for validation
+
+// Parser combinator pattern implementation:
+// - sequence() for command composition
+// - option() for flag parsing
+// - positional() for argument parsing
+// - Applicative composition of parsers
 ```
 
 ## QICORE-V4 Wrapper Integration

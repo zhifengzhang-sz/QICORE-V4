@@ -1,10 +1,10 @@
-# Stage 3: Python-Specific Implementation Prompt
+# Stage 5: Python-Specific Implementation Prompt
 
 > **AI Prompt for generating Python templates from design patterns**  
 > **Based on**: Design patterns from Stage 2 and package research  
 > **Generates**: `impl/qi.v4.python.template.md` with complete package integration  
 > Version: v4.0.1  
-> Date: December 26, 2024  
+> Date: June 25, 2025  
 > Status: Python Implementation Prompt  
 > Purpose: Generate production-ready Python templates using researched packages
 
@@ -110,6 +110,13 @@ from contextlib import asynccontextmanager
 from jinja2 import Environment, FileSystemLoader, Template
 import asyncio
 from typing import AsyncIterator
+
+# Command-Line Processing - argparse (built-in) + click (enhanced features)
+import argparse
+import click
+from click import Context, Command, Group, Option, Argument
+import sys
+from typing import Dict, Any, List, Optional, Callable
 ```
 
 ## Python-Specific Implementation Guidelines
@@ -144,6 +151,52 @@ from typing import Awaitable
 
 # Type hints for static analysis
 from typing import Protocol, runtime_checkable
+```
+
+### Mathematical Properties Preservation
+
+**CRITICAL: All implementations must preserve mathematical laws from design analysis:**
+
+#### Monad Laws (Result<T> - section 2.1)
+```python
+# Left Identity: return(x).flatMap(f) ≡ f(x)
+# Right Identity: m.flatMap(return) ≡ m  
+# Associativity: (m.flatMap(f)).flatMap(g) ≡ m.flatMap(λx -> f(x).flatMap(g))
+
+# Implementation must verify these laws hold
+def verify_monad_laws():
+    # Test left identity
+    assert Result.success(5).flatMap(lambda x: Result.success(x * 2)) == Result.success(10)
+    # Test right identity  
+    assert Result.success(5).flatMap(Result.success) == Result.success(5)
+    # Test associativity
+    # Implementation validates these properties
+```
+
+#### Monoid Laws (Configuration - section 3.1)
+```python
+# Identity Element: config.merge(empty) ≡ config ≡ empty.merge(config)
+# Associativity: (a.merge(b)).merge(c) ≡ a.merge(b.merge(c))
+
+# Implementation must preserve these properties
+def verify_monoid_laws():
+    empty_config = Configuration({})
+    config = Configuration({"key": "value"})
+    assert config.merge(empty_config) == config
+    assert empty_config.merge(config) == config
+    # Associativity testing in implementation
+```
+
+#### Functor Laws (Components - sections 2.1, 3.x, 4.x)
+```python
+# Identity: map(id) ≡ id
+# Composition: map(f).map(g) ≡ map(compose(g, f))
+
+# All component transformations must preserve these laws
+def verify_functor_laws():
+    result = Result.success(5)
+    assert result.map(lambda x: x) == result  # Identity
+    # Composition law verification in implementation
 ```
 
 ## Contract Implementation Specifications
@@ -446,6 +499,32 @@ class DatabaseConfig(BaseModel):
 # - Custom filters and functions
 # - Template inheritance
 # - Streaming for large documents
+```
+
+#### Command-Line Processing Contract
+```python
+# Package: argparse (built-in) + click>=8.1.0
+# Pattern: Parser Combinator Pattern from design analysis (section 4.3)
+# Performance: < 1ms parsing (interpreted tier)
+
+[Language-specific Command-Line Processing implementation template]
+# Must implement ALL 3 operations from design analysis:
+# - parse(args, config) - Recursive descent parser
+# - validate(args, config) - Schema-based validation  
+# - generateHelp(config) - Tree traversal formatter
+
+# Key Click features:
+# - Declarative command definition
+# - Type conversion and validation
+# - Nested command groups
+# - Auto-generated help
+# - Integration with argparse for compatibility
+
+# Parser combinator pattern implementation:
+# - sequence() for command composition
+# - option() for flag parsing
+# - positional() for argument parsing
+# - Applicative composition of parsers
 ```
 
 ## QICORE-V4 Wrapper Integration

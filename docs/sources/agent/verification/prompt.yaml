@@ -1,0 +1,371 @@
+# Prompt Guide Consistency Verification
+# Version: 1.0
+# Purpose: Verify consistency across all sources/guides files
+
+process:
+  name: "QiCore v4.0 Prompt Guide Consistency Verification"
+  overview: |
+    Verify that all guide files maintain mathematical consistency,
+    proper cross-references, and coherent implementation patterns
+    across the entire 5-stage development methodology.
+
+prerequisites:
+  required_inputs:
+    - path: "guides/"
+      description: "All guide files in sources/guides directory"
+      files:
+        - "common.md"
+        - "guide.md"
+        - "formal.prompt.md"
+        - "design.prompt.md"
+        - "impl.prompt.md"
+        - "package-research-methodology.md"
+        - "impl.py.prompt.md"
+        - "impl.ts.prompt.md"
+        - "impl.hs.prompt.md"
+
+verification_criteria:
+  stage_consistency:
+    - criterion: "Stage numbering format consistent"
+      files: ["formal.prompt.md", "design.prompt.md", "impl.prompt.md"]
+      check: "grep -E '^# Stage [1-3]:' && grep -E 'Stage [0-2] → Stage [1-3]'"
+      required: true
+    
+    - criterion: "Language stage numbering (Stage 5)"
+      files: ["impl.py.prompt.md", "impl.ts.prompt.md", "impl.hs.prompt.md"]
+      check: "grep -E '^# Stage 5:' && grep -E 'Stage 4 → Stage 5'"
+      required: true
+    
+    - criterion: "Version consistency across all files"
+      check: "grep -c 'v4.0' guides/*.md | grep -v ':0' | wc -l"
+      expected: 9
+      required: true
+    
+    - criterion: "Date consistency in recent updates"
+      check: "grep -E '202[4-5]' guides/*.md && ! grep -E '202[0-3]'"
+      required: true
+
+  mathematical_contract_consistency:
+    description: "Verify mathematical consistency across all guide files"
+    verification_method: "content_analysis"
+    
+    common_md_references:
+      target_files: ["formal.prompt.md", "design.prompt.md", "impl.prompt.md", "impl.py.prompt.md", "impl.ts.prompt.md", "impl.hs.prompt.md"]
+      requirement: "All prompt files must reference guides/common.md"
+      expected_count: 6
+      critical: true
+    
+    abstract_contract_consistency:
+      contracts:
+        - name: "Abstract Monad Contract"
+          requirement: "Referenced in all relevant guide files"
+          expected_references: 8
+        - name: "Abstract Functor Contract" 
+          requirement: "Referenced in all relevant guide files"
+          expected_references: 8
+        - name: "Abstract Monoid Contract"
+          requirement: "Referenced in all relevant guide files"
+          expected_references: 8
+      verification_rules:
+        - "Check each guide file for abstract contract references"
+        - "Ensure consistent mathematical terminology"
+        - "Verify proper mathematical foundations"
+    
+    mathematical_law_consistency:
+      laws: ["left identity", "right identity", "associativity"]
+      requirement: "Mathematical laws must be preserved across all stages"
+      verification_rules:
+        - "Check for monad law references in relevant files"
+        - "Verify monoid law preservation in configuration files"
+        - "Ensure functor law compliance in component files"
+
+  cross_reference_integrity:
+    description: "Verify all file references are valid and consistent"
+    verification_method: "content_analysis"
+    
+    mathematical_contracts_chain:
+      requirement: "Stage 2+ files must reference mathematical-contracts.md"
+      target_files: ["design.prompt.md", "impl.prompt.md", "impl.py.prompt.md", "impl.ts.prompt.md", "impl.hs.prompt.md", "package-research-methodology.md"]
+      expected_count: 6
+      verification_rules:
+        - "Check each file for mathematical-contracts.md reference"
+        - "Verify proper file path format"
+        - "Ensure reference context is appropriate"
+    
+    design_analysis_references:
+      requirement: "Language implementation files must reference design analysis"
+      target_files: ["impl.py.prompt.md", "impl.ts.prompt.md", "impl.hs.prompt.md"]
+      expected_count: 3
+      verification_rules:
+        - "Check for design/qi.v4.design.analysis.md references"
+        - "Verify proper integration with design patterns"
+        - "Ensure stage flow compliance"
+    
+    package_research_references:
+      requirement: "Language files must reference their package research"
+      target_files: ["impl.py.prompt.md", "impl.ts.prompt.md", "impl.hs.prompt.md"]
+      expected_references: ["package/py.md", "package/ts.md", "package/hs.md"]
+      verification_rules:
+        - "Check each language file references its package research"
+        - "Verify proper package integration guidance"
+        - "Ensure stage 4 to stage 5 flow"
+    
+    broken_reference_detection:
+      requirement: "No broken or TODO file path references"
+      verification_rules:
+        - "Check for TODO or FIXME placeholders in file paths"
+        - "Verify all referenced files exist"
+        - "Ensure consistent path format across files"
+
+  section_structure_consistency:
+    required_sections:
+      stage_prompts: ["Context", "Required Reading", "Methodology", "Input Documents", "Output Requirements"]
+      language_prompts: ["Context", "Required Reading", "Mathematical Contracts", "Implementation Strategy", "Output Requirements"]
+    
+    - criterion: "Stage prompt files have required sections"
+      files: ["formal.prompt.md", "design.prompt.md", "impl.prompt.md"]
+      check: "verify all 5 required sections present"
+      required: true
+    
+    - criterion: "Language prompt files have required sections"
+      files: ["impl.py.prompt.md", "impl.ts.prompt.md", "impl.hs.prompt.md"]
+      check: "verify all 5 required sections present"
+      required: true
+    
+    - criterion: "Section ordering consistency"
+      check: "verify same section order across similar file types"
+      required: true
+
+  performance_model_consistency:
+    description: "Verify consistent performance tiers and targets across all files"
+    verification_method: "content_analysis"
+    
+    tier_multiplier_consistency:
+      requirement: "Performance tier multipliers must be consistent"
+      tiers:
+        functional: "50× baseline"
+        interpreted: "100× baseline"
+        vm_based: "10× baseline"
+        native: "1× baseline"
+      verification_rules:
+        - "Check each file uses correct multiplier for language tier"
+        - "Verify functional = 50×, interpreted = 100×"
+        - "Ensure consistent tier terminology"
+    
+    language_tier_mapping:
+      requirement: "Language to tier mapping must be consistent"
+      mappings:
+        haskell: "functional (50×)"
+        python: "interpreted (100×)"
+        typescript: "interpreted (100×)"
+        rust: "native (1×)"
+        go: "vm-based (10×)"
+      verification_rules:
+        - "Check each language file uses correct tier"
+        - "Verify tier alignment with language characteristics"
+        - "Ensure performance target consistency"
+    
+    baseline_operation_consistency:
+      requirement: "Baseline operation targets must be consistent"
+      operations: ["Result creation", "log level check", "cache operation"]
+      verification_rules:
+        - "Check baseline operation definitions across files"
+        - "Verify consistent performance examples"
+        - "Ensure tier-based scaling is applied"
+    
+    critical_threshold_consistency:
+      requirement: "Critical thresholds must be consistent across files"
+      thresholds:
+        web_requests: "5-10ms"
+        database_queries: "50-100ms"
+        ai_llm_calls: "< 200ms"
+      verification_rules:
+        - "Check threshold values are consistent"
+        - "Verify realistic performance expectations"
+        - "Ensure language-appropriate adjustments"
+
+  contract_coverage_completeness:
+    expected_contracts: 8
+    contracts: ["Result<T>", "QiError", "Configuration", "Logging", "Cache", "HTTP", "Document", "CLP"]
+    
+    - criterion: "All 8 contracts covered in each stage file"
+      files: ["formal.prompt.md", "design.prompt.md", "impl.prompt.md"]
+      check: "verify each file references all 8 contracts"
+      required: true
+    
+    - criterion: "Language files cover all contracts"
+      files: ["impl.py.prompt.md", "impl.ts.prompt.md", "impl.hs.prompt.md"]
+      check: "verify each language file covers all 8 contracts"
+      required: true
+    
+    - criterion: "Contract method consistency"
+      methods:
+        Result: ["map", "flatMap", "orElse", "unwrap", "match"]
+        Configuration: ["merge", "get", "set", "validate"]
+        Cache: ["get", "set", "delete", "clear", "getOrSet"]
+      check: "verify consistent method sets across files"
+      required: true
+
+  language_specific_consistency:
+    - criterion: "Package version consistency across languages"
+      check: "verify same functionality packages have consistent versions"
+      required: true
+    
+    - criterion: "Result<T> wrapper pattern consistency"
+      languages: ["py", "ts", "hs"]
+      check: "grep -E 'Result.*wrapper|wrapper.*Result' guides/impl.*.prompt.md | wc -l"
+      expected: 3
+      required: true
+    
+    - criterion: "Package equivalency mappings present"
+      check: "grep -E 'equivalent|equivalent.*package|package.*equivalent' guides/impl.*.prompt.md"
+      required: true
+    
+    - criterion: "Mathematical property preservation in language bindings"
+      check: "grep -E 'preserve.*law|law.*preserve|maintain.*property' guides/impl.*.prompt.md"
+      required: true
+
+  methodology_consistency:
+    - criterion: "Systematic approach consistency"
+      check: "grep -i 'systematic' && grep -i 'methodology' guides/*.md"
+      required: true
+    
+    - criterion: "Evidence-based decision making"
+      check: "grep -E 'evidence.*based|based.*evidence|rationale' guides/*.md"
+      required: true
+    
+    - criterion: "Traceability requirements"
+      check: "grep -E 'traceab|trace.*to|derived.*from' guides/*.md"
+      required: true
+    
+    - criterion: "Quality assurance standards"
+      check: "grep -E '95%.*compliance|compliance.*95%|property.*based.*test' guides/*.md"
+      required: true
+
+  category_theory_consistency:
+    - criterion: "Monad usage consistency"
+      check: "grep -E 'monad.*law|bind.*operation|flatMap.*associativ' guides/*.md"
+      required: true
+    
+    - criterion: "Functor usage consistency"
+      check: "grep -E 'functor.*law|map.*composition|fmap' guides/*.md"
+      required: true
+    
+    - criterion: "Monoid usage consistency"
+      check: "grep -E 'monoid.*law|identity.*element|associativ.*operation' guides/*.md"
+      required: true
+    
+    - criterion: "Natural transformation consistency"
+      check: "grep -E 'natural.*transformation|component.*natural' guides/*.md"
+      required: false
+      description: "Advanced category theory - optional but should be consistent if present"
+
+validation_process:
+  stages:
+    - name: "Stage Consistency Check"
+      action: "Verify stage numbering and transformation arrows"
+      failure_action: "Fix stage numbering inconsistencies"
+    
+    - name: "Mathematical Contract Check"
+      action: "Verify all files reference same abstract contracts"
+      failure_action: "Update files to reference consistent contracts"
+      critical: true
+    
+    - name: "Cross-Reference Integrity Check"
+      action: "Verify all file references are valid and consistent"
+      failure_action: "Fix broken references and add missing ones"
+    
+    - name: "Section Structure Check"
+      action: "Verify consistent section structure across file types"
+      failure_action: "Standardize section structures"
+    
+    - name: "Performance Model Check"
+      action: "Verify consistent performance tiers and targets"
+      failure_action: "Align performance specifications"
+    
+    - name: "Contract Coverage Check"
+      action: "Verify all 8 contracts covered consistently"
+      failure_action: "Add missing contract coverage"
+    
+    - name: "Language Consistency Check"
+      action: "Verify package versions and wrapper patterns"
+      failure_action: "Standardize language-specific implementations"
+    
+    - name: "Methodology Consistency Check"
+      action: "Verify systematic approach and quality standards"
+      failure_action: "Align methodology across files"
+    
+    - name: "Category Theory Check"
+      action: "Verify mathematical concepts used consistently"
+      failure_action: "Standardize mathematical terminology"
+
+output:
+  report_path: "verification/prompt-consistency-report.md"
+  format: |
+    # Prompt Guide Consistency Verification Report
+    Date: [timestamp]
+    
+    ## Summary
+    - Files Verified: [count]
+    - Pass/Fail: [status]
+    - Criteria Met: [x/y]
+    
+    ## Stage Consistency
+    - Stage numbering: [pass/fail]
+    - Version consistency: [pass/fail]
+    - Date consistency: [pass/fail]
+    
+    ## Mathematical Contract Consistency
+    - Common.md references: [x/6] files
+    - Abstract Monad Contract: [x/8] files
+    - Abstract Functor Contract: [x/8] files
+    - Abstract Monoid Contract: [x/8] files
+    - Mathematical laws: [pass/fail]
+    
+    ## Cross-Reference Integrity
+    - Mathematical contracts chain: [x/6] files
+    - Design analysis refs: [x/3] files
+    - Package research refs: [x/3] files
+    - Broken references: [count] found
+    
+    ## Section Structure
+    - Stage prompts structure: [pass/fail]
+    - Language prompts structure: [pass/fail]
+    - Section ordering: [pass/fail]
+    
+    ## Performance Model
+    - Tier multipliers: [pass/fail]
+    - Language tier mapping: [pass/fail]
+    - Baseline operations: [pass/fail]
+    - Critical thresholds: [pass/fail]
+    
+    ## Contract Coverage
+    - All 8 contracts in stages: [pass/fail]
+    - All 8 contracts in languages: [pass/fail]
+    - Method consistency: [pass/fail]
+    
+    ## Language Consistency
+    - Package versions: [pass/fail]
+    - Result<T> wrappers: [x/3] files
+    - Equivalency mappings: [pass/fail]
+    - Property preservation: [pass/fail]
+    
+    ## Methodology Consistency
+    - Systematic approach: [pass/fail]
+    - Evidence-based decisions: [pass/fail]
+    - Traceability: [pass/fail]
+    - Quality standards: [pass/fail]
+    
+    ## Category Theory
+    - Monad usage: [pass/fail]
+    - Functor usage: [pass/fail]
+    - Monoid usage: [pass/fail]
+    - Natural transformations: [pass/fail/N/A]
+    
+    ## Required Actions
+    [list of fixes needed]
+
+execution:
+  automated: true
+  comprehensive_check: true
+  cache_key: "prompt_consistency_${files_hash}"

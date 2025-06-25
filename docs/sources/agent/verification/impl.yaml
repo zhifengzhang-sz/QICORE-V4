@@ -158,6 +158,99 @@ verification_criteria:
     - criterion: "Dependency injection pattern"
       check: "grep -i 'inject' || grep -i 'provide' || grep -i 'factory'"
       required: true
+  
+  stage_input_compliance:
+    description: "Verify Stage 5 inputs fulfill Stage 2 design analysis requirements"
+    source_file: "design/qi.v4.design.analysis.md"
+    
+    component_completeness:
+      expected_components: 13
+      design_sections:
+        - section: "2.1"
+          component: "Result<T>"
+          operations: ["success", "failure", "fromTryCatch", "map", "flatMap", "unwrap", "unwrapOr", "match"]
+        - section: "2.2"
+          component: "QiError"
+          operations: ["create", "chain", "withContext", "toString"]
+        - section: "3.1"
+          component: "Configuration"
+          operations: ["fromFile", "fromEnvironment", "merge", "get", "set", "validate"]
+        - section: "3.2"
+          component: "Logging"
+          operations: ["debug", "info", "warn", "error", "fatal", "isLevelEnabled"]
+        - section: "3.3"
+          component: "Cache"
+          operations: ["get", "set", "delete", "clear", "size", "getOrSet"]
+        - section: "4.1"
+          component: "HTTP Client"
+          operations: ["get", "post", "put", "delete", "stream", "withCircuitBreaker"]
+        - section: "4.2"
+          component: "Document Generation"
+          operations: ["generate", "generateStream", "generateBatch", "validate"]
+        - section: "4.3"
+          component: "Command-Line Processing"
+          operations: ["parse", "validate", "generateHelp"]
+          critical: true
+          description: "Often missing from language implementations"
+        - section: "4.4"
+          component: "Web Framework"
+          operations: ["route", "middleware", "handle", "listen"]
+        - section: "4.5"
+          component: "ASGI Server"
+          operations: ["start", "stop", "gracefulShutdown", "reload"]
+        - section: "4.6"
+          component: "AI/LLM Client"
+          operations: ["query", "stream", "embed", "configure"]
+        - section: "4.7"
+          component: "MCP Protocol"
+          operations: ["connect", "call", "stream", "disconnect"]
+        - section: "4.8"
+          component: "Database"
+          operations: ["query", "transaction", "migrate", "close"]
+    
+    interface_compliance:
+      - criterion: "All 13 components present in language prompt"
+        check: |
+          # Check each component mentioned in prompt file (language-appropriate variants)
+          for component in "Result" "QiError" "Configuration" "Logging" "Cache" "HTTP" "Document" "Command-Line" "Web Framework" "AI/LLM" "MCP" "Database"; do
+            grep -q "$component" guides/impl.${language}.prompt.md || echo "Missing: $component"
+          done
+          
+          # Check language-specific server component
+          case "${language}" in
+            py) grep -q "ASGI" guides/impl.${language}.prompt.md || echo "Missing: ASGI (Python-specific)" ;;
+            ts) grep -q "Server.*Node\|Node.*Server" guides/impl.${language}.prompt.md || echo "Missing: Node.js Server (TypeScript-specific)" ;;
+            hs) grep -q "WAI\|Warp\|Server" guides/impl.${language}.prompt.md || echo "Missing: WAI/Warp Server (Haskell-specific)" ;;
+          esac
+        required: true
+        critical: true
+      
+      - criterion: "Each component has required operations from design analysis"
+        check: |
+          # Verify specific operations for critical components
+          grep -q "parse.*args.*config" guides/impl.${language}.prompt.md || echo "Missing CLP parse operation"
+          grep -q "validate.*args" guides/impl.${language}.prompt.md || echo "Missing CLP validate operation"
+          grep -q "generateHelp" guides/impl.${language}.prompt.md || echo "Missing CLP generateHelp operation"
+          
+          grep -q "map.*flatMap" guides/impl.${language}.prompt.md || echo "Missing Result monad operations"
+          grep -q "merge.*operation" guides/impl.${language}.prompt.md || echo "Missing Configuration merge operation"
+        required: true
+        critical: true
+      
+      - criterion: "Performance targets match language tier from design analysis"
+        language_tiers:
+          py: "100× baseline (Interpreted tier from design/qi.v4.design.analysis.md section 6.4)"
+          ts: "100× baseline (Interpreted tier from design/qi.v4.design.analysis.md section 6.4)"
+          hs: "50× baseline (Functional tier from design/qi.v4.design.analysis.md section 6.3)"
+        check: "grep -E 'tier.*100|100.*baseline' guides/impl.${language}.prompt.md"
+        required: true
+      
+      - criterion: "Mathematical properties preserved from design analysis"
+        check: |
+          grep -q "monad.*law\|associativity" guides/impl.${language}.prompt.md || echo "Missing monad laws"
+          grep -q "functor.*law\|composition" guides/impl.${language}.prompt.md || echo "Missing functor laws"
+          grep -q "monoid.*law\|identity.*element" guides/impl.${language}.prompt.md || echo "Missing monoid laws"
+        required: true
 
 validation_process:
   stages:
@@ -188,6 +281,11 @@ validation_process:
     - name: "Component Structure Check"
       action: "Verify component boundaries and dependencies"
       failure_action: "Fix component violations"
+    
+    - name: "Component Count Consistency Check"
+      action: "Verify consistent component count across all Stage 5 input files"
+      failure_action: "Update files to have consistent component/contract counts"
+      critical_note: "Prevents incomplete Stage 5 implementations"
 
 output:
   report_path: "verification/impl-${language}-verification-report.md"
@@ -243,6 +341,12 @@ output:
     - Base independence: [pass/fail]
     - Boundaries enforced: [pass/fail]
     - Dependency injection: [pass/fail]
+    
+    ## Component Count Consistency
+    - Template components: [count] (expected: 13)
+    - Package components: [count] (expected: 13)
+    - Prompt contracts: [count] (expected: 13)
+    - Cross-file consistency: [pass/fail]
     
     ## Required Actions
     [list of fixes needed]

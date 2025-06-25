@@ -62,29 +62,108 @@ verification_criteria:
       check: "grep -i 'stream' && (grep -i 'chunk' || grep -i 'coalgebra')"
       required: true
   
-  completeness:
-    - criterion: "All 8 contracts formalized"
-      contracts:
-        - "Result<T>"
-        - "QiError"
-        - "Configuration"
-        - "Logging"
-        - "Cache"
-        - "HTTP"
-        - "Document"
-        - "CLP"
-      check: "verify all contracts have mathematical formalization"
-      required: true
+  stage_input_compliance:
+    description: "Verify Stage 1 inputs produce outputs that Stage 2 requires"
+    inputs: 
+      - "sources/nl/qi.v4.class.contracts.md"
+      - "sources/nl/qi.v4.component.contracts.md"
+      - "sources/guides/common.md"
+    outputs:
+      - "build/objective/formal/qi.v4.formal.spec.md"
+      - "build/guides/mathematical-contracts.md"
     
-    - criterion: "Component boundaries defined"
-      components:
-        - "Base Component"
-        - "Core Component"
-        - "HTTP Component"
-        - "Document Component"
-        - "CLP Component"
-      check: "verify all components have functor definitions"
-      required: true
+    contract_formalization:
+      expected_contracts: 8
+      contracts:
+        - name: "Result<T>"
+          formalization_requirements:
+            - "Mathematical definition using category theory"
+            - "Monad laws (left identity, right identity, associativity)"
+            - "Type signature with error handling"
+            - "Performance specifications"
+        - name: "QiError"
+          formalization_requirements:
+            - "Structured error type definition"
+            - "Error composition and chaining"
+            - "Category-theoretic error handling"
+        - name: "Configuration"
+          formalization_requirements:
+            - "Monoid structure (not sheaf)"
+            - "Merge operation with associativity"
+            - "Identity element definition"
+        - name: "Logging"
+          formalization_requirements:
+            - "Simple effect interface (not free monad)"
+            - "Level-based filtering specification"
+            - "Performance characteristics"
+        - name: "Cache"
+          formalization_requirements:
+            - "State management formalization"
+            - "Eviction policy specification"
+            - "Circuit breaker integration"
+        - name: "HTTP"
+          formalization_requirements:
+            - "Request/response formalization"
+            - "Circuit breaker state machine"
+            - "Streaming data handling"
+        - name: "Document"
+          formalization_requirements:
+            - "Template processing formalization"
+            - "Generation pipeline specification"
+            - "Validation constraints"
+        - name: "CLP"
+          formalization_requirements:
+            - "Parser combinator formalization"
+            - "Command structure specification" 
+            - "Help generation patterns"
+      
+      verification_method: "content_analysis"
+      verification_rules:
+        - "Each contract must have mathematical formalization section"
+        - "LaTeX notation must be used for formal definitions"
+        - "Category theory concepts must reference common.md structures"
+        - "Performance specifications must be tier-independent"
+        - "No over-engineered abstractions (no sheaves, no free monads)"
+    
+    abstract_contract_extraction:
+      target_file: "build/guides/mathematical-contracts.md"
+      required_abstractions:
+        - name: "Abstract Monad Contract"
+          content_requirements:
+            - "Type class definition with bind and return"
+            - "Monad laws specification"
+            - "Usage examples for Result<T>"
+        - name: "Abstract Functor Contract"
+          content_requirements:
+            - "Functor laws (identity, composition)"
+            - "Component boundary specifications"
+            - "Data transformation patterns"
+        - name: "Abstract Monoid Contract"
+          content_requirements:
+            - "Monoid structure (operation, identity)"
+            - "Associativity law"
+            - "Configuration merging patterns"
+        - name: "Abstract Effect Interface Contract"
+          content_requirements:
+            - "Simple effect operations"
+            - "No free monad complexity"
+            - "Logging interface specification"
+        - name: "Abstract State Machine Contract"
+          content_requirements:
+            - "State, transition, event formalization"
+            - "Circuit breaker application"
+            - "Resilience patterns"
+        - name: "Abstract Stream Contract"
+          content_requirements:
+            - "Stream coalgebra formalization"
+            - "Chunk processing patterns"
+            - "Large data handling"
+      
+      verification_method: "content_analysis"
+      verification_rules:
+        - "Each abstract contract must be extracted from common.md"
+        - "Must provide interface layer for design stage"
+        - "Must maintain mathematical rigor without over-engineering"
     
     - criterion: "Examples referenced from contracts"
       check: "grep -i 'example' || grep -i 'usage'"
