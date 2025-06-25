@@ -1,15 +1,15 @@
-name: "Stage 3: Design Patterns to Language-Agnostic Implementation"
+name: "Stage 2: Mathematical Formalization to Design Patterns"
 version: "1.0.0"
-description: "Transform design patterns into language-agnostic implementation templates using abstract mathematical contracts"
+description: "Transform formal mathematical specifications into language-agnostic design patterns using abstract mathematical contracts"
 domain: "design_transformation"
-category: "stage_3_workflow"
+category: "stage_2_workflow"
 
 # ============================================================================
-# STAGE 3 TRANSFORMATION OBJECTIVE
+# STAGE 2 TRANSFORMATION OBJECTIVE
 # ============================================================================
 
 objective: |
-  Transform design patterns into language-agnostic implementation templates by:
+  Transform formal mathematical specifications into language-agnostic design patterns by:
   
   1. **Abstract Contract Application**: Use mathematical-contracts.md for derivation guidance
   2. **Concrete Model Integration**: Apply concrete models from formal.spec.md
@@ -38,7 +38,7 @@ inputs:
         role: "Shared mathematical foundations"
         description: "Mathematical foundations, performance models, and categorical structures"
       
-      - path: "sources/guides/mathematical-contracts.md"
+      - path: "build/guides/mathematical-contracts.md"
         role: "Abstract mathematical model contracts"
         description: "Abstract interface contracts for design pattern derivation"
 
@@ -178,11 +178,12 @@ success_criteria:
 integration:
   
   upstream_dependencies:
-    - "Stage 2: design patterns must be complete with all 99 operations"
-    - "mathematical-contracts.md must define all abstract contracts"
+    - "Stage 1: formal.spec.md and mathematical-contracts.md must be complete with all 99 operations"
+    - "build/guides/mathematical-contracts.md must define all abstract contracts"
     - "common.md must provide mathematical foundations"
   
   downstream_consumers:
+    - "Stage 3: impl.prompt.md will create templates from patterns"
     - "Stage 4: package research will find packages matching patterns"
     - "Stage 5: impl.[LANG].prompt.md will implement patterns in specific languages"
     - "Verification processes will validate pattern implementation"
@@ -221,7 +222,7 @@ execution:
 # ============================================================================
 
 verification_report:
-  target_file: "stage3-verification-report.md"
+  target_file: "stage2-verification-report.md"
   required_sections:
     - "Contract Derivation Verification"
     - "Operation Coverage Verification (99 operations)"
@@ -231,7 +232,7 @@ verification_report:
     - "Success Criteria Compliance"
   
   format: |
-    # Stage 3 Verification Report
+    # Stage 2 Verification Report
     
     ## Contract Derivation Verification
     [Verify each pattern derives from abstract contract]

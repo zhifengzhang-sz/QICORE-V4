@@ -1,0 +1,425 @@
+name: "Stage 4: Implementation Template to Package Research"
+version: "1.0.0"
+description: "Research and select packages that satisfy mathematical contracts for each target language"
+domain: "package_research"
+category: "stage_4_workflow"
+
+# ============================================================================
+# STAGE 4 TRANSFORMATION OBJECTIVE
+# ============================================================================
+
+objective: |
+  Research and select packages that satisfy mathematical contracts by:
+  
+  1. **Template Analysis**: Analyze language-agnostic implementation templates
+  2. **Contract Mapping**: Map mathematical contracts to package requirements
+  3. **Package Research**: Research packages for each target language
+  4. **Compliance Verification**: Verify packages satisfy mathematical contracts
+  5. **Performance Validation**: Ensure packages meet tier-based performance requirements
+
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
+
+inputs:
+  required:
+    build_inputs:
+      - path: "build/impl/qi.v4.impl.template.md"
+        role: "Language-agnostic implementation templates"
+        description: "Implementation templates for all 99 operations"
+        operations_count: 99
+    
+    methodology_files:
+      - path: "sources/guides/package-research-methodology.md"
+        role: "Stage 4 transformation methodology"
+        description: "Methodology for researching and selecting packages"
+      
+      - path: "sources/guides/common.md"
+        role: "Shared mathematical foundations"
+        description: "Mathematical foundations and performance models"
+      
+      - path: "build/guides/mathematical-contracts.md"
+        role: "Abstract mathematical contracts"
+        description: "Mathematical contracts that packages must satisfy"
+
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
+
+outputs:
+  primary:
+    - path: "build/package/ts.md"
+      description: "TypeScript packages that satisfy mathematical contracts"
+      format: "markdown"
+      required_sections:
+        - "Package Selection Rationale"
+        - "Mathematical Contract Compliance"
+        - "Performance Characteristics"
+        - "Integration Requirements"
+        - "Alternative Options"
+    
+    - path: "build/package/py.md"
+      description: "Python packages that satisfy mathematical contracts"
+      format: "markdown"
+      required_sections:
+        - "Package Selection Rationale"
+        - "Mathematical Contract Compliance"
+        - "Performance Characteristics"
+        - "Integration Requirements"
+        - "Alternative Options"
+    
+    - path: "build/package/rs.md"
+      description: "Rust packages that satisfy mathematical contracts"
+      format: "markdown"
+      required_sections:
+        - "Package Selection Rationale"
+        - "Mathematical Contract Compliance"
+        - "Performance Characteristics"
+        - "Integration Requirements"
+        - "Alternative Options"
+    
+    - path: "build/package/hs.md"
+      description: "Haskell packages that satisfy mathematical contracts"
+      format: "markdown"
+      required_sections:
+        - "Package Selection Rationale"
+        - "Mathematical Contract Compliance"
+        - "Performance Characteristics"
+        - "Integration Requirements"
+        - "Alternative Options"
+    
+    - path: "build/package/go.md"
+      description: "Go packages that satisfy mathematical contracts"
+      format: "markdown"
+      required_sections:
+        - "Package Selection Rationale"
+        - "Mathematical Contract Compliance"
+        - "Performance Characteristics"
+        - "Integration Requirements"
+        - "Alternative Options"
+
+# ============================================================================
+# TRANSFORMATION PROCESS
+# ============================================================================
+
+transformation_process:
+  
+  step_1_template_analysis:
+    description: "Analyze implementation templates for package requirements"
+    actions:
+      - "Load all templates from impl.template.md"
+      - "Extract mathematical contract requirements per operation"
+      - "Identify package integration points"
+      - "Map templates to language-specific needs"
+      - "Document performance requirements per tier"
+  
+  step_2_contract_mapping:
+    description: "Map mathematical contracts to package capabilities"
+    actions:
+      - "Monad contracts → functional programming libraries"
+      - "Monoid contracts → data structure libraries"
+      - "Effect contracts → side effect management libraries"
+      - "State contracts → state management libraries"
+      - "Stream contracts → streaming/async libraries"
+      - "Performance contracts → optimization libraries"
+  
+  step_3_language_research:
+    description: "Research packages for each target language"
+    actions:
+      - "TypeScript: Functional libs (fp-ts), HTTP (axios), async/await"
+      - "Python: Functional (toolz), HTTP (httpx), async (asyncio)"
+      - "Rust: Tokio ecosystem, serde, reqwest, functional patterns"
+      - "Haskell: Native monads, lens, aeson, http-client"
+      - "Go: Context patterns, goroutines, standard library focus"
+  
+  step_4_compliance_verification:
+    description: "Verify packages satisfy mathematical contracts"
+    actions:
+      - "Verify monad law compliance in functional libraries"
+      - "Check monoid operation support in data libraries"
+      - "Validate effect isolation in async libraries"
+      - "Confirm state consistency in state libraries"
+      - "Test streaming semantics in async libraries"
+  
+  step_5_performance_validation:
+    description: "Ensure packages meet tier-based performance"
+    actions:
+      - "Native tier (Rust): Zero-cost abstractions, compile-time optimization"
+      - "VM tier (Go): Efficient runtime, minimal GC pressure"
+      - "Functional tier (Haskell): Lazy evaluation, optimization pragmas"
+      - "Interpreted tier (Python, TypeScript): Runtime efficiency focus"
+      - "Benchmark critical operations per language"
+
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
+
+quality_assurance:
+  
+  contract_compliance:
+    - "Every selected package satisfies required mathematical contracts"
+    - "Monad laws verified for Result-like types"
+    - "Monoid laws verified for Configuration-like types"
+    - "Effect isolation verified for Logger-like operations"
+    - "Performance characteristics documented per tier"
+  
+  package_selection_criteria:
+    - "Active maintenance and community support"
+    - "Proven production usage and stability"
+    - "Documentation quality and examples"
+    - "Performance characteristics match tier requirements"
+    - "License compatibility with QiCore usage"
+  
+  integration_viability:
+    - "Clear integration path from templates to packages"
+    - "Minimal adaptation required for mathematical contracts"
+    - "Dependency conflicts analyzed and resolved"
+    - "Build system compatibility verified"
+
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
+
+success_criteria:
+  
+  coverage_completeness:
+    - "[ ] TypeScript: All 99 operations have package support"
+    - "[ ] Python: All 99 operations have package support"
+    - "[ ] Rust: All 99 operations have package support"
+    - "[ ] Haskell: All 99 operations have package support"
+    - "[ ] Go: All 99 operations have package support"
+  
+  mathematical_contract_satisfaction:
+    - "[ ] Result monad: Packages support functional composition"
+    - "[ ] Configuration monoid: Packages support merge operations"
+    - "[ ] Logger effect: Packages support structured logging"
+    - "[ ] Cache state: Packages support state management"
+    - "[ ] HTTP circuit breaker: Packages support resilience patterns"
+    - "[ ] Stream processing: Packages support async streaming"
+  
+  performance_tier_compliance:
+    - "[ ] Native tier (Rust): < 1× baseline performance"
+    - "[ ] VM tier (Go): < 10× baseline performance"
+    - "[ ] Functional tier (Haskell): < 50× baseline performance"
+    - "[ ] Interpreted tier (Python, TS): < 100× baseline performance"
+  
+  language_specific_validation:
+    - "[ ] TypeScript: fp-ts or equivalent for functional patterns"
+    - "[ ] Python: asyncio + functional libraries compatibility"
+    - "[ ] Rust: Tokio ecosystem integration verified"
+    - "[ ] Haskell: Standard library + lens ecosystem"
+    - "[ ] Go: Standard library + minimal dependencies approach"
+
+# ============================================================================
+# PACKAGE RESEARCH FOCUS AREAS
+# ============================================================================
+
+research_focus:
+  
+  base_component_packages:
+    result_monad:
+      - "Functional programming libraries with Either/Result types"
+      - "Error handling libraries with composition support"
+      - "Libraries supporting map, flatMap, and related operations"
+    
+    error_handling:
+      - "Structured error libraries with context support"
+      - "Error chaining and causation libraries"
+      - "Serialization support for error contexts"
+  
+  core_component_packages:
+    configuration:
+      - "Configuration loading libraries (JSON, YAML, TOML)"
+      - "Environment variable integration"
+      - "Merge and validation libraries"
+    
+    logging:
+      - "Structured logging libraries with levels"
+      - "High-performance logging with minimal overhead"
+      - "Context propagation and correlation ID support"
+    
+    caching:
+      - "In-memory cache libraries with LRU eviction"
+      - "TTL support and expiration handling"
+      - "Persistence and serialization capabilities"
+  
+  application_component_packages:
+    http_client:
+      - "HTTP client libraries with async support"
+      - "Circuit breaker and resilience libraries"
+      - "Connection pooling and keep-alive support"
+    
+    web_framework:
+      - "Async web frameworks with middleware support"
+      - "Request/response validation libraries"
+      - "ASGI/similar server integration"
+    
+    ai_llm:
+      - "HTTP clients for AI provider APIs"
+      - "Streaming response handling libraries"
+      - "Token counting and rate limiting libraries"
+    
+    database:
+      - "Database connection libraries with pooling"
+      - "Transaction support and ACID guarantees"
+      - "Query building and parameter binding"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  
+  upstream_dependencies:
+    - "Stage 3: impl.template.md must be complete with all 99 operations"
+    - "mathematical-contracts.md must define required contracts"
+    - "package-research-methodology.md must provide research framework"
+  
+  downstream_consumers:
+    - "Stage 5: impl.[LANG].prompt.md will use selected packages"
+    - "Language implementations will integrate selected packages"
+    - "Verification processes will validate package integration"
+
+# ============================================================================
+# EXECUTION INSTRUCTIONS
+# ============================================================================
+
+execution:
+  
+  preparation:
+    - "Verify impl.template.md contains all 99 operations"
+    - "Load mathematical contracts for compliance checking"
+    - "Review package-research-methodology.md guidelines"
+    - "Set up research environment for each target language"
+  
+  research_process:
+    - "Follow package-research-methodology.md systematic approach"
+    - "Research packages using multiple sources (official docs, GitHub, benchmarks)"
+    - "Evaluate packages against mathematical contract requirements"
+    - "Test package APIs for contract compliance"
+    - "Document performance characteristics per language tier"
+  
+  validation:
+    - "Verify every operation has appropriate package support"
+    - "Confirm mathematical contract satisfaction"
+    - "Validate performance meets tier requirements"
+    - "Check integration compatibility with templates"
+  
+  output_generation:
+    - "Generate build/package/[LANG].md for each language"
+    - "Include detailed rationale for each package selection"
+    - "Document mathematical contract compliance evidence"
+    - "Provide integration guidance for Stage 5"
+
+# ============================================================================
+# VERIFICATION REPORT
+# ============================================================================
+
+verification_report:
+  target_file: "stage4-verification-report.md"
+  required_sections:
+    - "Package Coverage Verification (99 operations × 5 languages)"
+    - "Mathematical Contract Compliance"
+    - "Performance Tier Validation"
+    - "Integration Viability Assessment"
+    - "Success Criteria Compliance"
+  
+  format: |
+    # Stage 4 Verification Report
+    
+    ## Package Coverage Verification
+    [Verify all 99 operations have package support in all 5 languages]
+    
+    ## Mathematical Contract Compliance
+    [Confirm each selected package satisfies required mathematical contracts]
+    
+    ## Performance Tier Validation
+    [Validate packages meet tier-based performance requirements]
+    
+    ## Integration Viability Assessment
+    [Assess how well packages integrate with implementation templates]
+    
+    ## Success Criteria Compliance
+    [Complete checklist from package-research-methodology.md]
+    
+    ## Package Selection Summary
+    [Summary table of selected packages per language per component]
+    
+    ## Overall Assessment
+    [Pass/Fail with specific issues if any]
+
+# ============================================================================
+# LANGUAGE-SPECIFIC RESEARCH GUIDELINES
+# ============================================================================
+
+language_guidelines:
+  
+  typescript:
+    ecosystem_focus: "npm ecosystem, functional programming support"
+    key_criteria:
+      - "TypeScript type definitions available"
+      - "Functional programming patterns (fp-ts compatibility)"
+      - "Async/await and Promise integration"
+      - "Performance suitable for interpreted tier (100× baseline)"
+    
+    priority_packages:
+      - "fp-ts or similar for functional patterns"
+      - "axios or fetch for HTTP operations"
+      - "Winston or pino for logging"
+      - "node-cache or similar for caching"
+  
+  python:
+    ecosystem_focus: "PyPI ecosystem, asyncio compatibility"
+    key_criteria:
+      - "asyncio integration for async operations"
+      - "Type hints support for better tooling"
+      - "Performance optimizations where available"
+      - "Functional programming library compatibility"
+    
+    priority_packages:
+      - "httpx for async HTTP operations"
+      - "structlog for structured logging"
+      - "cachetools for caching operations"
+      - "pydantic for validation"
+  
+  rust:
+    ecosystem_focus: "crates.io ecosystem, zero-cost abstractions"
+    key_criteria:
+      - "Zero-cost abstractions and compile-time optimization"
+      - "Tokio ecosystem compatibility for async operations"
+      - "serde integration for serialization"
+      - "Performance targeting native tier (1× baseline)"
+    
+    priority_packages:
+      - "tokio for async runtime"
+      - "reqwest for HTTP operations"
+      - "serde for serialization"
+      - "tracing for structured logging"
+  
+  haskell:
+    ecosystem_focus: "Hackage ecosystem, monadic patterns"
+    key_criteria:
+      - "Native monad support and mathematical correctness"
+      - "Lens library ecosystem integration"
+      - "GHC optimization pragma support"
+      - "Performance targeting functional tier (50× baseline)"
+    
+    priority_packages:
+      - "http-client for HTTP operations"
+      - "aeson for JSON handling"
+      - "lens for functional data manipulation"
+      - "fast-logger for logging"
+  
+  go:
+    ecosystem_focus: "Standard library + minimal dependencies"
+    key_criteria:
+      - "Standard library preference where possible"
+      - "Goroutine and channel integration"
+      - "Context package integration"
+      - "Performance targeting VM tier (10× baseline)"
+    
+    priority_packages:
+      - "net/http from standard library"
+      - "context package for request contexts"
+      - "sync package for concurrency"
+      - "Third-party only when standard library insufficient"

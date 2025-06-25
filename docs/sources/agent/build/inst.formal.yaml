@@ -13,7 +13,7 @@ objective: |
   
   1. **Contract Analysis**: Parse and understand natural language contracts
   2. **Mathematical Modeling**: Apply category theory to create formal models
-  3. **Abstract Contract Satisfaction**: Ensure models satisfy mathematical-contracts.md
+  3. **Abstract Contract Extraction**: Extract abstract mathematical patterns as interface contracts
   4. **Complete Coverage**: Formalize ALL operations from both class and component contracts
   5. **Performance Specification**: Define realistic tier-based performance constraints
 
@@ -43,9 +43,6 @@ inputs:
         role: "Shared mathematical foundations"
         description: "Categorical structures, performance models, and required patterns"
       
-      - path: "qicore-v4/docs/sources/guides/mathematical-contracts.md"
-        role: "Abstract mathematical contracts"
-        description: "Abstract models that concrete specifications must satisfy"
 
 # ============================================================================
 # OUTPUT SPECIFICATIONS
@@ -65,6 +62,20 @@ outputs:
         - "Required Patterns"
         - "Verification Conditions"
         - "Performance Specifications by Language Tier"
+    
+    - path: "build/guides/mathematical-contracts.md"
+      description: "Abstract mathematical interface contracts extracted from concrete models"
+      format: "markdown"
+      required_sections:
+        - "Abstract Mathematical Models"
+        - "Monad Contract"
+        - "Functor Contract"
+        - "Monoid Contract"
+        - "Effect Interface Contract"
+        - "State Machine Contract"
+        - "Stream Coalgebra Contract"
+        - "Performance Contract Constraints"
+        - "Cross-Language Verification Requirements"
 
 # ============================================================================
 # TRANSFORMATION PROCESS
@@ -91,14 +102,15 @@ transformation_process:
       - "Map HTTP patterns to circuit breaker state machine"
       - "Map streaming operations to stream coalgebra"
   
-  step_3_contract_satisfaction:
-    description: "Ensure models satisfy abstract mathematical contracts"
+  step_3_abstract_contract_extraction:
+    description: "Extract abstract mathematical patterns from concrete models"
     actions:
-      - "Verify Result monad satisfies abstract Monad contract"
-      - "Verify Configuration satisfies abstract Monoid contract"
-      - "Verify Logger satisfies abstract Effect Interface contract"
-      - "Verify Cache satisfies abstract State Machine contract"
-      - "Verify streaming satisfies abstract Stream contract"
+      - "Extract Monad contract from Result<T> implementation"
+      - "Extract Monoid contract from Configuration merge operations"
+      - "Extract Effect Interface from Logger operations"
+      - "Extract State Machine patterns from Cache and Circuit Breaker"
+      - "Extract Stream Coalgebra from streaming operations"
+      - "Generate mathematical-contracts.md with abstract interfaces"
   
   step_4_performance_specification:
     description: "Define tier-based performance constraints"
@@ -128,11 +140,11 @@ quality_assurance:
     - "All required patterns from common.md included"
     - "All performance tiers specified"
   
-  abstract_contract_compliance:
-    - "Each concrete model references its abstract contract"
-    - "All abstract contract laws are preserved"
+  abstract_contract_extraction:
+    - "Abstract contracts properly extracted from concrete models"
+    - "All abstract contract laws are included"
     - "Performance constraints respect contract requirements"
-    - "Cross-language consistency ensured through contracts"
+    - "Cross-language consistency enabled through abstract contracts"
 
 # ============================================================================
 # SUCCESS CRITERIA
@@ -179,13 +191,13 @@ integration:
   
   upstream_dependencies:
     - "Natural language contracts must be complete"
-    - "mathematical-contracts.md must define abstract models"
     - "common.md must provide categorical foundations"
   
   downstream_consumers:
-    - "Stage 2: design.prompt.md will use formal spec for pattern derivation"
-    - "Verification processes will validate against formal spec"
-    - "All implementation stages reference formal spec"
+    - "Stage 2: design.prompt.md will use both formal spec and mathematical contracts"
+    - "mathematical-contracts.md provides abstract interface layer for design"
+    - "Verification processes will validate against both concrete and abstract contracts"
+    - "All implementation stages reference both output files"
 
 # ============================================================================
 # EXECUTION INSTRUCTIONS
@@ -195,26 +207,26 @@ execution:
   
   preparation:
     - "Verify all natural language contracts are complete"
-    - "Ensure mathematical-contracts.md is available"
     - "Confirm common.md foundations are understood"
   
   transformation:
     - "Follow formal.prompt.md methodology exactly"
     - "Apply category theory from common.md"
-    - "Ensure abstract contract satisfaction"
+    - "Extract abstract contracts while creating concrete models"
     - "Use LaTeX notation for all mathematics"
   
   validation:
     - "Verify all 99 operations are formalized"
     - "Confirm all mathematical laws are stated"
     - "Validate performance specifications are realistic"
-    - "Check abstract contract compliance"
+    - "Check abstract contracts properly extracted"
   
   output_generation:
-    - "Generate build/objective/formal/qi.v4.formal.spec.md"
-    - "Include all required sections"
+    - "Generate build/objective/formal/qi.v4.formal.spec.md with concrete models"
+    - "Generate build/guides/mathematical-contracts.md with abstract contracts"
+    - "Include all required sections in both files"
     - "Ensure LaTeX formatting throughout"
-    - "Add dependencies and references section"
+    - "Add dependencies and references sections"
 
 # ============================================================================
 # VERIFICATION REPORT
@@ -225,7 +237,7 @@ verification_report:
   required_sections:
     - "Operation Coverage Verification (99 operations)"
     - "Mathematical Structure Verification"
-    - "Abstract Contract Compliance"
+    - "Abstract Contract Extraction Verification"
     - "Performance Specification Validation"
     - "Success Criteria Checklist"
   
@@ -238,8 +250,8 @@ verification_report:
     ## Mathematical Structure Verification
     [Verify all required structures with laws]
     
-    ## Abstract Contract Compliance
-    [Confirm each model satisfies its abstract contract]
+    ## Abstract Contract Extraction Verification
+    [Confirm abstract contracts properly extracted from concrete models]
     
     ## Performance Specification Validation
     [Validate tier-based performance bounds]

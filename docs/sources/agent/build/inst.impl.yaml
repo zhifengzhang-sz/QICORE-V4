@@ -1,0 +1,244 @@
+name: "Stage 3: Design to Language-Agnostic Implementation"
+version: "1.0.0"
+description: "Transform design patterns into language-agnostic implementation templates"
+domain: "implementation_transformation"
+category: "stage_3_workflow"
+
+# ============================================================================
+# STAGE 3 TRANSFORMATION OBJECTIVE
+# ============================================================================
+
+objective: |
+  Transform design patterns into language-agnostic implementation templates by:
+  
+  1. **Pattern Translation**: Convert design patterns to implementation templates
+  2. **Mathematical Preservation**: Ensure mathematical properties are maintained
+  3. **Language Independence**: Create templates applicable to all target languages
+  4. **Performance Specifications**: Include tier-based performance targets
+  5. **Complete Coverage**: Template for all 99 operations
+
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
+
+inputs:
+  required:
+    build_inputs:
+      - path: "build/design/qi.v4.design.analysis.md"
+        role: "Design patterns and implementation strategies"
+        description: "Complete design analysis with all 99 operations"
+        operations_count: 99
+    
+    methodology_files:
+      - path: "sources/guides/impl.prompt.md"
+        role: "Stage 3 transformation methodology"
+        description: "Methodology for creating language-agnostic templates"
+      
+      - path: "sources/guides/common.md"
+        role: "Shared mathematical foundations"
+        description: "Mathematical foundations and performance models"
+      
+      - path: "build/guides/mathematical-contracts.md"
+        role: "Abstract mathematical contracts"
+        description: "Mathematical contracts that implementations must satisfy"
+
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
+
+outputs:
+  primary:
+    - path: "build/impl/qi.v4.impl.template.md"
+      description: "Language-agnostic implementation template"
+      format: "markdown"
+      required_sections:
+        - "Implementation Template Overview"
+        - "Base Component Templates"
+        - "Core Component Templates"
+        - "Application Component Templates"
+        - "Cross-Language Adaptation Guidelines"
+        - "Performance Optimization Strategies"
+        - "Verification Requirements"
+        - "Package Integration Points"
+
+# ============================================================================
+# TRANSFORMATION PROCESS
+# ============================================================================
+
+transformation_process:
+  
+  step_1_pattern_analysis:
+    description: "Analyze design patterns for implementation"
+    actions:
+      - "Load all design patterns from design.analysis.md"
+      - "Identify language-agnostic elements"
+      - "Extract performance requirements per pattern"
+      - "Map patterns to mathematical contracts"
+      - "Identify package integration points"
+  
+  step_2_template_creation:
+    description: "Create implementation templates"
+    actions:
+      - "Result<T> template with monad operations"
+      - "Configuration template with monoid merge"
+      - "Logger template with effect interface"
+      - "Cache template with state management"
+      - "HTTP template with circuit breaker"
+      - "All other component templates"
+  
+  step_3_adaptation_guidelines:
+    description: "Define cross-language adaptation rules"
+    actions:
+      - "Functional language adaptations (Haskell)"
+      - "OOP language adaptations (Java, C#)"
+      - "Procedural adaptations (C, Go)"
+      - "Dynamic language adaptations (Python, JS)"
+      - "Systems language adaptations (Rust, C++)"
+  
+  step_4_performance_specifications:
+    description: "Include tier-based performance targets"
+    actions:
+      - "Native tier (1×): Rust, C++"
+      - "VM tier (10×): Go, Java"
+      - "Functional tier (50×): Haskell"
+      - "Interpreted tier (100×): Python, JavaScript"
+      - "Operation-specific targets"
+
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
+
+quality_assurance:
+  
+  mathematical_consistency:
+    - "All templates preserve mathematical laws"
+    - "Contract compliance documented"
+    - "Natural transformations defined"
+    - "Performance bounds specified"
+  
+  implementation_completeness:
+    - "All 99 operations have templates"
+    - "Every template includes type signatures"
+    - "Error handling patterns consistent"
+    - "Package integration points marked"
+  
+  language_neutrality:
+    - "No language-specific syntax"
+    - "Concepts expressible in all targets"
+    - "Adaptation guidelines complete"
+    - "Performance realistic per tier"
+
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
+
+success_criteria:
+  
+  template_coverage:
+    - "[ ] Result: 8/8 operations templated"
+    - "[ ] QiError: 6/6 operations + 8/8 categories"
+    - "[ ] Configuration: 9/9 operations templated"
+    - "[ ] Logger: 7/7 operations templated"
+    - "[ ] Cache: 9/9 operations templated"
+    - "[ ] HTTP: 7/7 operations templated"
+    - "[ ] Document: 6/6 operations templated"
+    - "[ ] CLP: 5/5 operations templated"
+    - "[ ] Web Framework: 8/8 operations templated"
+    - "[ ] ASGI: 5/5 operations templated"
+    - "[ ] MCP: 6/6 operations templated"
+    - "[ ] Database: 5/5 operations templated"
+    - "[ ] AI Client: 5/5 operations templated"
+    - "[ ] Total: 99/99 operations templated"
+  
+  mathematical_preservation:
+    - "[ ] Monad laws preserved in Result template"
+    - "[ ] Monoid laws preserved in Configuration"
+    - "[ ] Effect isolation in Logger"
+    - "[ ] State consistency in Cache"
+    - "[ ] All other mathematical properties"
+  
+  adaptation_readiness:
+    - "[ ] Functional adaptation guidelines"
+    - "[ ] OOP adaptation guidelines"
+    - "[ ] Procedural adaptation guidelines"
+    - "[ ] Dynamic language guidelines"
+    - "[ ] Systems language guidelines"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  
+  upstream_dependencies:
+    - "Stage 2: design.analysis.md must be complete"
+    - "All design patterns must be documented"
+    - "Performance targets must be specified"
+  
+  downstream_consumers:
+    - "Stage 4: Package research will use templates"
+    - "Stage 5: Language implementations will follow templates"
+    - "Verification will check template compliance"
+
+# ============================================================================
+# EXECUTION INSTRUCTIONS
+# ============================================================================
+
+execution:
+  
+  preparation:
+    - "Verify design.analysis.md is complete"
+    - "Ensure all 99 operations are covered"
+    - "Load mathematical contracts"
+  
+  transformation:
+    - "Follow impl.prompt.md methodology"
+    - "Create language-agnostic templates"
+    - "Preserve mathematical properties"
+    - "Include adaptation guidelines"
+  
+  validation:
+    - "Verify all operations templated"
+    - "Check mathematical consistency"
+    - "Validate cross-language applicability"
+    - "Ensure performance specifications"
+  
+  output_generation:
+    - "Generate build/impl/qi.v4.impl.template.md"
+    - "Include all required sections"
+    - "Document package integration points"
+    - "Provide clear downstream guidance"
+
+# ============================================================================
+# VERIFICATION REPORT
+# ============================================================================
+
+verification_report:
+  target_file: "stage3-verification-report.md"
+  required_sections:
+    - "Template Coverage Verification"
+    - "Mathematical Property Preservation"
+    - "Cross-Language Adaptation Validation"
+    - "Performance Specification Check"
+    - "Success Criteria Compliance"
+  
+  format: |
+    # Stage 3 Verification Report
+    
+    ## Template Coverage Verification
+    [List all 99 operations and confirm template creation]
+    
+    ## Mathematical Property Preservation
+    [Verify all mathematical laws maintained in templates]
+    
+    ## Cross-Language Adaptation Validation
+    [Confirm adaptation guidelines for all language paradigms]
+    
+    ## Performance Specification Check
+    [Validate tier-based targets for all operations]
+    
+    ## Success Criteria Compliance
+    [Complete checklist from impl.prompt.md]
+    
+    ## Overall Assessment
+    [Pass/Fail with specific issues if any]

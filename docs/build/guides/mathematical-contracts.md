@@ -144,10 +144,13 @@ type Stream a = {
 All derived implementations must respect tier-based performance:
 
 **Tier Multipliers** (from `common.md`):
-- **Native** (Rust, C++): 1× baseline
-- **VM-based** (Go, Java): 10× baseline  
 - **Functional** (Haskell): 50× baseline
-- **Interpreted** (Python, JavaScript): 100× baseline
+- **Interpreted** (Python, TypeScript/Node.js): 100× baseline
+
+**Currently Supported Languages:**
+- **Haskell**: Functional tier with native mathematical abstractions
+- **Python**: Interpreted tier with comprehensive ecosystem
+- **TypeScript**: Interpreted tier with strong type safety
 
 **Contract Performance Requirements**:
 - **Monad bind operation**: < tier_multiplier × 1μs
