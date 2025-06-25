@@ -97,6 +97,13 @@ TypeScript falls in the interpreted tier (Node.js runtime), requiring packages t
 - Promise-based API that integrates well with fp-ts TaskEither
 - Excellent TypeScript definitions and ecosystem support
 
+**Circuit Breaker Implementation Strategy:**
+- **Built-in State Machine**: Simple 3-state enum (CLOSED/OPEN/HALF_OPEN) implemented directly
+- **XState v5 Considered**: Professional state management library with excellent TypeScript support
+- **Decision Rationale**: Circuit breaker requires only 3 states with simple transitions - built-in implementation sufficient
+- **XState v5 Alternative**: For complex state management beyond circuit breaker, XState v5 would be preferred choice
+- **Implementation Detail**: Custom CircuitBreakerState enum with transition logic in Stage 5
+
 **Mathematical Contract Verification:**
 - ✅ Promise Monad: Proper async composition with error handling
 - ✅ Resource Management: Connection pooling and request/response transformation
@@ -332,25 +339,33 @@ TypeScript falls in the interpreted tier (Node.js runtime), requiring packages t
 
 ### 13. MCP Protocol
 
-**Selected Package**: Custom Implementation + `ws@8.14.2` + `jayson@4.1.0`  
+**Selected Package**: `@modelcontextprotocol/sdk@1.13.1` (Official TypeScript SDK)  
 **Component**: MCP Protocol  
 **Mathematical Contract Compliance**: ⭐⭐⭐⭐⭐
 
 **Selection Rationale:**
-- Custom implementation follows MCP specification exactly
-- `ws` provides robust WebSocket client/server implementation
-- `jayson` handles JSON-RPC 2.0 protocol with proper error handling
-- Full bidirectional communication support
+- **Official TypeScript SDK**: Maintained by Anthropic with full MCP specification compliance
+- **Latest Version**: 1.13.1 published within days (highly active development)
+- **Wide Adoption**: 6,729 projects using this SDK in npm registry
+- **Complete Implementation**: Built-in support for stdio and HTTP transports
+- **2024-2025 Standard**: Industry-standard implementation for MCP integration
 
 **Mathematical Contract Verification:**
-- ✅ Protocol Functor: Message transformation preservation
-- ✅ Transport Abstraction: Multiple transport support
-- ✅ Message Correlation: Request/response matching
+- ✅ Protocol Functor: Official message transformation with type preservation
+- ✅ Transport Abstraction: Multiple transport support (stdio, HTTP) built-in
+- ✅ Message Correlation: Official request/response lifecycle management
+- ✅ Type Safety: Full TypeScript integration with MCP protocol types
 
 **Performance Characteristics:**
-- Message processing: < 5ms + network latency
-- WebSocket overhead: Minimal frame processing
-- JSON serialization: Fast with V8 native JSON
+- **Message processing**: < 5ms + network latency (optimized official implementation)
+- **Protocol overhead**: Minimal with official transport layers
+- **JSON serialization**: Fast with V8 native JSON + TypeScript optimizations
+- **Connection management**: Built-in lifecycle and error handling
+
+**Selection Strategy:**
+- **Use official SDK**: For all MCP server and client implementations
+- **Built-in transports**: Leverage stdio and HTTP transports as needed
+- **Type safety**: Full compile-time verification of MCP protocol compliance
 
 ---
 
@@ -516,6 +531,25 @@ TypeScript falls in the interpreted tier (Node.js runtime), requiring packages t
 - **Edge runtime**: Full support vs Prisma's limitations
 - **Type safety**: Compile-time query validation
 - **SQL control**: Direct SQL access when needed
+
+### Alternative State Management Libraries
+
+**Considered but not selected:**
+- **xstate@5.0**: Professional state management with visual statecharts, excellent TypeScript support
+- **robot3**: Lightweight finite state machine library
+- **state-machine**: Basic state machine implementations
+
+**Why built-in state machine is better for circuit breaker:**
+- **Simplicity**: Only 3 states (CLOSED/OPEN/HALF_OPEN) with simple transitions
+- **Performance**: Zero external dependencies, minimal overhead
+- **Bundle size**: No additional library weight for simple state logic
+- **Maintenance**: Fewer dependencies to manage and update
+
+**When XState v5 would be preferred:**
+- **Complex state management**: Applications with multiple interconnected state machines
+- **Visual debugging**: Need for statechart visualization and debugging tools
+- **Advanced features**: Parallel states, hierarchical states, guards, actions
+- **Team collaboration**: Visual statecharts improve communication and documentation
 
 ---
 
