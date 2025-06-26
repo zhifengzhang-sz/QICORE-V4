@@ -1,0 +1,241 @@
+# Cross-File Component Synchronization Verification
+# Version: 1.0
+# Purpose: Ensure component count and structure consistency across all QiCore files
+
+process:
+  name: "QiCore v4.0 Cross-File Component Synchronization"
+  overview: |
+    Detect component count inconsistencies across all stages and files.
+    Uses existing verification tools as data sources to identify drift.
+    Prevents the issue where verification reports become outdated.
+
+prerequisites:
+  verification_tools:
+    - path: "template.yaml"
+      purpose: "Extract component count from implementation templates"
+    - path: "package.yaml" 
+      purpose: "Extract component count from package research files"
+    - path: "prompt.yaml"
+      purpose: "Extract component count from language prompts"
+    - path: "impl.yaml"
+      purpose: "Extract component count from implementation guides"
+
+synchronization_criteria:
+  component_count_consistency:
+    description: "All files must reference the same number of components"
+    verification_method: "content_analysis"
+    
+    source_of_truth:
+      file: "build/impl/qi.v4.impl.template.md"
+      pattern: "### [0-9]+\\."
+      description: "Language-agnostic templates are the authoritative component list"
+      expected_count: 13
+      
+    files_to_validate:
+      stage_4_package_research:
+        - file: "build/package/py.md"
+          expected_sections: 13
+          verification_rule: "Count numbered component sections, should match template"
+        - file: "build/package/ts.md" 
+          expected_sections: 13
+          verification_rule: "Count numbered component sections, should match template"
+        - file: "build/package/hs.md"
+          expected_sections: 13
+          verification_rule: "Count numbered component sections, should match template"
+          
+      stage_5_implementation:
+        - file: "build/impl/qi.v4.py.template.md"
+          expected_sections: 13
+          verification_rule: "Count component implementations, should match base template"
+        - file: "build/impl/qi.v4.py.impl.md"
+          expected_sections: 13  
+          verification_rule: "Count component generation instructions, should match base template"
+          
+      verification_reports:
+        - file: "build/reports/documentation.chain.verification.md"
+          section: "Forward Traceability"
+          expected_rows: 13
+          verification_rule: "Count traceability table rows, should match template"
+        - file: "build/reports/implementation.verification.md"
+          expected_components: 13
+          verification_rule: "Count components in verification criteria"
+          
+      language_prompts:
+        - file: "sources/guides/impl.py.prompt.md"
+          expected_components: 13
+          verification_rule: "Count component coverage in prompt instructions"
+        - file: "sources/guides/impl.ts.prompt.md"
+          expected_components: 13
+          verification_rule: "Count component coverage in prompt instructions"
+        - file: "sources/guides/impl.hs.prompt.md"
+          expected_components: 13
+          verification_rule: "Count component coverage in prompt instructions"
+
+  component_list_consistency:
+    description: "Component names and ordering must be consistent"
+    verification_method: "content_analysis"
+    
+    canonical_list:
+      source: "build/impl/qi.v4.impl.template.md"
+      components:
+        1: "Result<T>"
+        2: "QiError" 
+        3: "Configuration"
+        4: "Logger"
+        5: "Cache"
+        6: "HTTP Client"
+        7: "Document Generation"
+        8: "Command-Line Processing"
+        9: "Web Framework"
+        10: "ASGI Server"
+        11: "AI/LLM Client"
+        12: "MCP Protocol"
+        13: "Database"
+        
+    validation_rules:
+      - criterion: "Component names match canonical list"
+        check: "Verify each file uses consistent component naming"
+        critical: true
+      - criterion: "Component ordering preserved"
+        check: "Verify numbered components follow same sequence"
+        critical: true
+      - criterion: "No missing components"
+        check: "Verify all 13 components present in each applicable file"
+        critical: true
+      - criterion: "No extra components"
+        check: "Verify no additional components beyond the canonical 13"
+        critical: true
+
+  architectural_boundary_consistency:
+    description: "Component groupings must be consistent across files"
+    verification_method: "content_analysis"
+    
+    canonical_architecture:
+      base_components: [1, 2]  # Result<T>, QiError
+      core_components: [3, 4, 5]  # Configuration, Logger, Cache  
+      application_components: [6, 7, 8, 9, 10, 11, 12, 13]  # All others
+      
+    validation_rules:
+      - criterion: "Base component independence maintained"
+        check: "Components 1-2 have no dependencies on 3-13"
+        files: ["build/impl/qi.v4.*.template.md", "build/impl/qi.v4.*.impl.md"]
+      - criterion: "Core component layering respected"
+        check: "Components 3-5 only depend on base components"
+        files: ["build/impl/qi.v4.*.template.md"]
+      - criterion: "Application component dependencies clear"
+        check: "Components 6-13 can depend on base and core only"
+        files: ["build/impl/qi.v4.*.template.md"]
+
+  stage_completion_consistency:
+    description: "Stage completion status must be accurate across all reports"
+    verification_method: "content_analysis"
+    
+    stage_status_sources:
+      - file: "build/reports/documentation.chain.verification.md"
+        sections: ["Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5"]
+      - file: "build/reports/comprehensive-verification-report.md"
+        purpose: "Cross-check stage completion claims"
+        
+    validation_rules:
+      - criterion: "Stage completion claims are consistent"
+        check: "All reports agree on which stages are complete"
+        critical: true
+      - criterion: "Component counts per stage are accurate"
+        check: "Each stage references correct number of components"
+        critical: true
+      - criterion: "Language implementation status accurate"
+        check: "Python/TypeScript/Haskell status matches actual file existence"
+        critical: true
+
+validation_process:
+  stages:
+    - name: "Source of Truth Validation"
+      action: "Verify implementation template has exactly 13 numbered components"
+      failure_action: "Alert: Base template component count changed"
+      critical: true
+      
+    - name: "Cross-Stage Component Count Check"  
+      action: "Compare component counts across all Stage 4 and 5 files"
+      failure_action: "List files with mismatched component counts"
+      critical: true
+      
+    - name: "Component Name Consistency Check"
+      action: "Verify all files use canonical component names"
+      failure_action: "List component naming inconsistencies"
+      
+    - name: "Architectural Boundary Validation"
+      action: "Verify component dependencies respect architectural layers"
+      failure_action: "List boundary violations"
+      
+    - name: "Report Accuracy Check"
+      action: "Verify verification reports reflect actual file states"
+      failure_action: "List outdated report sections"
+      critical: true
+
+detection_rules:
+  component_count_drift:
+    trigger: "Any file has different component count than source of truth"
+    severity: "critical"
+    action: "Flag for immediate synchronization"
+    
+  missing_stage_5_files:
+    trigger: "Reports claim Stage 5 complete but files don't exist"
+    severity: "critical" 
+    action: "Update completion status in reports"
+    
+  naming_inconsistency:
+    trigger: "Component names vary across files"
+    severity: "medium"
+    action: "Standardize naming across all files"
+    
+  architectural_violation:
+    trigger: "Component dependencies violate layer boundaries"
+    severity: "high"
+    action: "Review and fix dependency structure"
+
+output:
+  report_path: "build/reports/component-synchronization-report.md"
+  format: |
+    # Component Synchronization Report
+    Date: [timestamp]
+    
+    ## Summary
+    - Source of Truth: build/impl/qi.v4.impl.template.md (13 components)
+    - Files Validated: [count]
+    - Synchronization Status: [pass/fail]
+    - Critical Issues: [count]
+    
+    ## Component Count Validation
+    - Implementation Template: [13/13] ✅
+    - Package Research Files: [x/3] [status]
+    - Stage 5 Implementation: [x/6] [status] 
+    - Verification Reports: [x/2] [status]
+    - Language Prompts: [x/3] [status]
+    
+    ## Component List Consistency
+    - Naming consistency: [pass/fail]
+    - Ordering consistency: [pass/fail]
+    - Missing components: [list]
+    - Extra components: [list]
+    
+    ## Architectural Boundaries
+    - Base component independence: [pass/fail]
+    - Core component layering: [pass/fail]
+    - Application dependencies: [pass/fail]
+    
+    ## Stage Completion Accuracy
+    - Stage status consistency: [pass/fail]
+    - Component count accuracy: [pass/fail]
+    - Implementation status accuracy: [pass/fail]
+    
+    ## Critical Issues Detected
+    [list of critical synchronization issues]
+    
+    ## Recommended Actions
+    [prioritized list of fixes needed]
+
+execution:
+  automated: true
+  runs_after: ["template.yaml", "package.yaml", "prompt.yaml", "impl.yaml"]
+  triggers_on: ["template_change", "component_addition", "report_update"]
+  cache_key: "sync_${all_files_hash}"

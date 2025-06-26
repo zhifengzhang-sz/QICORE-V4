@@ -133,6 +133,7 @@ This document provides instructions for verifying that generated QiCore implemen
 ### Stage 6: Cross-Stage Consistency Verification ⭐ NEW
 
 **Purpose**: Verify consistency across all stages and files
+**Tool**: `sync.yaml` (automated cross-file validation)
 
 **Verify**:
 - [ ] **Component Count**: All stages reference same 13 components
@@ -140,6 +141,12 @@ This document provides instructions for verifying that generated QiCore implemen
 - [ ] **Language Coverage**: All supported languages have complete Stage 4 + Stage 5 outputs  
 - [ ] **Reference Integrity**: All cross-references between files are valid
 - [ ] **Version Consistency**: All files use consistent version numbers and dates
+
+**Synchronization Rules** (from `sync.yaml`):
+- [ ] **Source of Truth**: `build/impl/qi.v4.impl.template.md` defines canonical 13 components
+- [ ] **Cross-File Validation**: All package research, implementation, and report files must match component count
+- [ ] **Architectural Boundaries**: Base (1-2) → Core (3-5) → Application (6-13) component layering preserved
+- [ ] **Report Accuracy**: Verification reports reflect actual file existence and completion status
 
 ## Performance Tiers (Verified)
 
@@ -211,6 +218,7 @@ Content analysis verifies implementations meet these performance targets:
 - `package.yaml`: Stage 4 package research verification
 - `prompt.yaml`: Stage 5 language-specific implementation verification
 - `impl.yaml`: Legacy implementation verification (deprecated)
+- `sync.yaml`: **NEW** Cross-file component synchronization verification
 
 ### Verification Methodology
 - **Content Analysis**: Semantic understanding vs shell pattern matching

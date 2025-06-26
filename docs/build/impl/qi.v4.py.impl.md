@@ -1,7 +1,7 @@
 # QiCore v4.0 Python Implementation Guide
 
 > **Stage 5: Python Source Code Generation Driver**  
-> **Depends on**: [Python Templates](qi.v4.py.template.md), [Python Packages](../package/py.md), [Mathematical Contracts](../guides/mathematical-contracts.md)  
+> **Depends on**: [Python Templates](qi.v4.py.template.md), [Package Research](../package/py.md), [Mathematical Contracts](../guides/mathematical-contracts.md)  
 > **Implements**: Complete Python source code generation process  
 > Version: v4.0.1  
 > Date: June 25, 2025  
@@ -47,10 +47,12 @@ qicore_v4/
 │       │   ├── __init__.py
 │       │   ├── http_client.py      # HTTP client with circuit breaker
 │       │   ├── web_framework.py    # FastAPI integration
+│       │   ├── asgi_server.py      # Uvicorn ASGI server
 │       │   ├── ai_client.py        # LLM clients
 │       │   ├── mcp_protocol.py     # MCP implementation
 │       │   ├── database.py         # Database operations
-│       │   └── document.py         # Document generation
+│       │   ├── document.py         # Document generation
+│       │   └── cli.py              # Command-line processing
 │       └── utils/                  # Utilities
 │           ├── __init__.py
 │           └── performance.py      # Performance benchmarks
@@ -103,6 +105,7 @@ dependencies = [
     "toolz>=0.12.0",
     "aiofiles>=23.2.0",
     "aiohttp>=3.9.4",
+    "httpx>=0.28.1",
     "pydantic>=2.5.0",
     "python-dotenv>=1.0.0",
     "PyYAML>=6.0.1",
@@ -112,6 +115,7 @@ dependencies = [
     "uvicorn>=0.30.0",
     "openai>=1.12.0",
     "anthropic>=0.8.1",
+    "ollama>=0.2.1",
     "mcp>=1.9.4",
     "aiosqlite>=0.19.0",
     "Jinja2>=3.1.0",
@@ -254,55 +258,205 @@ class LoggerFactory:
 __all__ = ["LogLevel", "PerformanceLogger", "LoggerFactory"]
 ```
 
-#### 3.4 src/qicore/application/http_client.py
+#### 3.4 src/qicore/core/cache.py
 
 ```python
 """
-Generate from HTTP Client template section
-Async HTTP client with circuit breaker state machine
+Generate from Cache template section
+Async cache implementation with Redis
 """
 
-import aiohttp
-import asyncio
-import time
-from typing import Dict, Any, Optional, Union
-from enum import Enum
+import redis
+import redis.asyncio as redis_async
+import pickle
+import hashlib
+from datetime import datetime, timedelta
+from typing import Any, Optional, Dict, Union
 from dataclasses import dataclass
-from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
 from ..base.result import Result, QiError
-
-# Copy all circuit breaker and HTTP client classes from template
-class CircuitBreakerState(Enum):
-    # [Implementation from template]
-    pass
+from ..core.logging import PerformanceLogger
 
 @dataclass
-class CircuitBreakerConfig:
-    # [Implementation from template]
-    pass
+class CacheConfig:
+    """Cache configuration"""
+    redis_url: str = "redis://localhost:6379"
+    default_ttl: int = 300  # 5 minutes
+    max_connections: int = 10
+    socket_timeout: float = 5.0
+    health_check_interval: int = 30
 
-class CircuitBreaker:
-    # [Full implementation from template]
-    pass
+class AsyncCache:
+    """
+    High-performance async cache with Redis backend
+    Supports both in-memory and persistent caching
+    """
+    
+    def __init__(self, config: CacheConfig, logger: Optional[PerformanceLogger] = None):
+        self.config = config
+        self.logger = logger or PerformanceLogger("cache")
+        self._redis: Optional[redis_async.Redis] = None
+    
+    async def connect(self) -> Result[None]:
+        """Connect to Redis"""
+        try:
+            self._redis = redis_async.from_url(
+                self.config.redis_url,
+                max_connections=self.config.max_connections,
+                socket_timeout=self.config.socket_timeout,
+                health_check_interval=self.config.health_check_interval
+            )
+            
+            # Test connection
+            await self._redis.ping()
+            return Result.success(None)
+            
+        except Exception as e:
+            return Result.failure(
+                QiError.cache("REDIS_CONNECTION_FAILED", f"Failed to connect to Redis: {str(e)}")
+            )
+    
+    async def get(self, key: str) -> Result[Optional[Any]]:
+        """Get value from cache"""
+        if not self._redis:
+            return Result.failure(QiError.cache("NOT_CONNECTED", "Cache not connected"))
+        
+        try:
+            value = await self._redis.get(key)
+            if value is None:
+                return Result.success(None)
+            
+            # Deserialize using pickle
+            deserialized = pickle.loads(value)
+            return Result.success(deserialized)
+            
+        except Exception as e:
+            return Result.failure(
+                QiError.cache("GET_FAILED", f"Failed to get cache value: {str(e)}")
+                .with_context({"key": key})
+            )
+    
+    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> Result[None]:
+        """Set value in cache"""
+        if not self._redis:
+            return Result.failure(QiError.cache("NOT_CONNECTED", "Cache not connected"))
+        
+        try:
+            # Serialize using pickle
+            serialized = pickle.dumps(value)
+            ttl_seconds = ttl or self.config.default_ttl
+            
+            await self._redis.setex(key, ttl_seconds, serialized)
+            return Result.success(None)
+            
+        except Exception as e:
+            return Result.failure(
+                QiError.cache("SET_FAILED", f"Failed to set cache value: {str(e)}")
+                .with_context({"key": key, "ttl": ttl})
+            )
+    
+    async def delete(self, key: str) -> Result[None]:
+        """Delete value from cache"""
+        if not self._redis:
+            return Result.failure(QiError.cache("NOT_CONNECTED", "Cache not connected"))
+        
+        try:
+            await self._redis.delete(key)
+            return Result.success(None)
+            
+        except Exception as e:
+            return Result.failure(
+                QiError.cache("DELETE_FAILED", f"Failed to delete cache value: {str(e)}")
+                .with_context({"key": key})
+            )
+    
+    async def clear(self) -> Result[None]:
+        """Clear all cache values"""
+        if not self._redis:
+            return Result.failure(QiError.cache("NOT_CONNECTED", "Cache not connected"))
+        
+        try:
+            await self._redis.flushdb()
+            return Result.success(None)
+            
+        except Exception as e:
+            return Result.failure(
+                QiError.cache("CLEAR_FAILED", f"Failed to clear cache: {str(e)}")
+            )
+    
+    async def get_or_set(self, key: str, factory: Callable[[], Any], ttl: Optional[int] = None) -> Result[Any]:
+        """Get value from cache or set it using factory function"""
+        get_result = await self.get(key)
+        
+        if get_result.is_failure():
+            return get_result
+        
+        cached_value = get_result.unwrap()
+        if cached_value is not None:
+            return Result.success(cached_value)
+        
+        # Generate new value
+        try:
+            new_value = factory()
+            set_result = await self.set(key, new_value, ttl)
+            
+            if set_result.is_failure():
+                return set_result
+            
+            return Result.success(new_value)
+            
+        except Exception as e:
+            return Result.failure(
+                QiError.cache("FACTORY_FAILED", f"Cache factory function failed: {str(e)}")
+                .with_context({"key": key})
+            )
+    
+    async def close(self) -> None:
+        """Close Redis connection"""
+        if self._redis:
+            await self._redis.close()
 
-class HttpClientConfig(BaseModel):
-    # [Implementation from template]
-    pass
+class CacheFactory:
+    """Factory for creating cache instances"""
+    
+    @staticmethod
+    def create(config: CacheConfig, logger: Optional[PerformanceLogger] = None) -> Result[AsyncCache]:
+        """Create new cache instance"""
+        try:
+            cache = AsyncCache(config, logger)
+            return Result.success(cache)
+        except Exception as e:
+            return Result.failure(
+                QiError.configuration("CACHE_CREATION_FAILED", f"Failed to create cache: {str(e)}")
+            )
+    
+    @staticmethod
+    def create_default() -> Result[AsyncCache]:
+        """Create cache with default configuration"""
+        config = CacheConfig()
+        return CacheFactory.create(config)
 
-class AsyncHttpClient:
-    # [Full implementation from template]
-    pass
-
-class HttpClientFactory:
-    # [Implementation from template]
-    pass
-
-__all__ = [
-    "CircuitBreakerState", "CircuitBreakerConfig", "CircuitBreaker",
-    "HttpClientConfig", "AsyncHttpClient", "HttpClientFactory"
-]
+__all__ = ["AsyncCache", "CacheConfig", "CacheFactory"]
 ```
+
+#### 3.5 src/qicore/application/http_client.py
+
+```python
+# Copy HTTP Client implementation exactly from template
+# [Full implementation from qi.v4.py.template.md]
+```
+
+#### 3.6 Additional Application Components
+
+Generate all remaining application components by copying implementations from the template:
+
+- `src/qicore/application/web_framework.py` - FastAPI wrapper
+- `src/qicore/application/asgi_server.py` - Uvicorn ASGI server
+- `src/qicore/application/ai_client.py` - OpenAI/Anthropic/Ollama clients
+- `src/qicore/application/mcp_protocol.py` - MCP protocol implementation
+- `src/qicore/application/database.py` - aiosqlite database operations
+- `src/qicore/application/document.py` - Jinja2 document generation
+- `src/qicore/application/cli.py` - Click command-line interface
 
 ### 4. Main Module Exports
 
@@ -323,6 +477,27 @@ from .application.http_client import (
     AsyncHttpClient, HttpClientConfig, HttpClientFactory,
     CircuitBreakerState, CircuitBreakerConfig
 )
+from .application.web_framework import (
+    QiCoreWebFramework, WebFrameworkConfig, WebFrameworkFactory
+)
+from .application.asgi_server import (
+    QiCoreASGIServer, ASGIServerConfig, ASGIServerFactory
+)
+from .application.ai_client import (
+    QiCoreAIClient, AIClientConfig, AIClientFactory
+)
+from .application.mcp_protocol import (
+    QiCoreMCPClient, MCPClientConfig, MCPClientFactory
+)
+from .application.database import (
+    QiCoreDatabase, DatabaseConfig, DatabaseFactory
+)
+from .application.document import (
+    QiCoreDocumentGenerator, DocumentConfig, DocumentFactory
+)
+from .application.cli import (
+    QiCoreCLI, CLIConfig, CLIFactory
+)
 
 # Version information
 __version__ = "4.0.1"
@@ -342,6 +517,13 @@ __all__ = [
     # Application components
     "AsyncHttpClient", "HttpClientConfig", "HttpClientFactory",
     "CircuitBreakerState", "CircuitBreakerConfig",
+    "QiCoreWebFramework", "WebFrameworkConfig", "WebFrameworkFactory",
+    "QiCoreASGIServer", "ASGIServerConfig", "ASGIServerFactory",
+    "QiCoreAIClient", "AIClientConfig", "AIClientFactory",
+    "QiCoreMCPClient", "MCPClientConfig", "MCPClientFactory",
+    "QiCoreDatabase", "DatabaseConfig", "DatabaseFactory",
+    "QiCoreDocumentGenerator", "DocumentConfig", "DocumentFactory",
+    "QiCoreCLI", "CLIConfig", "CLIFactory",
     
     # Version info
     "__version__",
@@ -463,8 +645,8 @@ class TestCircuitBreaker:
         client = AsyncHttpClient(config)
         
         # Simulate failures
-        with patch('aiohttp.ClientSession.request') as mock_request:
-            mock_request.side_effect = aiohttp.ClientError("Connection failed")
+        with patch('httpx.AsyncClient.request') as mock_request:
+            mock_request.side_effect = httpx.ClientError("Connection failed")
             
             # Make requests until circuit opens
             for i in range(4):
@@ -488,7 +670,7 @@ class TestCircuitBreaker:
         client.circuit_breaker.state = CircuitBreakerState.OPEN
         client.circuit_breaker.last_failure_time = time.time() - 1.0
         
-        with patch('aiohttp.ClientSession.request') as mock_request:
+        with patch('httpx.AsyncClient.request') as mock_request:
             mock_response = Mock()
             mock_response.status = 200
             mock_response.read.return_value = b"success"
@@ -528,7 +710,7 @@ class TestPerformanceCompliance:
         # pytest-benchmark will fail if > 100μs baseline
     
     def test_result_map_100_microseconds(self, benchmark):
-        """Result.map() must be < 100μs."""  
+        """Result.map() must be < 100μs.""""  
         result = Result.success(42)
         mapped = benchmark(lambda: result.map(lambda x: x * 2))
         assert mapped.unwrap() == 84
