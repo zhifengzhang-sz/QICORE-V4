@@ -1,0 +1,4 @@
+# file: /home/zzhang/dev/qi/github/mcp-server/qicore-v4/python/src/qicore/core/cache.py
+# hypothesis_version: 6.135.16
+
+[1000, 'K', 'V', 'all', 'clear', 'delete', 'evictions', 'function', 'get', 'get_many', 'has_key', 'hit_rate', 'hits', 'max_size', 'misses', 'set', 'set_many', 'sets', 'size']

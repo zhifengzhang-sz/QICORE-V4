@@ -1,14 +1,103 @@
-[project]
-name = "qicore"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-authors = [
-    { name = "zhifengzhang-sz", email = "zhifeng.zhang.sz@gmail.com" }
-]
-requires-python = ">=3.13.5"
-dependencies = []
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[project]
+name = "qicore"
+version = "4.0.1"
+description = "QiCore v4.0 - Mathematical Contract-Based Python Library"
+authors = [{name = "QiCore Team", email = "team@qicore.dev"}]
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["functional", "monad", "result", "async", "contracts"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.13"
+dependencies = [
+    # Base component packages (updated 2024-2025)
+    "returns>=0.25.0",
+    "cytoolz>=0.12.3",
+    
+    # Core component packages (updated 2024-2025)
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.6.0",
+    "python-dotenv>=1.0.1",
+    "PyYAML>=6.0.2",
+    "structlog>=25.4.0",
+    "cachetools>=5.5.0",
+    
+    # Application component packages (updated 2024-2025)
+    "httpx>=0.28.0",
+    "circuitbreaker>=2.0.0",
+    "tenacity>=9.0.0",
+    "fastapi>=0.115.13",
+    "uvicorn>=0.32.0",
+    "aiofiles>=24.1.0",
+    "jinja2>=3.1.4",
+    "markdown>=3.7.0",
+    "weasyprint>=62.0",
+    "click>=8.1.7",
+    "rich>=13.9.0",
+    "openai>=1.54.0",
+    "anthropic>=0.40.0",
+    "ollama>=0.5.1",
+    "mcp>=0.9.0",
+    "aiosqlite>=0.20.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-benchmark>=4.0.0",
+    "hypothesis>=6.120.0",
+    "mypy>=1.13.0",
+    "ruff>=0.8.0",
+    "pre-commit>=4.0.0",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/qicore/qicore-v4-python"
+Repository = "https://github.com/qicore/qicore-v4-python"
+Documentation = "https://docs.qicore.dev/v4"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-benchmark>=4.0.0",
+    "hypothesis>=6.120.0",
+    "mypy>=1.13.0",
+    "ruff>=0.8.0",
+    "pre-commit>=4.0.0",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+lint.select = ["E", "F", "I", "N", "UP", "YTT", "B", "A", "C4", "DTZ", "ISC", "ICN", "PIE", "PT", "RET", "SIM", "ARG"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

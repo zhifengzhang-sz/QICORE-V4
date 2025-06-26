@@ -1,0 +1,4 @@
+# file: /home/zzhang/dev/qi/github/mcp-server/qicore-v4/python/.venv/bin/pytest
+# hypothesis_version: 6.135.16
+
+['-script.pyw', '.exe', '__main__']

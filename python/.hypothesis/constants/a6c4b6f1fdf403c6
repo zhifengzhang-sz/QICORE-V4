@@ -1,0 +1,4 @@
+# file: /home/zzhang/dev/qi/github/mcp-server/qicore-v4/python/src/qicore/application/ai/client.py
+# hypothesis_version: 6.135.16
+
+[0.7, 1000, 'ai_client', 'anthropic', 'complete', 'content', 'embed', 'gpt-4', 'list_models', 'models', 'name', 'ollama', 'openai', 'response', 'role', 'stream', 'system', 'temperature', 'user']

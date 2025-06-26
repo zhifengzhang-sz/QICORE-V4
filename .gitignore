@@ -55,6 +55,43 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+
+# Python virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Python testing & development
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Python-specific for qicore-v4
+python/.venv/
+python/__pycache__/
+python/.pytest_cache/
+python/.coverage
+python/htmlcov/
+python/.mypy_cache/
+python/dist/
+python/build/
+python/*.egg-info/
+
+# uv package manager
+.uv-cache/
+uv.lock
+
+# Python version management
+.python-version
 
 # Generated documentation
 _site/

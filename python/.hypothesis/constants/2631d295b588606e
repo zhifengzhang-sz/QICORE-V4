@@ -1,0 +1,4 @@
+# file: /home/zzhang/dev/qi/github/mcp-server/qicore-v4/python/src/qicore/base/error.py
+# hypothesis_version: 6.135.16
+
+['ConfigurationError', 'IntegrationError', 'NetworkError', 'PermissionError', 'QiError', 'ResourceError', 'StateError', 'TimeoutError', 'ValidationError', 'current_state', 'expected_state', 'expected_type', 'field', 'key', 'operation', 'required_permission', 'resource', 'resource_id', 'resource_type', 'service', 'status_code', 'timeout_seconds', 'url', 'value']

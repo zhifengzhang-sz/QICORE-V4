@@ -1,0 +1,4 @@
+# file: /home/zzhang/dev/qi/github/mcp-server/qicore-v4/python/src/qicore/__init__.py
+# hypothesis_version: 6.135.16
+
+['4.0.1', 'Cache', 'Configuration', 'Hello from qicore!', 'QiCore Team', 'QiError', 'Result', 'StructuredLogger', '__author__', '__email__', '__version__', 'configure_logging', 'team@qicore.dev']
