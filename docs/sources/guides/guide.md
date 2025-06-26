@@ -31,7 +31,7 @@
 - **Input**: `build/design/qi.v4.design.analysis.md`
 - **Output**: `build/impl/qi.v4.impl.template.md`
 - **Purpose**: Create language-agnostic implementation templates
-- **Automation**: `sources/agent/build/inst.impl.yaml` *(TODO: Create this file)*
+- **Automation**: `sources/agent/build/inst.impl.yaml`
 
 ### **Stage 4: Implementation → Package Research**
 - **Use**: `sources/guides/package-research-methodology.md` + `sources/guides/common.md`
@@ -48,17 +48,17 @@
 - **Use**: Language-specific implementation guides:
   - TypeScript: `sources/guides/impl.ts.prompt.md`
   - Python: `sources/guides/impl.py.prompt.md`
-  - Haskell: `sources/guides/impl.hs.prompt.md` *(TODO: Create this file)*
+  - Haskell: `sources/guides/impl.hs.prompt.md`
 - **Input**: 
   - `build/impl/qi.v4.impl.template.md` (language-agnostic templates)
   - `build/package/[LANG].md` (selected packages from Stage 4)
   - `build/guides/mathematical-contracts.md` (mathematical contracts)
 - **Output**: 
-  - `build/impl/qi.v4.[LANG].template.md` (language-specific templates)
-  - `build/impl/qi.v4.[LANG].impl.md` (wrapper implementations fulfilling contracts)
-- **Purpose**: Create wrappers around selected packages to fulfill mathematical contracts + implementation guides
+  - `build/impl/qi.v4.[LANG].template.md` (language-specific code templates)
+  - `build/impl/qi.v4.[LANG].impl.md` (implementation guide/driver)
+- **Purpose**: Generate BOTH ready-to-use code templates AND implementation assembly guides
 - **Scope**: Currently supporting Python, TypeScript, and Haskell implementations
-- **Key Objective**: Build the wrapper layer that bridges selected packages to contract requirements
+- **Key Objective**: Bridge the gap between selected packages and mathematical contracts
 - **Automation**: `sources/agent/build/inst.impl.[LANG].yaml`
 
 ## File Structure
@@ -73,9 +73,7 @@ docs/
 │   │   ├── package-research-methodology.md # Stage 4 methodology
 │   │   ├── impl.ts.prompt.md             # Stage 5 TypeScript
 │   │   ├── impl.py.prompt.md             # Stage 5 Python
-│   │   ├── impl.rs.prompt.md             # Stage 5 Rust (TODO)
-│   │   ├── impl.hs.prompt.md             # Stage 5 Haskell (TODO)
-│   │   ├── impl.go.prompt.md             # Stage 5 Go (TODO)
+│   │   ├── impl.hs.prompt.md             # Stage 5 Haskell
 │   │   └── common.md                     # Shared foundations
 │   ├── nl/                       # Natural language contracts (input)
 │   │   ├── qi.v4.class.contracts.md
@@ -84,13 +82,11 @@ docs/
 │       └── build/                # YAML workflow definitions
 │           ├── inst.formal.yaml          # Stage 1 automation
 │           ├── inst.design.yaml          # Stage 2 automation
-│           ├── inst.impl.yaml            # Stage 3 automation (TODO)
-│           ├── inst.package.yaml         # Stage 4 automation (TODO)
+│           ├── inst.impl.yaml            # Stage 3 automation
+│           ├── inst.package.yaml         # Stage 4 automation
 │           ├── inst.impl.ts.yaml         # Stage 5 TypeScript
 │           ├── inst.impl.py.yaml         # Stage 5 Python
-│           ├── inst.impl.rs.yaml         # Stage 5 Rust
-│           ├── inst.impl.hs.yaml         # Stage 5 Haskell
-│           └── inst.impl.go.yaml         # Stage 5 Go
+│           └── inst.impl.hs.yaml         # Stage 5 Haskell
 └── build/                        # Generated outputs from design process
     ├── objective/formal/         # Stage 1 output
     │   └── qi.v4.formal.spec.md
@@ -104,30 +100,13 @@ docs/
     │   ├── qi.v4.ts.impl.md              # Stage 5: TypeScript guide
     │   ├── qi.v4.py.template.md          # Stage 5: Python code
     │   ├── qi.v4.py.impl.md              # Stage 5: Python guide
-    │   └── [other languages...]
+    │   ├── qi.v4.hs.template.md          # Stage 5: Haskell code
+    │   └── qi.v4.hs.impl.md              # Stage 5: Haskell guide
     └── package/                  # Stage 4 output
         ├── ts.md                 # TypeScript packages
         ├── py.md                 # Python packages
         └── hs.md                 # Haskell packages
 ```
-
-## Missing Files Summary
-
-### High Priority (Core Process)
-1. **Stage 1 Output**: `build/guides/mathematical-contracts.md` - Abstract mathematical interface contracts  
-2. **Stage 3 Output**: `build/impl/qi.v4.impl.template.md` - Language-agnostic implementation template
-3. **Stage 3 Workflow**: `sources/agent/build/inst.impl.yaml` - Automation for Stage 3
-4. **Fix Stage 4**: Restructure `build/package/[LANG].md` files to contain ONLY package selection (no implementation code)
-
-### Medium Priority (Language Support)
-4. **Rust Guide**: `sources/guides/impl.rs.prompt.md` - Rust implementation methodology
-5. **Haskell Guide**: `sources/guides/impl.hs.prompt.md` - Haskell implementation methodology
-6. **Go Guide**: `sources/guides/impl.go.prompt.md` - Go implementation methodology
-
-### Already Exist (Verified)
-- ✅ All Stage 1 & 2 files
-- ✅ TypeScript and Python implementation guides
-- ✅ All workflow files for Stage 5 (all languages)
 
 ## Usage Instructions
 
@@ -150,16 +129,16 @@ docs/
    # Output: build/impl/qi.v4.impl.template.md
    ```
 
-4. **Stage 4**: Research packages for target language (SELECTION ONLY)
+4. **Stage 4**: Research packages for target language
    ```bash
    # Input: build/impl/qi.v4.impl.template.md + target language
-   # Output: build/package/[LANG].md (package selection rationale, NO code)
+   # Output: build/package/[LANG].md (package selection rationale only)
    ```
 
-5. **Stage 5**: Generate language-specific implementation (WITH integration examples)
+5. **Stage 5**: Generate language-specific implementation
    ```bash
-   # Input: build/impl/qi.v4.impl.template.md + build/package/[LANG].md
-   # Output: build/impl/qi.v4.[LANG].template.md (HOW to use packages) + qi.v4.[LANG].impl.md (complete implementation)
+   # Input: build/impl/qi.v4.impl.template.md + build/package/[LANG].md + guides
+   # Output: build/impl/qi.v4.[LANG].template.md + qi.v4.[LANG].impl.md
    ```
 
 ### Automated Process
@@ -170,22 +149,20 @@ run sources/agent/build/inst.formal.yaml
 # Stage 2: Design patterns
 run sources/agent/build/inst.design.yaml
 
-# Stage 3: Language-agnostic template (manual - workflow TODO)
-manually create build/impl/qi.v4.impl.template.md
+# Stage 3: Language-agnostic template
+run sources/agent/build/inst.impl.yaml
 
-# Stage 4: Package research (SELECTION ONLY)
+# Stage 4: Package research
 run sources/agent/build/inst.package.yaml
 
-# Stage 5: Language-specific implementation (WITH integration examples)
+# Stage 5: Language-specific implementation
 run sources/agent/build/inst.impl.[LANG].yaml
 ```
 
 ## Language Codes
 - `ts` = TypeScript
 - `py` = Python  
-- `rs` = Rust
 - `hs` = Haskell
-- `go` = Go
 
 ## Success Criteria
 
@@ -200,7 +177,7 @@ run sources/agent/build/inst.impl.[LANG].yaml
 - ✅ All operations implemented with complete coverage
 - ✅ Component architecture maintained throughout
 
-## Current Project Scope (Updated)
+## Current Project Scope
 
 ### **Supported Languages (3)**:
 - **Python**: Interpreted tier (100× baseline) - Comprehensive ecosystem
@@ -215,27 +192,14 @@ run sources/agent/build/inst.impl.[LANG].yaml
 - ❌ NO implementation code or wrappers
 
 **Stage 5 (Implementation)**:
-- ✅ Create language-specific templates using selected packages
-- ✅ Build wrapper implementations that fulfill mathematical contracts
-- ✅ Generate implementation guides with code examples
-- ✅ Bridge the gap between packages and contract requirements
-
-### **Recently Completed**:
-- ✅ Updated package research with 2024-2025 current data
-- ✅ Expanded Haskell coverage from 54% to 85% through systematic research
-- ✅ Enhanced TypeScript research with performance-focused selections
-- ✅ Corrected documentation to reflect current scope
+- ✅ Create language-specific code templates using selected packages
+- ✅ Create implementation guides showing how to assemble final library
+- ✅ Bridge selected packages to mathematical contracts with wrapper code
+- ✅ Ensure mathematical laws are preserved in language-specific idioms
 
 ## Next Steps
 
-1. **Immediate**: Complete Stage 5 for current languages (Python, TypeScript, Haskell)
-2. **Short-term**: Generate wrapper implementations and integration guides
-3. **Long-term**: Consider adding other languages based on demand
-
-## Dependencies and References
-
-- **Input**: [Class Contracts](../nl/qi.v4.class.contracts.md), [Component Contracts](../nl/qi.v4.component.contracts.md)
-- **Mathematics**: [Mathematical Contracts](../build/guides/mathematical-contracts.md), [Common Foundations](common.md)
-- **Methodology**: [Package Research](package-research-methodology.md)
-- **Process**: [Workflow YAML Files](../agent/build/)
-- **Used By**: Any project requiring systematic specification-to-implementation transformation
+1. **Use Stage 1-3 outputs**: Work with existing formal spec, design, and templates
+2. **Complete Stage 5**: Generate TypeScript and Haskell implementations
+3. **Verify implementations**: Use verification workflows to ensure correctness
+4. **Deploy**: Create production-ready libraries for each language

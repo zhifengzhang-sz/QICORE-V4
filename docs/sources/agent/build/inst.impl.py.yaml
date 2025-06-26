@@ -29,17 +29,13 @@ inputs:
         description: "Stage 3 output: language-agnostic templates"
         operations_count: 99
       
-      - path: "build/research/qi.v4.py.packages.md"
+      - path: "build/package/py.md"  # FIXED: was build/research/qi.v4.py.packages.md
         role: "Python package research"
         description: "Stage 4 output: vetted Python packages"
       
-      - path: "build/research/qi.v4.py.wrappers.md"
-        role: "Python wrapper specifications"
-        description: "Stage 4 output: interface wrappers for external packages"
-      
       - path: "build/guides/mathematical-contracts.md"
         role: "Mathematical contracts"
-        description: "Stage 2 output: abstract mathematical contracts"
+        description: "Stage 1 output: abstract mathematical contracts"
     
     methodology_files:
       - path: "sources/guides/impl.py.prompt.md"
@@ -56,8 +52,8 @@ inputs:
 
 outputs:
   primary:
-    - path: "build/impl/qi.v4.py.impl.md"
-      description: "Python implementation specification (combines template + guide)"
+    - path: "build/impl/qi.v4.py.template.md"
+      description: "Python-specific code templates with runnable examples"
       format: "markdown"
       required_sections:
         - "Base Component Implementation"
@@ -66,6 +62,11 @@ outputs:
         - "Integration Examples"
         - "Performance Benchmarks"
         - "Type Safety Verification"
+        
+    - path: "build/impl/qi.v4.py.impl.md"
+      description: "Python implementation guide and assembly instructions"
+      format: "markdown"
+      required_sections:
         - "Package Dependencies"
         - "Implementation Strategy"
         - "Package Integration Guide"
@@ -189,7 +190,7 @@ integration:
   upstream_dependencies:
     - "Stage 3: language-agnostic template must be complete"
     - "Stage 4: Python package research must be complete"
-    - "Stage 2: mathematical contracts must be available"
+    - "Stage 1: mathematical contracts must be available"
     - "Methodology files: impl.py.prompt.md and common.md available"
   
   downstream_consumers:
@@ -259,4 +260,4 @@ verification_report:
     [Verify package integration and abstractions]
     
     ## Success Criteria Compliance
-    [Complete checklist from impl.py.prompt.md] 
+    [Complete checklist from impl.py.prompt.md]

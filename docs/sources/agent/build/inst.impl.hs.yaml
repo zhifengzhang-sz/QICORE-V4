@@ -1,265 +1,92 @@
-name: "Stage 5: Design to Haskell Implementation"
-description: "Transform design patterns into concrete Haskell implementations using native mathematical models"
+name: "Stage 5: Templates + Packages to Haskell Implementation"
 version: "v4.0.1"
-stage: 5
-language: "Haskell"
+description: "Transform language-agnostic templates and package research into Haskell implementation"
+domain: "implementation_transformation"
+category: "stage_5_workflow"
+
+# ============================================================================
+# STAGE 5 TRANSFORMATION OBJECTIVE
+# ============================================================================
+
+objective: |
+  Transform language-agnostic templates into Haskell-specific implementation by:
+  
+  1. **Code Template Generation**: Create qi.v4.hs.template.md with Haskell code
+  2. **Implementation Guide Generation**: Create qi.v4.hs.impl.md with assembly instructions
+  3. **Package Integration**: Show how selected packages fulfill mathematical contracts
+  4. **Mathematical Purity**: Leverage Haskell's type system for mathematical correctness
+  5. **Lazy Evaluation**: Optimize using Haskell's evaluation strategy
+
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
 
 inputs:
-  required_files:
-    - path: "build/design/qi.v4.design.analysis.md"
-      description: "Design analysis with complete operation coverage from Stage 2"
+  required:
+    stage_inputs:
+      - path: "build/impl/qi.v4.impl.template.md"
+        role: "Language-agnostic implementation template"
+        description: "Stage 3 output: base templates for all languages"
+        
+      - path: "build/package/hs.md"
+        role: "Haskell package selection"
+        description: "Stage 4 output: researched and selected Haskell packages"
+        
+      - path: "build/guides/mathematical-contracts.md"
+        role: "Mathematical contracts"
+        description: "Stage 1 output: abstract mathematical interface contracts"
     
-    - path: "build/research/qi.v4.hs.packages.md"
-      description: "Haskell package research results from Stage 4"
-    
-    - path: "build/research/qi.v4.hs.wrappers.md"
-      description: "Haskell wrapper specifications from Stage 4"
-    
-    - path: "sources/guides/common.md"
-      description: "Mathematical foundations and categorical structures"
-    
-    - path: "sources/guides/mathematical-contracts.md"
-      description: "Abstract mathematical model contracts for implementation"
-    
-    - path: "sources/guides/impl.hs.prompt.md"
-      description: "Stage 5 Haskell-specific transformation instructions"
+    methodology_files:
+      - path: "sources/guides/impl.hs.prompt.md"
+        role: "Haskell implementation methodology"
+        description: "Haskell-specific transformation rules and patterns"
+      
+      - path: "sources/guides/common.md"
+        role: "Shared foundations"
+        description: "Mathematical foundations and categorical structures"
+
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
 
 outputs:
-  target_files:
+  primary:
     - path: "build/impl/qi.v4.hs.template.md"
-      description: "Haskell code template with mathematical model implementations"
-      
+      description: "Haskell-specific code templates"
+      format: "markdown"
+      required_sections:
+        - "Haskell Implementation Templates"
+        - "Base Type Classes and Data Types"
+        - "Core Components with Monadic Interfaces"
+        - "Application Components with Effect Systems"
+        - "Type-Level Programming Examples"
+        - "Lens Integration for State Management"
+        
     - path: "build/impl/qi.v4.hs.impl.md"
-      description: "Haskell implementation guide with mathematical proofs"
+      description: "Haskell implementation guide/driver"
+      format: "markdown"
+      required_sections:
+        - "Implementation Guide Overview"
+        - "Cabal/Stack Project Setup"
+        - "Module Structure and Exports"
+        - "Type Class Hierarchy"
+        - "QuickCheck Property Tests"
+        - "Performance Profiling Guide"
+        - "GHC Optimization Flags"
 
-  project_structure:
-    base_path: "src/"
-    components:
-      - "Core/ (Mathematical models and type classes)"
-      - "API/ (Servant API types and handlers)"
-      - "DB/ (Database operations with transactions)"
-      - "Cache/ (Redis operations with effect handling)"
-      - "HTTP/ (HTTP client with circuit breaker)"
-      - "Log/ (Structured logging with contravariant functors)"
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
 
-validation:
-  method: "Generate verification report using success criteria from sources/guides/impl.hs.prompt.md"
-  
-  verification_report:
-    target_file: "stage5-haskell-verification-report.md"
-    required_sections:
-      - "Mathematical Model Implementation Verification"
-      - "Type Safety Verification"
-      - "Performance Tier Compliance"
-      - "Mathematical Law Preservation"
-      - "Success Criteria Compliance"
+success_criteria:
+  mathematical_correctness:
+    - "All mathematical laws enforced at type level"
+    - "Proper use of type classes for abstractions"
+    - "Referential transparency maintained"
+    - "Effect tracking with appropriate monads"
     
-    format: |
-      # Stage 5 Haskell Verification Report
-      
-      ## Mathematical Model Implementation Verification
-      [Verify each mathematical model is correctly implemented]
-      - Result (Either) monad implementation
-      - IO monad and transformers
-      - State monad for caching
-      - Reader monad for configuration
-      - Stream processing
-      - Effect handling
-      
-      ## Type Safety Verification
-      [Confirm type-level guarantees]
-      - API type safety (Servant)
-      - JSON encoding/decoding (Aeson)
-      - Database operations (sqlite-simple)
-      - Redis operations (hedis)
-      
-      ## Performance Tier Compliance
-      [Validate performance within Haskell tier]
-      - Monad bind: < 50μs
-      - Functor map: < 25μs
-      - Effect operations: < 500μs
-      - Stream operations: < 50μs
-      
-      ## Mathematical Law Preservation
-      [Verify categorical laws]
-      - Monad laws
-      - Functor laws
-      - Applicative laws
-      - Category laws
-      
-      ## Success Criteria Compliance
-      [Complete checklist from impl.hs.prompt.md]
-      
-      ## Overall Assessment
-      [Pass/Fail with specific issues if any]
-
-execution:
-  instructions_source: "sources/guides/impl.hs.prompt.md"
-  context_instruction: "Follow Haskell-specific methodology and mathematical model requirements"
-  verification_method: "Generate systematic verification report with mathematical proofs"
-
-package_requirements:
-  core_packages:
-    - name: "mtl"
-      version: ">=2.3.1"
-      purpose: "Mathematical models and transformers"
-    
-    - name: "transformers"
-      version: ">=0.6.1"
-      purpose: "Effect composition"
-    
-    - name: "servant"
-      version: ">=0.20"
-      purpose: "Type-safe API specification"
-    
-    - name: "servant-server"
-      version: ">=0.20"
-      purpose: "Server implementation"
-    
-    - name: "http-client"
-      version: ">=0.7.13"
-      purpose: "HTTP client base"
-    
-    - name: "servant-client"
-      version: ">=0.20"
-      purpose: "Type-safe HTTP client"
-    
-    - name: "hedis"
-      version: ">=0.15.1"
-      purpose: "Redis client with monad transformers"
-    
-    - name: "sqlite-simple"
-      version: ">=0.4.18.0"
-      purpose: "Database with resource management"
-    
-    - name: "co-log"
-      version: ">=0.6.0"
-      purpose: "Composable logging"
-    
-    - name: "aeson"
-      version: ">=2.1.2"
-      purpose: "JSON handling with generics"
-
-  test_packages:
-    - name: "QuickCheck"
-      version: ">=2.14.3"
-      purpose: "Property-based testing of mathematical laws"
-    
-    - name: "hspec"
-      version: ">=2.11.7"
-      purpose: "Behavioral testing framework"
-    
-    - name: "hspec-quickcheck"
-      version: ">=2.11.7"
-      purpose: "QuickCheck integration for hspec"
-    
-    - name: "hedgehog"
-      version: ">=1.4.1"
-      purpose: "State machine testing"
-
-mathematical_model_requirements:
-  - category: "Core Models"
-    implementations:
-      - name: "Result"
-        type: "Either Error a"
-        laws: ["Left identity", "Right identity", "Associativity"]
-        properties: |
-          prop_left_identity :: a -> Property
-          prop_left_identity x = 
-            return x >>= f === f x
-            where f = Right . (+1)
-      
-      - name: "Effect"
-        type: "ReaderT AppEnv (ExceptT Error (StateT AppState IO)) a"
-        laws: ["Monad laws", "Transformer laws"]
-        properties: |
-          prop_transformer_composition :: Property
-          prop_transformer_composition = 
-            runStateT (runExceptT (runReaderT action env)) state ===
-            (runReaderT (runExceptT (runStateT action state)) env)
-      
-      - name: "Stream"
-        type: "ConduitT () a m r"
-        laws: ["Category laws", "Arrow laws"]
-        properties: |
-          prop_stream_composition :: Property
-          prop_stream_composition =
-            runConduit (src .| f .| g) === runConduit (src .| (f >=> g))
-      
-      - name: "State Machine"
-        type: "State CircuitBreakerState a"
-        laws: ["State monad laws"]
-        properties: |
-          prop_state_get_put :: s -> Property
-          prop_state_get_put s = 
-            runState (get >>= put) s === ((), s)
-
-  - category: "Type Classes"
-    implementations:
-      - name: "Monad"
-        instances: ["Either", "IO", "State", "Reader"]
-        properties: |
-          prop_monad_laws :: (Monad m, Eq (m a)) => m a -> (a -> m b) -> Property
-          prop_monad_laws m f = conjoin [
-            return x >>= f === f x,           -- left identity
-            m >>= return === m,               -- right identity
-            (m >>= f) >>= g === m >>= (\x -> f x >>= g)  -- associativity
-          ]
-      
-      - name: "Functor"
-        instances: ["Either", "State", "LogAction"]
-        properties: |
-          prop_functor_laws :: (Functor f, Eq (f a)) => f a -> Property
-          prop_functor_laws fa = conjoin [
-            fmap id fa === fa,                -- identity
-            fmap (f . g) fa === (fmap f . fmap g) fa  -- composition
-          ]
-      
-      - name: "Applicative"
-        instances: ["Validation", "Parser"]
-        properties: |
-          prop_applicative_laws :: (Applicative f, Eq (f a)) => f a -> Property
-          prop_applicative_laws fa = conjoin [
-            pure id <*> fa === fa,            -- identity
-            pure (.) <*> u <*> v <*> w === u <*> (v <*> w)  -- composition
-          ]
-
-property_testing_requirements:
-  - category: "Mathematical Laws"
-    tests:
-      - name: "Monad Laws"
-        framework: "QuickCheck"
-        minimum_tests: 1000
-        coverage: ["Either", "State", "IO", "Reader"]
-      
-      - name: "Functor Laws"
-        framework: "QuickCheck"
-        minimum_tests: 1000
-        coverage: ["Either", "State", "LogAction"]
-      
-      - name: "Category Laws"
-        framework: "QuickCheck"
-        minimum_tests: 1000
-        coverage: ["Stream", "Arrow"]
-  
-  - category: "State Machines"
-    tests:
-      - name: "Circuit Breaker"
-        framework: "Hedgehog"
-        properties: ["State transitions", "Failure counting", "Reset timing"]
-        coverage: ["All states", "All transitions"]
-      
-      - name: "Connection Pool"
-        framework: "Hedgehog"
-        properties: ["Resource limits", "Cleanup", "Timeout handling"]
-        coverage: ["Creation", "Release", "Timeout"]
-
-  - category: "Performance Properties"
-    tests:
-      - name: "Operation Timing"
-        framework: "Criterion"
-        benchmarks: ["Monad bind", "Functor map", "Effect operations"]
-        assertions:
-          - "Monad bind < 50μs"
-          - "Functor map < 25μs"
-          - "Effect operations < 500μs" 
+  haskell_idioms:
+    - "Proper use of laziness for performance"
+    - "Lens library for nested data access"
+    - "STM for concurrent state management"
+    - "Type families where appropriate"
