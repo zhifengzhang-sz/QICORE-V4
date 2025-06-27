@@ -1,469 +1,209 @@
-# Stage 3: Design Analysis to Templates and Implementation
+# Stage 3: Design to Language-Agnostic Implementation Templates
 
-> **AI Prompt for Stage 2 → Stage 3 Transformation**  
-> **Based on**: Proven methodology from [qi.v4.ai.context.md](qi.v4.ai.context.md)  
-> **Enhanced with**: Direct implementation of design patterns from Stage 2
+## Objective
 
-## Context
+Transform design patterns into language-agnostic implementation templates that:
+1. **Build upon the mathematical contracts** from Stage 1
+2. Preserve mathematical properties across all language targets
+3. Define clear integration points for external packages
+4. Maintain cross-language behavioral consistency
 
-You are creating production-ready code templates and implementation guides that **directly implement the design patterns from Stage 2**. Every implementation must be a faithful translation of the language-agnostic patterns into idiomatic code for the target language.
+## Critical Dependency
 
-**Required Reading**: 
-- Include all content from `guides/common.md` for mathematical foundations
-- Study all design patterns from `design/qi.v4.design.analysis.md` carefully
-
-## Implementation Methodology
-
-**CRITICAL: Every implementation must be a direct translation of the corresponding design pattern from Stage 2:**
-
-- **Railway-Oriented Programming** → Language-specific Result/Either implementation
-- **Monoid Merge Pattern** → Configuration merge with right-bias in target language
-- **Level-Based Filtering** → Logger with performance-optimized checks
-- **State Management Pattern** → Cache with appropriate concurrency primitives
-- **Circuit Breaker State Machine** → Exact state transitions from design
-- **Stream Coalgebra Pattern** → Language-appropriate streaming implementation
-- **Parser Combinator Pattern** → Recursive descent or combinator library
-
-**Example: Implementing Railway-Oriented Programming pattern**:
-1. Reference the pattern from design analysis:
-   ```
-   Success path: →→→→→→→→→→→→→→→→→
-                       ↘         ↗
-   Failure path: - - - - - - - - -
-   ```
-2. Implement in target language preserving the pattern
-3. Ensure monad laws are maintained in implementation
-4. Use language-specific optimizations while preserving behavior
+**THIS IS ESSENTIAL**: All implementation templates MUST be built on top of the mathematical contracts defined in `build/guides/mathematical-contracts.md`. The concrete implementations are instances of these abstract contracts.
 
 ## Input Documents
 
-You will be provided with:
-- `design/qi.v4.design.analysis.md` - Design patterns to implement
-- `guides/common.md` - Mathematical foundations and performance targets
-- `guides/qi.v4.framework.md` - Development process methodology
+1. **Primary Input**: `build/design/qi.v4.design.analysis.md`
+   - Design patterns derived from formal specification
+   - Component boundaries and interactions
+   - Performance requirements
 
-## Task
+2. **Mathematical Foundation**: `build/guides/mathematical-contracts.md`
+   - Abstract mathematical contracts that ALL implementations must satisfy
+   - These are the "interface laws" that ensure correctness
+   - Every concrete implementation MUST be an instance of these contracts
 
-Create `impl/qi.v4.[LANG].template.md` and `impl/qi.v4.[LANG].impl.md` for each target language:
+3. **Shared Foundations**: `sources/guides/common.md`
+   - Mathematical pattern definitions
+   - Cross-language mappings
 
-## TEMPLATE REQUIREMENTS (qi.v4.[LANG].template.md)
+## Output Requirements
 
-### 1. Header with Dependencies
-```markdown
-# QiCore v4.0 [Language] Template
+Generate `build/impl/qi.v4.impl.template.md` containing:
 
-> **Stage 3: Language-Specific Code Templates**
-> **Depends on**: [Design Analysis](../design/qi.v4.design.analysis.md)
-> **Implements**: Language-specific code implementing design patterns
-> Version: v4.0.1
-> Date: [Current Date]
-> Status: Code Template
-> Purpose: Direct implementation of Stage 2 design patterns
-```
-
-### 2. Pattern Implementation Mapping
-
-**Document which design pattern each code section implements**:
-```markdown
-## Pattern Implementation Map
-
-| Design Pattern | Implementation | Preserves |
-|----------------|----------------|-----------|
-| Railway-Oriented Programming | Result<T> class/type | Monad laws |
-| Monoid Merge Pattern | ConfigMerge function | Associativity, Identity |
-| Level-Based Filtering | Logger.isLevelEnabled | < 10ns performance |
-| State Management Pattern | Cache with locks/STM | Thread safety |
-| Circuit Breaker FSM | CircuitBreaker class | State transitions |
-| Stream Coalgebra | Async iterators/streams | Lazy evaluation |
-| Parser Combinators | Parser type/class | Functor composition |
-```
-
-### 3. Mathematical Foundation Preservation
-
-**Show how each implementation preserves mathematical properties**:
-- Monad laws verification for Result
-- Monoid laws for Configuration
-- State machine invariants for Circuit Breaker
-- Performance characteristics per tier
-
-### 4. Component-Based Implementation
-
-**For each component, implement ALL patterns from the design**:
-
-#### **Base Component Implementation**
-- **Result<T>** implementing Railway-Oriented Programming:
-  ```[language]
-  // Direct implementation of the pattern:
-  // Success path: →→→→→→→→→→→→→→→→→
-  //                     ↘         ↗
-  // Failure path: - - - - - - - - -
-  
-  [Language-specific Result implementation]
-  
-  // Verify: Implements all 8 operations from design
-  // - success, failure, fromTryCatch (factory patterns)
-  // - map (functor pattern)
-  // - flatMap (monadic bind pattern)
-  // - unwrap, unwrapOr (elimination patterns)
-  // - match (pattern matching)
-  // - orElse (error recovery pattern)
-  ```
-
-- **QiError** implementing Structured Error Pattern:
-  ```[language]
-  // Direct implementation of product type pattern:
-  // QiError = Code × Message × Category × Context × Cause × Timestamp
-  
-  [Language-specific QiError implementation]
-  
-  // Verify: Implements all 6 operations from design
-  // With all 8 error categories as coproduct
-  ```
-
-#### **Core Component Implementation**
-- **Configuration** implementing Layered Configuration Pattern:
-  ```[language]
-  // Direct implementation of monoid pattern:
-  // Base ⊕ File ⊕ Environment ⊕ CLI = Final
-  
-  [Language-specific Configuration implementation]
-  
-  // Verify: Right-biased merge preserving monoid laws
-  ```
-
-- **Logger** implementing Level-Based Filtering Pattern:
-  ```[language]
-  // Direct implementation of simple effect pattern:
-  // IF level >= minLevel: PERFORM effect
-  // ELSE: SKIP
-  
-  [Language-specific Logger implementation]
-  
-  // Verify: < 10ns level check performance
-  ```
-
-- **Cache** implementing State Management Pattern:
-  ```[language]
-  // Direct implementation of state monad pattern:
-  // Operations return (value, newState)
-  // TTL checked lazily
-  // LRU maintains capacity
-  
-  [Language-specific Cache implementation]
-  ```
-
-#### **Application Component Implementation**
-- **HTTP** implementing Circuit Breaker State Machine:
-  ```[language]
-  // Direct implementation of FSM from design:
-  // CLOSED --[failures >= threshold]--> OPEN
-  //   ↑                                   |
-  //   +--[success]-- HALF_OPEN --[timeout]+
-  
-  [Language-specific HTTP implementation]
-  ```
-
-- **Document** implementing Template Evaluation Pattern:
-  ```[language]
-  // Direct implementation of functor composition:
-  // Template × Data → Document
-  
-  [Language-specific Document implementation]
-  ```
-
-- **CLP** implementing Parser Combinator Pattern:
-  ```[language]
-  // Direct implementation of parser pattern:
-  // Parser<A> = Input → Result<(A, RemainingInput)>
-  
-  [Language-specific CLP implementation]
-  ```
-
-- **Web Framework** implementing Request/Response Pipeline Pattern:
-  ```[language]
-  // Direct implementation of IO monad pattern:
-  // Request → Middleware₁ → Middleware₂ → ... → Handler → Response
-  
-  [Language-specific Web Framework implementation]
-  
-  // Verify: Implements all 8 operations from design
-  // - route, mount, group, param (routing patterns)
-  // - use, compose (middleware patterns)
-  // - static, errorHandler (static/error patterns)
-  ```
-
-- **ASGI Server** implementing Server Lifecycle Pattern:
-  ```[language]
-  // Direct implementation of continuation monad pattern:
-  // STOPPED → STARTING → RUNNING → STOPPING → STOPPED
-  
-  [Language-specific ASGI Server implementation]
-  
-  // Verify: Implements all 6 operations from design
-  // - start, shutdown (lifecycle patterns)
-  // - accept, reject (connection patterns)
-  // - workers, health (worker/monitor patterns)
-  ```
-
-- **AI/LLM Client** implementing Configuration Reader Pattern:
-  ```[language]
-  // Direct implementation of reader monad pattern:
-  // LLMClient = Config → IO(Result<Response>)
-  
-  [Language-specific AI/LLM Client implementation]
-  
-  // Verify: Implements all 7 operations from design
-  // - chat, chatStream, generate (chat patterns)
-  // - embedding, withConfig (embedding/config patterns)
-  // - withCircuitBreaker, streamGenerate (circuit breaker integration)
-  ```
-
-- **MCP Protocol** implementing Message Transformation Pattern:
-  ```[language]
-  // Direct implementation of protocol functor pattern:
-  // InternalMessage ↔ WireMessage ↔ ExternalMessage
-  
-  [Language-specific MCP Protocol implementation]
-  
-  // Verify: Implements all 6 operations from design
-  // - connect, disconnect (connection patterns)
-  // - send, receive (messaging patterns)
-  // - listResources, callTool (resource/tool patterns)
-  ```
-
-- **Database** implementing Transaction Composition Pattern:
-  ```[language]
-  // Direct implementation of transaction monad pattern:
-  // Transaction<A> = Connection → IO(Result<A>)
-  
-  [Language-specific Database implementation]
-  
-  // Verify: Implements all 8 operations from design
-  // - create, read, update, delete (CRUD patterns)
-  // - begin, commit (transaction patterns)
-  // - migrate, pool (migration/pool patterns)
-  ```
-
-### 5. Pattern Verification
-
-**For each implementation, show it preserves the design pattern**:
-```[language]
-// Example: Verifying Monad Laws for Result
-// Test Left Identity: return(a).flatMap(f) ≡ f(a)
-[Test implementation]
-
-// Test Right Identity: m.flatMap(return) ≡ m
-[Test implementation]
-
-// Test Associativity: (m.flatMap(f)).flatMap(g) ≡ m.flatMap(x => f(x).flatMap(g))
-[Test implementation]
-```
-
-### 6. Language-Specific Optimizations
-
-**Apply optimizations while preserving patterns**:
-- Native tier: Zero-cost abstractions
-- VM tier: Object pooling, JIT-friendly code
-- Functional tier: Lazy evaluation, fusion
-- Interpreted tier: Minimize allocations
-
-### 7. Complete Working Examples
-
-**Show the implemented patterns in action**:
-```[language]
-// Example: Using Railway-Oriented Programming
-result = getUserById(123)
-  .flatMap(user => updateUser(user))  // Railway junction
-  .map(user => user.email)             // Stay on success track
-  .orElse(err => getDefaultEmail())   // Recovery pattern
-
-// This directly implements the railway pattern from design
-```
-
-## IMPLEMENTATION GUIDE REQUIREMENTS (qi.v4.[LANG].impl.md)
-
-### 1. Pattern Implementation Checklist
+### 1. Contract Dependency Declaration
 
 ```markdown
-## Implementation Verification Checklist
+## Mathematical Contract Dependencies
 
-### Base Component Patterns
-- [ ] Railway-Oriented Programming (Result)
-  - [ ] Success/Failure tracks implemented
-  - [ ] All 8 operations from design
-  - [ ] Monad laws preserved
-  
-- [ ] Structured Error Pattern (QiError)
-  - [ ] Product type with 6 fields
-  - [ ] All 8 error categories
-  - [ ] Context merging right-biased
+This implementation template instantiates the following mathematical contracts:
+- Result<T> contract: Monad laws from mathematical-contracts.md
+- Configuration contract: Monoid laws from mathematical-contracts.md
+- Logger contract: Effect interface from mathematical-contracts.md
+- Cache contract: State consistency from mathematical-contracts.md
+[... all other contracts ...]
 
-### Core Component Patterns
-- [ ] Layered Configuration Pattern
-  - [ ] Monoid merge implemented
-  - [ ] Right-bias precedence
-  - [ ] All 9 operations from design
-  
-- [ ] Level-Based Filtering Pattern
-  - [ ] < 10ns level checking
-  - [ ] Simple effect interface
-  - [ ] All 7 operations from design
-  
-- [ ] State Management Pattern
-  - [ ] Thread-safe operations
-  - [ ] Lazy TTL checking
-  - [ ] LRU eviction logic
-  - [ ] All 9 operations from design
-
-### Application Component Patterns
-- [ ] Circuit Breaker State Machine
-  - [ ] Three states: CLOSED, OPEN, HALF_OPEN
-  - [ ] Exact transitions from design
-  - [ ] Threshold configuration
-  
-- [ ] Template Evaluation Pattern
-  - [ ] Functor composition
-  - [ ] Multi-engine support
-  - [ ] Streaming for large documents
-  
-- [ ] Parser Combinator Pattern
-  - [ ] Input consumption with remainder
-  - [ ] Combinator composition
-  - [ ] Error position tracking
-
-- [ ] Request/Response Pipeline Pattern
-  - [ ] IO monad threading through middleware
-  - [ ] Function composition for request processing
-  - [ ] Type-safe parameter extraction
-  - [ ] All 8 Web Framework operations
-
-- [ ] Server Lifecycle Pattern
-  - [ ] State machine for server states
-  - [ ] Graceful connection management
-  - [ ] Worker/process management
-  - [ ] All 6 ASGI Server operations
-
-- [ ] Configuration Reader Pattern
-  - [ ] Reader monad for dependency injection
-  - [ ] Circuit breaker integration
-  - [ ] Streaming API support
-  - [ ] All 7 AI/LLM operations
-
-- [ ] Message Transformation Pattern
-  - [ ] Protocol functor for serialization
-  - [ ] Bidirectional message conversion
-  - [ ] Connection pooling and management
-  - [ ] All 6 MCP Protocol operations
-
-- [ ] Transaction Composition Pattern
-  - [ ] Transaction monad for ACID properties
-  - [ ] Connection pooling with lifecycle
-  - [ ] Migration and schema management
-  - [ ] All 8 Database operations
+Every implementation MUST satisfy these contracts to be considered correct.
 ```
 
-### 2. Design-to-Code Mapping
+### 2. Language-Agnostic Templates
+
+For each component, create templates that:
 
 ```markdown
-## Design Pattern to Code Mapping
+## Component: Result<T>
 
-For each design pattern from Stage 2, show the exact code that implements it:
+### Mathematical Contract
+References: mathematical-contracts.md#result-monad-contract
 
-### Railway-Oriented Programming → Result<T>
-Design: Two tracks with junctions
-Code: [Show specific implementation]
-Verification: [How to verify pattern is preserved]
-
-### Monoid Merge → Configuration.merge()
-Design: Associative operation with identity
-Code: [Show specific implementation]
-Verification: [Property tests for monoid laws]
-
-[Continue for all patterns...]
+### Abstract Template
+```pseudo
+type Result<T> implements MonadContract<Result> {
+    // Contract requirement: Monad laws
+    static success<T>(value: T): Result<T>
+    static failure<T>(error: Error): Result<T>
+    
+    // Contract requirement: Functor law
+    map<U>(fn: T → U): Result<U>
+    
+    // Contract requirement: Monad bind law  
+    flatMap<U>(fn: T → Result<U>): Result<U>
+    
+    // Contract requirement: Error handling
+    recover(fn: Error → T): Result<T>
+}
 ```
 
-### 3. Testing Pattern Implementation
+### Contract Verification Requirements
+- Left identity: Result.success(a).flatMap(f) ≡ f(a)
+- Right identity: m.flatMap(Result.success) ≡ m
+- Associativity: m.flatMap(f).flatMap(g) ≡ m.flatMap(x => f(x).flatMap(g))
+```
+
+### 3. Package Integration Points
+
+Mark where external packages should fulfill contracts:
 
 ```markdown
-## Pattern Verification Tests
+## Package Integration Strategy
 
-### Monad Law Tests (Result)
-[Property-based tests verifying the three monad laws]
+### Result<T> Implementation
+- **Contract**: Monad with error handling
+- **Package Integration Point**: Use language's Result/Either/Option type
+- **Wrapper Requirement**: Must adapt to satisfy our mathematical contract
 
-### Monoid Law Tests (Configuration)
-[Tests for identity and associativity]
+### Configuration Implementation  
+- **Contract**: Monoid with deep merge
+- **Package Integration Point**: Configuration parsing library
+- **Wrapper Requirement**: Must implement monoid merge operation
 
-### State Machine Tests (Circuit Breaker)
-[Tests for all state transitions]
-
-### Performance Tests
-[Benchmarks verifying tier-appropriate performance]
+[... continue for all components ...]
 ```
 
-### 4. Integration Examples
+### 4. Cross-Language Consistency Rules
 
-Show how implemented patterns work together:
-```[language]
-// Components use patterns as designed
-config = Configuration.merge([default, file, env]) // Monoid pattern
-logger = Logger.create(config)                     // Effect pattern
-cache = Cache.create(config)                       // State pattern
-http = HttpClient.withCircuitBreaker(config)      // FSM pattern
+```markdown
+## Cross-Language Behavioral Consistency
 
-// Railway pattern connects everything
-result = http.get(url)
-  .flatMap(response => cache.set(key, response))
-  .map(data => process(data))
-  .match(
-    success => logger.info("Success", success),
-    error => logger.error("Failed", error)
-  )
+All implementations across languages MUST:
+1. Satisfy the same mathematical contracts
+2. Exhibit identical error handling behavior
+3. Maintain referential transparency where specified
+4. Preserve performance characteristics within language tier
 ```
 
-## Target Languages
-- **TypeScript**: fp-ts for functors/monads, implement exact patterns
-- **Python**: Type hints + dataclasses, implement patterns idiomatically
-- **Rust**: Leverage native Result, impl patterns zero-cost
-- **Haskell**: Native categorical abstractions, direct pattern translation
-- **Go**: Interfaces for patterns, explicit error handling
+## Transformation Process
 
-## Critical Requirements
+1. **Load Mathematical Contracts First**
+   ```
+   contracts = load("build/guides/mathematical-contracts.md")
+   design = load("build/design/qi.v4.design.analysis.md")
+   ```
 
-1. **Pattern Fidelity**: Every implementation must faithfully implement its design pattern
-2. **Operation Completeness**: All operations from design must be implemented
-3. **Law Preservation**: Mathematical laws from patterns must be preserved
-4. **Performance Compliance**: Meet tier-specific targets while preserving patterns
-5. **Pattern Documentation**: Clearly show which pattern each code implements
+2. **For Each Design Pattern**
+   - Identify which mathematical contract it implements
+   - Create abstract template that satisfies the contract
+   - Define verification requirements from the contract
+   - Mark package integration points
 
-## Style Guidelines
+3. **Verify Contract Coverage**
+   - Ensure every mathematical contract has a corresponding template
+   - Verify all contract laws are preserved in template structure
+   - Confirm package integration preserves contracts
 
-- **Reference Design Patterns**: Always cite which pattern is being implemented
-- **Preserve Mathematical Properties**: Show law preservation in tests
-- **Language Idioms**: Use language features that best express the patterns
-- **Complete Examples**: Show patterns working together
-- **Performance Awareness**: Optimize within pattern constraints
+## Template Structure
 
-## Success Criteria
+Each component template must include:
 
-Before submitting, verify:
+1. **Contract Reference**: Which mathematical contract it implements
+2. **Abstract Operations**: Language-agnostic operation signatures
+3. **Contract Laws**: Mathematical properties that must hold
+4. **Integration Points**: Where packages can be used
+5. **Verification Strategy**: How to test contract compliance
 
-**Pattern Implementation Verification:**
-- [ ] Every design pattern has corresponding implementation
-- [ ] Pattern structure is preserved in code
-- [ ] Mathematical properties maintained
-- [ ] Performance targets achieved
-- [ ] All operations implemented
+## Example: Configuration Component
 
-**Cross-Reference Verification:**
-- [ ] Each code section references its design pattern
-- [ ] Pattern preservation is demonstrated
-- [ ] Integration follows component patterns
-- [ ] Examples show patterns in use
-- [ ] Tests verify pattern properties
+```markdown
+## Configuration Component Template
 
-**Language-Specific Verification:**
-- [ ] Idiomatic use of language features
-- [ ] Appropriate libraries for patterns
-- [ ] Performance optimizations applied
-- [ ] Build configuration complete
-- [ ] Documentation explains pattern mapping
+### Mathematical Contract
+References: mathematical-contracts.md#configuration-monoid-contract
+
+### Contract Laws
+- Identity: config.merge(empty) ≡ config
+- Associativity: (a.merge(b)).merge(c) ≡ a.merge(b.merge(c))
+- Commutativity: a.merge(b) ≡ b.merge(a) (for our use case)
+
+### Abstract Template
+```pseudo
+type Configuration<T> implements MonoidContract<Configuration<T>> {
+    // Monoid identity
+    static empty<T>(): Configuration<T>
+    
+    // Monoid operation  
+    merge(other: Configuration<T>): Configuration<T>
+    
+    // Additional operations
+    load(source: ConfigSource): Result<Configuration<T>>
+    validate(): Result<boolean>
+    get<K>(key: K): Result<T[K]>
+}
+```
+
+### Package Integration Points
+- Config parsing: YAML/JSON/TOML parsers
+- Schema validation: Type validation libraries
+- Merge operation: Deep merge utilities
+
+### Contract Verification
+```pseudo
+// Verify monoid laws
+assert(config.merge(empty()) == config)
+assert(a.merge(b.merge(c)) == (a.merge(b)).merge(c))
+```
+```
+
+## Critical Success Factors
+
+1. **Contract Dependency**: Every template explicitly references its mathematical contract
+2. **Law Preservation**: Template structure ensures mathematical laws are maintained
+3. **Package Readiness**: Clear integration points for Stage 4 package selection
+4. **Verification Path**: Each template includes how to verify contract compliance
+
+## Common Pitfalls to Avoid
+
+1. **Creating templates without contract references** - Every template MUST reference its contract
+2. **Ignoring mathematical laws** - Laws must be preserved in template structure
+3. **Language bias** - Templates must remain truly language-agnostic
+4. **Missing verification** - Every contract requirement needs verification strategy
+
+## Output Validation
+
+The generated `qi.v4.impl.template.md` is valid if:
+- [ ] Every mathematical contract has a corresponding template
+- [ ] All templates explicitly reference their contracts
+- [ ] Contract laws are preserved in template structure
+- [ ] Package integration points are clearly marked
+- [ ] Verification strategies are defined for each contract
+- [ ] Cross-language consistency is maintained

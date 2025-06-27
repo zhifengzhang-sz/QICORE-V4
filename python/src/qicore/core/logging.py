@@ -1,19 +1,20 @@
 # src/qicore/core/logging.py
-import structlog
-from typing import Any, Dict, Optional, Protocol, runtime_checkable, List
-from contextvars import ContextVar
-from ..base.result import Result
-from ..base.error import QiError
-import sys
 import logging
+from contextvars import ContextVar
+from typing import Any
+
+import structlog
+
+from ..base.error import QiError
+from ..base.result import Result
 
 # Context variable for request correlation
-correlation_id: ContextVar[Optional[str]] = ContextVar('correlation_id', default=None)
+correlation_id: ContextVar[str | None] = ContextVar('correlation_id', default=None)
 
 class StructuredLogger:
     """High-performance structured logging with context propagation"""
     
-    def __init__(self, name: str, context: Optional[Dict[str, Any]] = None):
+    def __init__(self, name: str, context: dict[str, Any] | None = None):
         self.name = name
         self.context = context or {}
         self._logger = structlog.get_logger(name).bind(**self.context)
@@ -60,7 +61,7 @@ class StructuredLogger:
         """Set correlation ID for request tracking"""
         correlation_id.set(correlation_id_value)
     
-    def _add_correlation_id(self, kwargs: Dict[str, Any]) -> None:
+    def _add_correlation_id(self, kwargs: dict[str, Any]) -> None:
         """Add correlation ID from context var"""
         if cid := correlation_id.get():
             kwargs['correlation_id'] = cid
@@ -68,9 +69,9 @@ class StructuredLogger:
 # Global configuration function
 async def configure_logging(
     level: str = "INFO",
-    format: str = "json",
+    log_format: str = "json",
     add_timestamp: bool = True,
-    processors: Optional[List[Any]] = None
+    processors: list[Any] | None = None
 ) -> Result[None]:
     """Configure global logging settings"""
     try:
@@ -89,7 +90,7 @@ async def configure_logging(
         if processors:
             default_processors.extend(processors)
         
-        if format == "json":
+        if log_format == "json":
             default_processors.append(structlog.processors.JSONRenderer())
         else:
             default_processors.append(structlog.dev.ConsoleRenderer())

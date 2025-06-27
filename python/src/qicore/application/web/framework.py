@@ -1,13 +1,16 @@
 # src/qicore/application/web/framework.py
-from fastapi import FastAPI, Request, Response, HTTPException, Depends
+import time
+import uuid
+from collections.abc import Callable
+from typing import Any
+
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from typing import Callable, Any, Optional, List, Dict
+
 from ...base.result import Result
-from ...base.error import QiError
 from ...core.logging import StructuredLogger, correlation_id
-import uuid
-import time
+
 
 class WebApplication:
     """FastAPI integration with QiCore patterns"""
@@ -16,7 +19,7 @@ class WebApplication:
         self,
         title: str = "QiCore API",
         version: str = "4.0.1",
-        logger: Optional[StructuredLogger] = None
+        logger: StructuredLogger | None = None
     ):
         self.app = FastAPI(title=title, version=version)
         self.logger = logger or StructuredLogger("web_app")
@@ -27,11 +30,13 @@ class WebApplication:
     def route(
         self,
         path: str,
-        methods: List[str] = ["GET"],
-        response_model: Optional[Any] = None,
+        methods: list[str] | None = None,
+        response_model: Any | None = None,
         status_code: int = 200
     ) -> Callable:
         """Decorator for Result-based routes"""
+        if methods is None:
+            methods = ["GET"]
         def decorator(fn: Callable) -> Callable:
             async def wrapper(*args, **kwargs) -> Any:
                 result = await fn(*args, **kwargs)
@@ -39,19 +44,21 @@ class WebApplication:
                 if isinstance(result, Result):
                     if result.is_success():
                         return result.unwrap_or(None)
-                    else:
-                        # Extract error from failed result
-                        error = result._inner._inner_value if hasattr(result._inner, '_inner_value') else None
-                        if error and hasattr(error, 'message'):
-                            raise HTTPException(
-                                status_code=400,
-                                detail=error.message
-                            )
-                        else:
-                            raise HTTPException(
-                                status_code=500,
-                                detail="Internal server error"
-                            )
+                    # Extract error from failed result
+                    error = (
+                        result._inner._inner_value 
+                        if hasattr(result._inner, '_inner_value') 
+                        else None
+                    )
+                    if error and hasattr(error, 'message'):
+                        raise HTTPException(
+                            status_code=400,
+                            detail=error.message
+                        )
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Internal server error"
+                    )
                 return result
             
             # Register with FastAPI
@@ -144,7 +151,7 @@ class WebApplication:
     def _setup_error_handlers(self) -> None:
         """Configure error handlers"""
         @self.app.exception_handler(HTTPException)
-        async def http_exception_handler(request: Request, exc: HTTPException):
+        async def http_exception_handler(_: Request, exc: HTTPException):
             return JSONResponse(
                 status_code=exc.status_code,
                 content={

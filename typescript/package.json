@@ -1,0 +1,85 @@
+{
+  "name": "qicore",
+  "version": "4.0.1",
+  "description": "QiCore v4.0 - Mathematical Contract-Based TypeScript Library",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "bun run build:clean && bun run build:compile",
+    "build:clean": "rm -rf dist/",
+    "build:compile": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "bun run --watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "lint": "biome check src/ tests/",
+    "lint:fix": "biome check --apply src/ tests/",
+    "format": "biome format --write src/ tests/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist/ node_modules/.cache",
+    "benchmark": "bun test tests/benchmarks/",
+    "example:basic": "bun run examples/basic/demo.ts",
+    "example:web": "bun run examples/web/server.ts"
+  },
+  "keywords": [
+    "functional",
+    "monad",
+    "result",
+    "async",
+    "contracts",
+    "typescript",
+    "mathematical"
+  ],
+  "author": "QiCore Team <team@qicore.dev>",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@eslint/js": "^9.29.0",
+    "@types/bun": "^1.1.6",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
+    "@vitest/ui": "^3.2.4",
+    "eslint": "^9.29.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.35.0",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "effect": "^3.16.10",
+    "fast-json-patch": "^3.1.1",
+    "ioredis": "^5.4.1",
+    "pino": "^9.7.0",
+    "pino-pretty": "^11.2.2",
+    "zod": "^3.25.67"
+  },
+  "engines": {
+    "bun": ">=1.1.0",
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qicore/qicore-v4-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/qicore/qicore-v4-typescript/issues"
+  },
+  "homepage": "https://docs.qicore.dev/v4"
+}

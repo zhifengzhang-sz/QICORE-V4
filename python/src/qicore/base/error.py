@@ -1,8 +1,9 @@
 # src/qicore/base/error.py
+import time
+import traceback
 from dataclasses import dataclass
 from typing import Any, Optional
-import traceback
-import time
+
 
 @dataclass(frozen=True)
 class QiError:
@@ -12,7 +13,7 @@ class QiError:
     context: dict[str, Any]
     timestamp: float
     cause: Optional['QiError'] = None
-    stack_trace: Optional[str] = None
+    stack_trace: str | None = None
     
     # Operation 1: Create validation error (Category 1)
     @classmethod
@@ -27,7 +28,7 @@ class QiError:
     
     # Operation 2: Create network error (Category 2)
     @classmethod
-    def network_error(cls, message: str, url: str, status_code: Optional[int] = None) -> 'QiError':
+    def network_error(cls, message: str, url: str, status_code: int | None = None) -> 'QiError':
         return cls(
             category="NetworkError",
             message=message,

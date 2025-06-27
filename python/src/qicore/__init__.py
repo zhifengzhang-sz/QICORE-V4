@@ -5,8 +5,9 @@ A comprehensive library providing 13 components with 99 operations based on
 mathematical contracts and functional programming principles.
 """
 
-from .base import Result, QiError
-from .core import Configuration, StructuredLogger, configure_logging, Cache
+from .base import QiError, Result
+from .core import Cache, Configuration, StructuredLogger, configure_logging
+
 # Note: Application components require additional dependencies (httpx, fastapi, etc.)
 # from .application import HTTPClient, WebApplication, CLIApplication, Database, AIClient
 

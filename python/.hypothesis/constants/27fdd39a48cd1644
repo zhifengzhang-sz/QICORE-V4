@@ -1,0 +1,4 @@
+# file: /home/zzhang/dev/qi/github/mcp-server/qicore-v4/python/src/qicore/core/logging.py
+# hypothesis_version: 6.135.16
+
+['INFO', 'StructuredLogger', 'correlation_id', 'iso', 'json', 'logging']

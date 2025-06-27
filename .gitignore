@@ -86,12 +86,23 @@ python/dist/
 python/build/
 python/*.egg-info/
 
-# uv package manager
+# TypeScript-specific for qicore-v4
+typescript/node_modules/
+typescript/dist/
+typescript/.tsbuildinfo
+typescript/bun.lock
+typescript/coverage/
+typescript/*.log
+
+# Package managers
 .uv-cache/
 uv.lock
+node_modules/
+bun.lock
 
-# Python version management
+# Version management
 .python-version
+.nvmrc
 
 # Generated documentation
 _site/

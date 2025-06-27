@@ -1,0 +1,4 @@
+# file: /home/zzhang/dev/qi/github/mcp-server/qicore-v4/python/src/qicore/application/http/client.py
+# hypothesis_version: 6.135.16
+
+[30.0, 100, 'GET', 'http_client']

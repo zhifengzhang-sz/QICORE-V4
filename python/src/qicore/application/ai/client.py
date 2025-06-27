@@ -1,11 +1,14 @@
 # src/qicore/application/ai/client.py
-from typing import List, Dict, Any, Optional, AsyncIterator
-from openai import AsyncOpenAI
-from anthropic import AsyncAnthropic
+from collections.abc import AsyncIterator
+
 import ollama
-from ...base.result import Result
+from anthropic import AsyncAnthropic
+from openai import AsyncOpenAI
+
 from ...base.error import QiError
+from ...base.result import Result
 from ...core.logging import StructuredLogger
+
 
 class AIClient:
     """Unified AI/LLM client with streaming support"""
@@ -13,10 +16,10 @@ class AIClient:
     def __init__(
         self,
         provider: str = "openai",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         model: str = "gpt-4",
         temperature: float = 0.7,
-        logger: Optional[StructuredLogger] = None
+        logger: StructuredLogger | None = None
     ):
         self.provider = provider
         self.model = model
@@ -38,7 +41,7 @@ class AIClient:
         self,
         prompt: str,
         max_tokens: int = 1000,
-        system_prompt: Optional[str] = None
+        system_prompt: str | None = None
     ) -> Result[str]:
         """Single completion request"""
         try:
@@ -58,7 +61,7 @@ class AIClient:
                 )
                 return Result.success(response.choices[0].message.content)
                 
-            elif self.provider == "anthropic":
+            if self.provider == "anthropic":
                 response = await self.client.completions.create(
                     model=self.model,
                     prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
@@ -67,7 +70,7 @@ class AIClient:
                 )
                 return Result.success(response.completion)
                 
-            elif self.provider == "ollama":
+            if self.provider == "ollama":
                 response = await self.client.generate(
                     model=self.model,
                     prompt=prompt,
@@ -90,7 +93,7 @@ class AIClient:
         self,
         prompt: str,
         max_tokens: int = 1000,
-        system_prompt: Optional[str] = None
+        system_prompt: str | None = None
     ) -> AsyncIterator[Result[str]]:
         """Streaming completion with backpressure handling"""
         try:
@@ -133,7 +136,7 @@ class AIClient:
             )
     
     # Operation 3: Embed text
-    async def embed(self, text: str) -> Result[List[float]]:
+    async def embed(self, text: str) -> Result[list[float]]:
         """Generate text embeddings"""
         try:
             if self.provider == "openai":
@@ -142,14 +145,13 @@ class AIClient:
                     input=text
                 )
                 return Result.success(response.data[0].embedding)
-            else:
-                return Result.failure(
-                    QiError.integration_error(
-                        f"Embeddings not supported for {self.provider}",
-                        self.provider,
-                        "embed"
-                    )
+            return Result.failure(
+                QiError.integration_error(
+                    f"Embeddings not supported for {self.provider}",
+                    self.provider,
+                    "embed"
                 )
+            )
         except Exception as e:
             return Result.failure(
                 QiError.integration_error(
@@ -160,25 +162,24 @@ class AIClient:
             )
     
     # Operation 4: List models
-    async def list_models(self) -> Result[List[str]]:
+    async def list_models(self) -> Result[list[str]]:
         """List available models"""
         try:
             if self.provider == "openai":
                 response = await self.client.models.list()
                 models = [model.id for model in response.data]
                 return Result.success(models)
-            elif self.provider == "ollama":
+            if self.provider == "ollama":
                 response = await self.client.list()
                 models = [model['name'] for model in response['models']]
                 return Result.success(models)
-            else:
-                return Result.failure(
-                    QiError.integration_error(
-                        f"Model listing not supported for {self.provider}",
-                        self.provider,
-                        "list_models"
-                    )
+            return Result.failure(
+                QiError.integration_error(
+                    f"Model listing not supported for {self.provider}",
+                    self.provider,
+                    "list_models"
                 )
+            )
         except Exception as e:
             return Result.failure(
                 QiError.integration_error(

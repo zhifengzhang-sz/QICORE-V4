@@ -21,7 +21,7 @@ class TestAllComponents:
     @pytest.fixture
     async def configured_logger(self):
         """Setup structured logging for tests"""
-        result = await configure_logging(level="INFO", format="json")
+        result = await configure_logging(level="INFO", log_format="json")
         assert result.is_success()
         return StructuredLogger("integration_test")
     

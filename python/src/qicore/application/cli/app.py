@@ -1,14 +1,17 @@
 # src/qicore/application/cli/app.py
-import click
-from typing import Any, Callable, Optional, List
-from ...base.result import Result
-from ...base.error import QiError
-from ...core.logging import StructuredLogger
 import asyncio
+from collections.abc import Callable
 from functools import wraps
+from typing import Any
+
+import click
 from rich.console import Console
-from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
+
+from ...base.result import Result
+from ...core.logging import StructuredLogger
+
 
 class CLIApplication:
     """Command-line application with Result-based error handling"""
@@ -17,7 +20,7 @@ class CLIApplication:
         self,
         name: str,
         version: str = "4.0.1",
-        logger: Optional[StructuredLogger] = None
+        logger: StructuredLogger | None = None
     ):
         self.name = name
         self.version = version
@@ -33,7 +36,7 @@ class CLIApplication:
     # Operation 1: Add command
     def command(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         **kwargs: Any
     ) -> Callable:
         """Decorator for Result-based commands"""
@@ -77,14 +80,16 @@ class CLIApplication:
     # Operation 4: Show progress
     def progress(self, description: str) -> Progress:
         """Create progress indicator"""
-        return Progress(
+        progress = Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=self.console
         )
+        progress.add_task(description)
+        return progress
     
     # Operation 5: Display table
-    def display_table(self, title: str, columns: List[str], rows: List[List[Any]]) -> None:
+    def display_table(self, title: str, columns: list[str], rows: list[list[Any]]) -> None:
         """Display data in table format"""
         table = Table(title=title, show_header=True)
         
@@ -104,18 +109,21 @@ class CLIApplication:
                 if value is not None:
                     self.console.print(value)
                 return 0
-            else:
-                # Extract error from failed result
-                try:
-                    error = result._inner._inner_value if hasattr(result._inner, '_inner_value') else None
-                    if error and hasattr(error, 'message'):
-                        self.logger.error(f"Command failed: {error.message}")
-                        self.console.print(f"[red]Error: {error.message}[/red]")
-                    else:
-                        self.logger.error("Command failed with unknown error")
-                        self.console.print("[red]Error: Unknown error occurred[/red]")
-                except Exception as e:
-                    self.logger.error(f"Error handling failed result: {e}")
-                    self.console.print("[red]Error: Failed to process error[/red]")
-                return 1
+            # Extract error from failed result
+            try:
+                error = (
+                result._inner._inner_value 
+                if hasattr(result._inner, '_inner_value') 
+                else None
+            )
+                if error and hasattr(error, 'message'):
+                    self.logger.error(f"Command failed: {error.message}")
+                    self.console.print(f"[red]Error: {error.message}[/red]")
+                else:
+                    self.logger.error("Command failed with unknown error")
+                    self.console.print("[red]Error: Unknown error occurred[/red]")
+            except Exception as e:
+                self.logger.error(f"Error handling failed result: {e}")
+                self.console.print("[red]Error: Failed to process error[/red]")
+            return 1
         return result

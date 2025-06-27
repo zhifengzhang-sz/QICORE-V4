@@ -1,1198 +1,203 @@
-# QiCore v4.0 Python Implementation Templates
+name: "Stage 5: Design to TypeScript Implementation"
+description: "Transform design patterns into concrete TypeScript implementations using researched packages"
+version: "v4.0.1"
+stage: 5
+language: "TypeScript"
 
-> **Stage 5: Python-Specific Code Templates**  
-> **Depends on**: [Implementation Templates](qi.v4.impl.template.md), [Python Package Research](../package/py.md), [Mathematical Contracts](../guides/mathematical-contracts.md)  
-> **Purpose**: Ready-to-use Python code templates with package integration  
-> Version: v4.0.1  
-> Date: June 26, 2025  
-> Status: Python Code Templates
+# ============================================================================
+# STAGE 5 TRANSFORMATION OBJECTIVE
+# ============================================================================
 
-## Base Components
+objective: |
+  Transform language-agnostic design patterns into concrete TypeScript implementations by:
+  
+  1. **Type-Safe Implementation**: Leverage TypeScript's type system fully
+  2. **Functional Pattern Integration**: Use fp-ts and effect-ts effectively
+  3. **Mathematical Law Preservation**: Ensure compile-time correctness
+  4. **Performance Optimization**: Apply TypeScript-specific optimizations
+  5. **Package Integration**: Wrap selected packages with type-safe interfaces
 
-### Result<T> Implementation
+# ============================================================================
+# INPUT SPECIFICATIONS
+# ============================================================================
 
-```python
-# src/qicore/base/result.py
-from typing import TypeVar, Generic, Callable, Union, Optional, Any
-from returns.result import Result as ReturnsResult, Success, Failure
-from returns.pipeline import pipe
-from returns.pointfree import bind, map_
-from dataclasses import dataclass
-import traceback
-import time
+inputs:
+  required_files:
+    - path: "build/impl/qi.v4.impl.template.md"
+      description: "Language-agnostic implementation template from Stage 3"
+    
+    - path: "build/package/ts.md"  # FIXED: was build/research/qi.v4.ts.packages.md
+      description: "TypeScript package research results from Stage 4"
+    
+    - path: "build/guides/mathematical-contracts.md"
+      description: "Mathematical contracts from Stage 1"
+    
+    - path: "sources/guides/common.md"
+      description: "Mathematical foundations and categorical structures"
+    
+    - path: "sources/guides/impl.ts.prompt.md"
+      description: "Stage 5 TypeScript-specific transformation instructions"
 
-T = TypeVar('T')
-E = TypeVar('E')
-U = TypeVar('U')
+# ============================================================================
+# OUTPUT SPECIFICATIONS
+# ============================================================================
 
-@dataclass(frozen=True)
-class QiError:
-    """Structured error with context and chaining support"""
-    category: str
-    message: str
-    context: dict[str, Any]
-    timestamp: float
-    cause: Optional['QiError'] = None
-    stack_trace: Optional[str] = None
-    
-    @classmethod
-    def validation_error(cls, message: str, field: str, value: Any) -> 'QiError':
-        return cls(
-            category="ValidationError",
-            message=message,
-            context={"field": field, "value": str(value)},
-            timestamp=time.time(),
-            stack_trace=traceback.format_stack()
-        )
-    
-    @classmethod
-    def network_error(cls, message: str, url: str, status_code: Optional[int] = None) -> 'QiError':
-        return cls(
-            category="NetworkError",
-            message=message,
-            context={"url": url, "status_code": status_code},
-            timestamp=time.time()
-        )
-    
-    def chain(self, cause: 'QiError') -> 'QiError':
-        """Chain errors for better debugging"""
-        return QiError(
-            category=self.category,
-            message=self.message,
-            context=self.context,
-            timestamp=self.timestamp,
-            cause=cause,
-            stack_trace=self.stack_trace
-        )
-
-class Result(Generic[T]):
-    """Result monad implementation wrapping returns.Result"""
-    
-    def __init__(self, value: Union[ReturnsResult[T, QiError], T, QiError]):
-        if isinstance(value, ReturnsResult):
-            self._inner = value
-        elif isinstance(value, QiError):
-            self._inner = Failure(value)
-        else:
-            self._inner = Success(value)
-    
-    @classmethod
-    def success(cls, value: T) -> 'Result[T]':
-        """Create successful result"""
-        return cls(Success(value))
-    
-    @classmethod
-    def failure(cls, error: QiError) -> 'Result[T]':
-        """Create failed result"""
-        return cls(Failure(error))
-    
-    def map(self, fn: Callable[[T], U]) -> 'Result[U]':
-        """Map function over success value"""
-        return Result(self._inner.map(fn))
-    
-    def flat_map(self, fn: Callable[[T], 'Result[U]']) -> 'Result[U]':
-        """Monadic bind operation"""
-        return Result(self._inner.bind(lambda x: fn(x)._inner))
-    
-    def map_error(self, fn: Callable[[QiError], QiError]) -> 'Result[T]':
-        """Transform error value"""
-        return Result(self._inner.alt(lambda e: Failure(fn(e))))
-    
-    def recover(self, fn: Callable[[QiError], T]) -> 'Result[T]':
-        """Recover from error with fallback"""
-        return Result(self._inner.alt(lambda e: Success(fn(e))))
-    
-    def unwrap_or(self, default: T) -> T:
-        """Get value or default"""
-        return self._inner.value_or(default)
-    
-    def unwrap(self) -> T:
-        """Force unwrap - raises if error"""
-        return self._inner.unwrap()
-    
-    def is_success(self) -> bool:
-        """Check if successful"""
-        return self._inner.is_ok()
-    
-    def is_failure(self) -> bool:
-        """Check if failed"""
-        return not self.is_success()
-```
-
-## Core Components
-
-### Configuration Management
-
-```python
-# src/qicore/core/configuration.py
-from typing import Any, Dict, Optional, Type, TypeVar, Generic
-from pydantic import BaseModel, ValidationError
-from pydantic_settings import BaseSettings
-from cytoolz import merge
-import yaml
-import json
-import os
-from pathlib import Path
-from ..base.result import Result, QiError
-
-T = TypeVar('T', bound=BaseModel)
-
-class Configuration(Generic[T]):
-    """Type-safe configuration with monoid merge semantics"""
-    
-    def __init__(self, schema: Type[T]):
-        self.schema = schema
-        self._data: Optional[T] = None
-    
-    def load_from_env(self) -> Result[T]:
-        """Load from environment variables"""
-        try:
-            config = self.schema()  # BaseSettings auto-loads from env
-            self._data = config
-            return Result.success(config)
-        except ValidationError as e:
-            return Result.failure(
-                QiError.validation_error(
-                    f"Environment validation failed: {e}",
-                    "env",
-                    str(e.errors())
-                )
-            )
-    
-    def load_from_file(self, path: Path) -> Result[T]:
-        """Load from YAML/JSON file"""
-        try:
-            if not path.exists():
-                return Result.failure(
-                    QiError.validation_error(
-                        f"Config file not found: {path}",
-                        "path",
-                        str(path)
-                    )
-                )
-            
-            with open(path) as f:
-                if path.suffix in ['.yaml', '.yml']:
-                    data = yaml.safe_load(f)
-                elif path.suffix == '.json':
-                    data = json.load(f)
-                else:
-                    return Result.failure(
-                        QiError.validation_error(
-                            f"Unsupported file type: {path.suffix}",
-                            "path",
-                            str(path)
-                        )
-                    )
-            
-            config = self.schema(**data)
-            self._data = config
-            return Result.success(config)
-            
-        except Exception as e:
-            return Result.failure(
-                QiError.validation_error(
-                    f"Failed to load config: {e}",
-                    "path",
-                    str(path)
-                )
-            )
-    
-    def merge(self, other: 'Configuration[T]') -> Result['Configuration[T]']:
-        """Monoid merge operation"""
-        if not self._data or not other._data:
-            return Result.failure(
-                QiError.validation_error(
-                    "Cannot merge uninitialized configurations",
-                    "config",
-                    "uninitialized"
-                )
-            )
+outputs:
+  target_files:
+    - path: "build/impl/qi.v4.ts.template.md"
+      description: "TypeScript code templates with runnable examples"
+      required_sections:
+        - "Base Component Types (Result<T>, QiError)"
+        - "Core Component Implementation"
+        - "Application Component Implementation"
+        - "Type Definitions and Interfaces"
+        - "fp-ts Integration Examples"
+        - "Effect System Usage"
         
-        try:
-            # Deep merge using cytoolz
-            merged_dict = merge(
-                self._data.model_dump(),
-                other._data.model_dump()
-            )
-            merged_config = self.schema(**merged_dict)
-            
-            result = Configuration(self.schema)
-            result._data = merged_config
-            return Result.success(result)
-            
-        except Exception as e:
-            return Result.failure(
-                QiError.validation_error(
-                    f"Merge failed: {e}",
-                    "merge",
-                    str(e)
-                )
-            )
-    
-    def get(self) -> Result[T]:
-        """Get current configuration"""
-        if self._data:
-            return Result.success(self._data)
-        return Result.failure(
-            QiError.validation_error(
-                "Configuration not loaded",
-                "config",
-                "uninitialized"
-            )
-        )
-```
+    - path: "build/impl/qi.v4.ts.impl.md"
+      description: "TypeScript implementation guide and assembly instructions"
+      required_sections:
+        - "Project Setup and Dependencies"
+        - "Type System Architecture"
+        - "Package Integration Strategy"
+        - "Build Configuration"
+        - "Testing with fast-check"
+        - "Performance Optimization"
+        - "Deployment Guide"
 
-### Structured Logging
+  project_structure:
+    base_path: "src/"
+    components:
+      - "base/ (Result<T>, QiError types)"
+      - "core/ (Configuration, Logger, Cache)"
+      - "http/ (HTTP client with circuit breaker)"
+      - "document/ (Document generation with streaming)"
+      - "clp/ (Command-line processing)"
 
-```python
-# src/qicore/core/logging.py
-import structlog
-from typing import Any, Dict, Optional, Protocol, runtime_checkable
-from contextvars import ContextVar
-from ..base.result import Result, QiError
-import sys
+# ============================================================================
+# TRANSFORMATION PROCESS
+# ============================================================================
 
-# Context variable for request correlation
-correlation_id: ContextVar[Optional[str]] = ContextVar('correlation_id', default=None)
+transformation_process:
+  
+  step_1_type_architecture:
+    description: "Design TypeScript type architecture"
+    actions:
+      - "Map Result monad to fp-ts Either/Option"
+      - "Create discriminated unions for errors"
+      - "Design generic type constraints"
+      - "Implement phantom types where beneficial"
+      - "Create branded types for validation"
+  
+  step_2_functional_integration:
+    description: "Integrate functional programming patterns"
+    actions:
+      - "Use fp-ts for monadic operations"
+      - "Apply io-ts for runtime validation"
+      - "Implement effect-ts for side effects"
+      - "Create pipeable APIs"
+      - "Use function composition throughout"
+  
+  step_3_type_safety:
+    description: "Maximize compile-time safety"
+    actions:
+      - "No use of 'any' type"
+      - "Exhaustive pattern matching"
+      - "Const assertions for literals"
+      - "Type predicates for narrowing"
+      - "Conditional types where appropriate"
+  
+  step_4_performance:
+    description: "Optimize for JavaScript engines"
+    actions:
+      - "Minimize allocations in hot paths"
+      - "Use object pools for frequent operations"
+      - "Implement efficient serialization"
+      - "Apply tree-shaking friendly exports"
+      - "Bundle optimization strategies"
 
-@runtime_checkable
-class LoggerProtocol(Protocol):
-    """Logger effect interface"""
-    def debug(self, message: str, **kwargs: Any) -> None: ...
-    def info(self, message: str, **kwargs: Any) -> None: ...
-    def warning(self, message: str, **kwargs: Any) -> None: ...
-    def error(self, message: str, **kwargs: Any) -> None: ...
-    def with_context(self, **kwargs: Any) -> 'LoggerProtocol': ...
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
 
-class StructuredLogger:
-    """High-performance structured logging with context propagation"""
-    
-    def __init__(self, name: str, context: Optional[Dict[str, Any]] = None):
-        self.name = name
-        self.context = context or {}
-        self._logger = structlog.get_logger(name).bind(**self.context)
-    
-    def debug(self, message: str, **kwargs: Any) -> None:
-        """Log debug message"""
-        self._add_correlation_id(kwargs)
-        self._logger.debug(message, **kwargs)
-    
-    def info(self, message: str, **kwargs: Any) -> None:
-        """Log info message"""
-        self._add_correlation_id(kwargs)
-        self._logger.info(message, **kwargs)
-    
-    def warning(self, message: str, **kwargs: Any) -> None:
-        """Log warning message"""
-        self._add_correlation_id(kwargs)
-        self._logger.warning(message, **kwargs)
-    
-    def error(self, message: str, **kwargs: Any) -> None:
-        """Log error message"""
-        self._add_correlation_id(kwargs)
-        self._logger.error(message, **kwargs)
-    
-    def with_context(self, **kwargs: Any) -> 'StructuredLogger':
-        """Create new logger with additional context"""
-        new_context = {**self.context, **kwargs}
-        return StructuredLogger(self.name, new_context)
-    
-    def _add_correlation_id(self, kwargs: Dict[str, Any]) -> None:
-        """Add correlation ID from context var"""
-        if cid := correlation_id.get():
-            kwargs['correlation_id'] = cid
+quality_assurance:
+  
+  type_correctness:
+    - "All operations fully typed"
+    - "No implicit any usage"
+    - "Discriminated unions exhaustive"
+    - "Generic constraints appropriate"
+  
+  functional_patterns:
+    - "Monadic laws preserved"
+    - "Referential transparency maintained"
+    - "Side effects properly managed"
+    - "Composition laws satisfied"
+  
+  build_quality:
+    - "Zero TypeScript errors"
+    - "Strict mode enabled"
+    - "All flags configured properly"
+    - "Bundle size optimized"
 
-def configure_logging(
-    level: str = "INFO",
-    format: str = "json",
-    add_timestamp: bool = True
-) -> Result[None]:
-    """Configure global logging settings"""
-    try:
-        processors = [
-            structlog.stdlib.filter_by_level,
-            structlog.stdlib.add_logger_name,
-            structlog.stdlib.add_log_level,
-            structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-        ]
-        
-        if add_timestamp:
-            processors.append(structlog.processors.TimeStamper(fmt="iso"))
-        
-        if format == "json":
-            processors.append(structlog.processors.JSONRenderer())
-        else:
-            processors.append(structlog.dev.ConsoleRenderer())
-        
-        structlog.configure(
-            processors=processors,
-            context_class=dict,
-            logger_factory=structlog.stdlib.LoggerFactory(),
-            wrapper_class=structlog.stdlib.BoundLogger,
-            cache_logger_on_first_use=True,
-        )
-        
-        return Result.success(None)
-        
-    except Exception as e:
-        return Result.failure(
-            QiError.validation_error(
-                f"Failed to configure logging: {e}",
-                "logging",
-                str(e)
-            )
-        )
-```
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
 
-### High-Performance Cache
+success_criteria:
+  
+  implementation_coverage:
+    - "[ ] All 99 operations type-safe"
+    - "[ ] All components have interfaces"
+    - "[ ] All errors discriminated unions"
+    - "[ ] All async operations Promise-based"
+  
+  type_system_usage:
+    - "[ ] Generics used appropriately"
+    - "[ ] Conditional types where beneficial"
+    - "[ ] Mapped types for transformations"
+    - "[ ] Template literal types for DSLs"
+  
+  package_integration:
+    - "[ ] fp-ts integrated throughout"
+    - "[ ] All packages properly typed"
+    - "[ ] No @ts-ignore usage"
+    - "[ ] Type definitions exported"
 
-```python
-# src/qicore/core/cache.py
-from typing import TypeVar, Generic, Optional, Dict, Any, Callable
-from cachetools import TTLCache, LRUCache
-import asyncio
-import time
-import pickle
-from ..base.result import Result, QiError
+# ============================================================================
+# VALIDATION METHOD
+# ============================================================================
 
-K = TypeVar('K')
-V = TypeVar('V')
-
-class Cache(Generic[K, V]):
-    """Thread-safe cache with TTL and LRU eviction"""
+validation:
+  method: "Generate verification report using success criteria from sources/guides/impl.prompt.md"
+  
+  verification_report:
+    target_file: "stage5-typescript-verification-report.md"
+    required_sections:
+      - "Operation Implementation Verification"
+      - "Type Safety Verification"
+      - "Mathematical Property Preservation"
+      - "Package Integration Verification"
+      - "Performance Optimization Verification"
+      - "Success Criteria Compliance"
     
-    def __init__(
-        self,
-        max_size: int = 1000,
-        ttl: Optional[float] = None,
-        eviction_callback: Optional[Callable[[K, V], None]] = None
-    ):
-        self.max_size = max_size
-        self.ttl = ttl
-        self.eviction_callback = eviction_callback
-        
-        if ttl:
-            self._cache: Dict[K, V] = TTLCache(maxsize=max_size, ttl=ttl)
-        else:
-            self._cache = LRUCache(maxsize=max_size)
-        
-        self._lock = asyncio.Lock()
-        self._stats = {
-            'hits': 0,
-            'misses': 0,
-            'evictions': 0
-        }
-    
-    async def get(self, key: K) -> Result[Optional[V]]:
-        """Get value from cache"""
-        async with self._lock:
-            try:
-                if key in self._cache:
-                    self._stats['hits'] += 1
-                    return Result.success(self._cache[key])
-                else:
-                    self._stats['misses'] += 1
-                    return Result.success(None)
-            except Exception as e:
-                return Result.failure(
-                    QiError.validation_error(
-                        f"Cache get failed: {e}",
-                        "key",
-                        str(key)
-                    )
-                )
-    
-    async def set(self, key: K, value: V) -> Result[None]:
-        """Set value in cache"""
-        async with self._lock:
-            try:
-                # Check if we're about to evict
-                if len(self._cache) >= self.max_size and key not in self._cache:
-                    self._stats['evictions'] += 1
-                    if self.eviction_callback:
-                        # Get the item that will be evicted
-                        evicted_key = next(iter(self._cache))
-                        evicted_value = self._cache[evicted_key]
-                        self.eviction_callback(evicted_key, evicted_value)
-                
-                self._cache[key] = value
-                return Result.success(None)
-                
-            except Exception as e:
-                return Result.failure(
-                    QiError.validation_error(
-                        f"Cache set failed: {e}",
-                        "key",
-                        str(key)
-                    )
-                )
-    
-    async def delete(self, key: K) -> Result[bool]:
-        """Delete value from cache"""
-        async with self._lock:
-            try:
-                if key in self._cache:
-                    del self._cache[key]
-                    return Result.success(True)
-                return Result.success(False)
-            except Exception as e:
-                return Result.failure(
-                    QiError.validation_error(
-                        f"Cache delete failed: {e}",
-                        "key",
-                        str(key)
-                    )
-                )
-    
-    async def clear(self) -> Result[None]:
-        """Clear all cache entries"""
-        async with self._lock:
-            try:
-                self._cache.clear()
-                return Result.success(None)
-            except Exception as e:
-                return Result.failure(
-                    QiError.validation_error(
-                        f"Cache clear failed: {e}",
-                        "cache",
-                        "clear"
-                    )
-                )
-    
-    def get_stats(self) -> Dict[str, int]:
-        """Get cache statistics"""
-        return {
-            **self._stats,
-            'size': len(self._cache),
-            'max_size': self.max_size
-        }
-    
-    async def memoize(self, fn: Callable, *args, **kwargs) -> Result[Any]:
-        """Memoize function results"""
-        # Create cache key from function and arguments
-        key = (fn.__name__, pickle.dumps((args, kwargs)))
-        
-        # Try to get from cache
-        cached = await self.get(key)
-        if cached.is_success() and cached.unwrap() is not None:
-            return Result.success(cached.unwrap())
-        
-        # Compute and cache result
-        try:
-            result = await fn(*args, **kwargs) if asyncio.iscoroutinefunction(fn) else fn(*args, **kwargs)
-            await self.set(key, result)
-            return Result.success(result)
-        except Exception as e:
-            return Result.failure(
-                QiError.validation_error(
-                    f"Memoization failed: {e}",
-                    "function",
-                    fn.__name__
-                )
-            )
-```
-
-## Application Components
-
-### HTTP Client with Circuit Breaker
-
-```python
-# src/qicore/application/http_client.py
-import httpx
-import asyncio
-from typing import Dict, Any, Optional, List
-from circuitbreaker import circuit
-from tenacity import retry, stop_after_attempt, wait_exponential
-from ..base.result import Result, QiError
-from ..core.logging import StructuredLogger
-
-class HTTPClient:
-    """Async HTTP client with circuit breaker and retry logic"""
-    
-    def __init__(
-        self,
-        base_url: Optional[str] = None,
-        timeout: float = 30.0,
-        max_retries: int = 3,
-        circuit_failure_threshold: int = 5,
-        circuit_recovery_timeout: int = 60,
-        logger: Optional[StructuredLogger] = None
-    ):
-        self.base_url = base_url
-        self.timeout = timeout
-        self.max_retries = max_retries
-        self.logger = logger or StructuredLogger("http_client")
-        
-        # Configure circuit breaker
-        self._circuit_failure_threshold = circuit_failure_threshold
-        self._circuit_recovery_timeout = circuit_recovery_timeout
-        
-        # HTTP client with connection pooling
-        self._client = httpx.AsyncClient(
-            base_url=base_url,
-            timeout=timeout,
-            limits=httpx.Limits(max_keepalive_connections=10, max_connections=100)
-        )
-    
-    @circuit(failure_threshold=5, recovery_timeout=60)
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10)
-    )
-    async def get(
-        self,
-        path: str,
-        params: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None
-    ) -> Result[httpx.Response]:
-        """GET request with circuit breaker"""
-        try:
-            self.logger.info(f"GET {path}", params=params)
-            response = await self._client.get(path, params=params, headers=headers)
-            response.raise_for_status()
-            return Result.success(response)
-            
-        except httpx.HTTPStatusError as e:
-            self.logger.error(f"HTTP error: {e}", status=e.response.status_code)
-            return Result.failure(
-                QiError.network_error(
-                    f"HTTP {e.response.status_code}: {e.response.text}",
-                    str(e.request.url),
-                    e.response.status_code
-                )
-            )
-        except Exception as e:
-            self.logger.error(f"Request failed: {e}")
-            return Result.failure(
-                QiError.network_error(
-                    f"Request failed: {e}",
-                    path
-                )
-            )
-    
-    @circuit(failure_threshold=5, recovery_timeout=60)
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10)
-    )
-    async def post(
-        self,
-        path: str,
-        json: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None
-    ) -> Result[httpx.Response]:
-        """POST request with circuit breaker"""
-        try:
-            self.logger.info(f"POST {path}")
-            response = await self._client.post(
-                path,
-                json=json,
-                data=data,
-                headers=headers
-            )
-            response.raise_for_status()
-            return Result.success(response)
-            
-        except httpx.HTTPStatusError as e:
-            self.logger.error(f"HTTP error: {e}", status=e.response.status_code)
-            return Result.failure(
-                QiError.network_error(
-                    f"HTTP {e.response.status_code}: {e.response.text}",
-                    str(e.request.url),
-                    e.response.status_code
-                )
-            )
-        except Exception as e:
-            self.logger.error(f"Request failed: {e}")
-            return Result.failure(
-                QiError.network_error(
-                    f"Request failed: {e}",
-                    path
-                )
-            )
-    
-    async def close(self) -> None:
-        """Close HTTP client connections"""
-        await self._client.aclose()
-    
-    def is_circuit_open(self) -> bool:
-        """Check if circuit breaker is open"""
-        # Access circuit breaker state through decorator
-        return False  # Simplified - would need actual circuit state access
-```
-
-### Web Framework Integration
-
-```python
-# src/qicore/application/web_framework.py
-from fastapi import FastAPI, Request, Response, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from typing import Callable, Any, Optional, List
-from ..base.result import Result, QiError
-from ..core.logging import StructuredLogger, correlation_id
-import uuid
-import time
-
-class WebApplication:
-    """FastAPI integration with QiCore patterns"""
-    
-    def __init__(
-        self,
-        title: str = "QiCore API",
-        version: str = "4.0.1",
-        logger: Optional[StructuredLogger] = None
-    ):
-        self.app = FastAPI(title=title, version=version)
-        self.logger = logger or StructuredLogger("web_app")
-        self._setup_middleware()
-        self._setup_error_handlers()
-    
-    def _setup_middleware(self) -> None:
-        """Configure middleware stack"""
-        
-        # CORS middleware
-        self.app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-        
-        # Request ID middleware
-        @self.app.middleware("http")
-        async def add_correlation_id(request: Request, call_next: Callable) -> Response:
-            request_id = str(uuid.uuid4())
-            correlation_id.set(request_id)
-            
-            start_time = time.time()
-            response = await call_next(request)
-            process_time = time.time() - start_time
-            
-            response.headers["X-Request-ID"] = request_id
-            response.headers["X-Process-Time"] = str(process_time)
-            
-            self.logger.info(
-                "Request processed",
-                method=request.method,
-                path=request.url.path,
-                status=response.status_code,
-                duration=process_time
-            )
-            
-            return response
-    
-    def _setup_error_handlers(self) -> None:
-        """Configure error handlers"""
-        
-        @self.app.exception_handler(HTTPException)
-        async def http_exception_handler(request: Request, exc: HTTPException):
-            return JSONResponse(
-                status_code=exc.status_code,
-                content={
-                    "error": {
-                        "message": exc.detail,
-                        "status_code": exc.status_code,
-                        "request_id": correlation_id.get()
-                    }
-                }
-            )
-        
-        @self.app.exception_handler(Exception)
-        async def general_exception_handler(request: Request, exc: Exception):
-            self.logger.error(f"Unhandled exception: {exc}", exc_info=True)
-            return JSONResponse(
-                status_code=500,
-                content={
-                    "error": {
-                        "message": "Internal server error",
-                        "status_code": 500,
-                        "request_id": correlation_id.get()
-                    }
-                }
-            )
-    
-    def route(
-        self,
-        path: str,
-        methods: List[str] = ["GET"],
-        response_model: Optional[Any] = None
-    ) -> Callable:
-        """Decorator for Result-based routes"""
-        def decorator(fn: Callable) -> Callable:
-            async def wrapper(*args, **kwargs) -> Any:
-                result = await fn(*args, **kwargs)
-                
-                if isinstance(result, Result):
-                    if result.is_success():
-                        return result.unwrap()
-                    else:
-                        error = result.unwrap()  # This will raise
-                        raise HTTPException(
-                            status_code=400,
-                            detail=error.message
-                        )
-                return result
-            
-            # Register with FastAPI
-            self.app.add_api_route(
-                path,
-                wrapper,
-                methods=methods,
-                response_model=response_model
-            )
-            
-            return wrapper
-        return decorator
-    
-    def get_app(self) -> FastAPI:
-        """Get FastAPI application instance"""
-        return self.app
-```
-
-### AI/LLM Client Integration
-
-```python
-# src/qicore/application/ai_client.py
-from typing import List, Dict, Any, Optional, AsyncIterator
-from openai import AsyncOpenAI
-from anthropic import AsyncAnthropic
-import ollama
-from ..base.result import Result, QiError
-from ..core.logging import StructuredLogger
-import asyncio
-
-class AIClient:
-    """Unified AI/LLM client with streaming support"""
-    
-    def __init__(
-        self,
-        provider: str = "openai",
-        api_key: Optional[str] = None,
-        model: str = "gpt-4",
-        temperature: float = 0.7,
-        logger: Optional[StructuredLogger] = None
-    ):
-        self.provider = provider
-        self.model = model
-        self.temperature = temperature
-        self.logger = logger or StructuredLogger("ai_client")
-        
-        # Initialize provider client
-        if provider == "openai":
-            self.client = AsyncOpenAI(api_key=api_key)
-        elif provider == "anthropic":
-            self.client = AsyncAnthropic(api_key=api_key)
-        elif provider == "ollama":
-            self.client = ollama.AsyncClient()
-        else:
-            raise ValueError(f"Unsupported provider: {provider}")
-    
-    async def complete(
-        self,
-        prompt: str,
-        max_tokens: int = 1000,
-        system_prompt: Optional[str] = None
-    ) -> Result[str]:
-        """Single completion request"""
-        try:
-            messages = []
-            if system_prompt:
-                messages.append({"role": "system", "content": system_prompt})
-            messages.append({"role": "user", "content": prompt})
-            
-            self.logger.info(f"Completion request to {self.provider}")
-            
-            if self.provider == "openai":
-                response = await self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    temperature=self.temperature,
-                    max_tokens=max_tokens
-                )
-                return Result.success(response.choices[0].message.content)
-                
-            elif self.provider == "anthropic":
-                response = await self.client.completions.create(
-                    model=self.model,
-                    prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
-                    max_tokens_to_sample=max_tokens,
-                    temperature=self.temperature
-                )
-                return Result.success(response.completion)
-                
-            elif self.provider == "ollama":
-                response = await self.client.generate(
-                    model=self.model,
-                    prompt=prompt,
-                    options={"temperature": self.temperature}
-                )
-                return Result.success(response['response'])
-                
-        except Exception as e:
-            self.logger.error(f"Completion failed: {e}")
-            return Result.failure(
-                QiError.network_error(
-                    f"AI completion failed: {e}",
-                    self.provider
-                )
-            )
-    
-    async def stream(
-        self,
-        prompt: str,
-        max_tokens: int = 1000,
-        system_prompt: Optional[str] = None
-    ) -> AsyncIterator[Result[str]]:
-        """Streaming completion with backpressure handling"""
-        try:
-            messages = []
-            if system_prompt:
-                messages.append({"role": "system", "content": system_prompt})
-            messages.append({"role": "user", "content": prompt})
-            
-            self.logger.info(f"Streaming request to {self.provider}")
-            
-            if self.provider == "openai":
-                stream = await self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    temperature=self.temperature,
-                    max_tokens=max_tokens,
-                    stream=True
-                )
-                
-                async for chunk in stream:
-                    if chunk.choices[0].delta.content:
-                        yield Result.success(chunk.choices[0].delta.content)
-                        
-            elif self.provider == "anthropic":
-                # Anthropic streaming implementation
-                yield Result.failure(
-                    QiError.validation_error(
-                        "Streaming not yet implemented for Anthropic",
-                        "provider",
-                        "anthropic"
-                    )
-                )
-                
-            elif self.provider == "ollama":
-                # Ollama streaming
-                async for chunk in await self.client.generate_stream(
-                    model=self.model,
-                    prompt=prompt,
-                    options={"temperature": self.temperature}
-                ):
-                    yield Result.success(chunk['response'])
-                    
-        except Exception as e:
-            self.logger.error(f"Streaming failed: {e}")
-            yield Result.failure(
-                QiError.network_error(
-                    f"AI streaming failed: {e}",
-                    self.provider
-                )
-            )
-```
-
-### Command-Line Processing
-
-```python
-# src/qicore/application/cli.py
-import click
-from typing import Any, Callable, Optional
-from ..base.result import Result, QiError
-from ..core.logging import StructuredLogger
-import asyncio
-from functools import wraps
-
-class CLIApplication:
-    """Command-line application with Result-based error handling"""
-    
-    def __init__(
-        self,
-        name: str,
-        version: str = "4.0.1",
-        logger: Optional[StructuredLogger] = None
-    ):
-        self.name = name
-        self.version = version
-        self.logger = logger or StructuredLogger("cli")
-        self.cli = click.Group(name=name)
-        self._setup_global_options()
-    
-    def _setup_global_options(self) -> None:
-        """Add global CLI options"""
-        self.cli = click.version_option(version=self.version)(self.cli)
-    
-    def command(
-        self,
-        name: Optional[str] = None,
-        **kwargs: Any
-    ) -> Callable:
-        """Decorator for Result-based commands"""
-        def decorator(fn: Callable) -> Callable:
-            # Handle async functions
-            if asyncio.iscoroutinefunction(fn):
-                @wraps(fn)
-                def wrapper(*args, **kwargs):
-                    async def run():
-                        result = await fn(*args, **kwargs)
-                        return self._handle_result(result)
-                    
-                    return asyncio.run(run())
-            else:
-                @wraps(fn)
-                def wrapper(*args, **kwargs):
-                    result = fn(*args, **kwargs)
-                    return self._handle_result(result)
-            
-            # Register with Click
-            return self.cli.command(name=name, **kwargs)(wrapper)
-        
-        return decorator
-    
-    def _handle_result(self, result: Any) -> Any:
-        """Handle Result return values"""
-        if isinstance(result, Result):
-            if result.is_success():
-                value = result.unwrap()
-                if value is not None:
-                    click.echo(value)
-                return 0
-            else:
-                error = result._inner._inner_value
-                self.logger.error(f"Command failed: {error.message}")
-                click.echo(f"Error: {error.message}", err=True)
-                return 1
-        return result
-    
-    def run(self) -> None:
-        """Run the CLI application"""
-        self.cli()
-
-# Example usage decorator
-def result_command(fn: Callable) -> Callable:
-    """Decorator to handle Result returns in Click commands"""
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        result = fn(*args, **kwargs)
-        if isinstance(result, Result):
-            if result.is_success():
-                return result.unwrap()
-            else:
-                error = result._inner._inner_value
-                raise click.ClickException(error.message)
-        return result
-    return wrapper
-```
-
-## Testing Utilities
-
-### Property-Based Testing
-
-```python
-# src/qicore/testing/properties.py
-from hypothesis import given, strategies as st
-from ..base.result import Result, QiError
-import pytest
-
-class PropertyTests:
-    """Property-based tests for mathematical laws"""
-    
-    @staticmethod
-    def test_monad_laws():
-        """Test Result monad laws"""
-        
-        # Left identity: Result.success(a).flat_map(f) == f(a)
-        @given(st.integers())
-        def test_left_identity(x: int):
-            f = lambda n: Result.success(n * 2)
-            assert Result.success(x).flat_map(f).unwrap() == f(x).unwrap()
-        
-        # Right identity: m.flat_map(Result.success) == m
-        @given(st.integers())
-        def test_right_identity(x: int):
-            m = Result.success(x)
-            assert m.flat_map(Result.success).unwrap() == m.unwrap()
-        
-        # Associativity: m.flat_map(f).flat_map(g) == m.flat_map(lambda x: f(x).flat_map(g))
-        @given(st.integers())
-        def test_associativity(x: int):
-            f = lambda n: Result.success(n * 2)
-            g = lambda n: Result.success(n + 1)
-            m = Result.success(x)
-            
-            left = m.flat_map(f).flat_map(g).unwrap()
-            right = m.flat_map(lambda n: f(n).flat_map(g)).unwrap()
-            assert left == right
-        
-        test_left_identity()
-        test_right_identity()
-        test_associativity()
-```
-
-## Performance Benchmarks
-
-```python
-# src/qicore/benchmarks/performance.py
-import asyncio
-import time
-from typing import List, Dict, Any
-from ..base.result import Result
-from ..core.cache import Cache
-
-async def benchmark_cache_operations(iterations: int = 10000) -> Dict[str, float]:
-    """Benchmark cache performance"""
-    cache = Cache[str, str](max_size=1000)
-    
-    # Benchmark writes
-    start = time.time()
-    for i in range(iterations):
-        await cache.set(f"key_{i}", f"value_{i}")
-    write_time = time.time() - start
-    
-    # Benchmark reads (hits)
-    start = time.time()
-    for i in range(iterations):
-        await cache.get(f"key_{i}")
-    read_hit_time = time.time() - start
-    
-    # Benchmark reads (misses)
-    start = time.time()
-    for i in range(iterations):
-        await cache.get(f"missing_key_{i}")
-    read_miss_time = time.time() - start
-    
-    return {
-        "writes_per_second": iterations / write_time,
-        "read_hits_per_second": iterations / read_hit_time,
-        "read_misses_per_second": iterations / read_miss_time,
-        "cache_stats": cache.get_stats()
-    }
-
-def benchmark_result_operations(iterations: int = 100000) -> Dict[str, float]:
-    """Benchmark Result monad operations"""
-    
-    # Benchmark creation
-    start = time.time()
-    for i in range(iterations):
-        Result.success(i)
-    creation_time = time.time() - start
-    
-    # Benchmark map operations
-    result = Result.success(1)
-    start = time.time()
-    for i in range(iterations):
-        result.map(lambda x: x + 1)
-    map_time = time.time() - start
-    
-    # Benchmark flat_map operations
-    start = time.time()
-    for i in range(iterations):
-        result.flat_map(lambda x: Result.success(x + 1))
-    flat_map_time = time.time() - start
-    
-    return {
-        "creations_per_second": iterations / creation_time,
-        "maps_per_second": iterations / map_time,
-        "flat_maps_per_second": iterations / flat_map_time
-    }
-```
-
-## Integration Examples
-
-### Complete Web Service Example
-
-```python
-# examples/web_service.py
-from qicore.application.web_framework import WebApplication
-from qicore.core.configuration import Configuration
-from qicore.core.logging import configure_logging, StructuredLogger
-from qicore.core.cache import Cache
-from qicore.base.result import Result, QiError
-from pydantic import BaseModel
-from typing import Optional
-
-# Configuration schema
-class AppConfig(BaseModel):
-    app_name: str = "QiCore Example"
-    debug: bool = False
-    cache_size: int = 1000
-    cache_ttl: float = 300.0
-
-# Initialize components
-async def setup_app():
-    # Configure logging
-    await configure_logging(level="INFO", format="json")
-    logger = StructuredLogger("example_app")
-    
-    # Load configuration
-    config = Configuration(AppConfig)
-    config_result = config.load_from_env()
-    if config_result.is_failure():
-        logger.error("Failed to load config", error=config_result.unwrap())
-        raise Exception("Configuration failed")
-    
-    app_config = config_result.unwrap()
-    
-    # Initialize cache
-    cache = Cache[str, Any](
-        max_size=app_config.cache_size,
-        ttl=app_config.cache_ttl
-    )
-    
-    # Create web application
-    web_app = WebApplication(
-        title=app_config.app_name,
-        logger=logger
-    )
-    
-    # Define routes using Result pattern
-    @web_app.route("/health", methods=["GET"])
-    async def health_check():
-        return Result.success({"status": "healthy", "version": "4.0.1"})
-    
-    @web_app.route("/cache/{key}", methods=["GET"])
-    async def get_cached(key: str):
-        result = await cache.get(key)
-        if result.is_success():
-            value = result.unwrap()
-            if value is not None:
-                return Result.success({"key": key, "value": value})
-            else:
-                return Result.failure(
-                    QiError.validation_error("Key not found", "key", key)
-                )
-        return result
-    
-    @web_app.route("/cache/{key}", methods=["POST"])
-    async def set_cached(key: str, value: dict):
-        result = await cache.set(key, value)
-        if result.is_success():
-            return Result.success({"key": key, "value": value, "cached": True})
-        return result
-    
-    return web_app.get_app()
-
-# Run the application
-if __name__ == "__main__":
-    import uvicorn
-    app = asyncio.run(setup_app())
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-```
-
-## Summary
-
-This template provides:
-- ✅ All 13 components with 99 operations
-- ✅ Full integration with researched packages
-- ✅ Mathematical law preservation
-- ✅ Type safety with Python type hints
-- ✅ Async/await patterns throughout
-- ✅ Production-ready error handling
-- ✅ Performance optimizations for Python tier
+    format: |
+      # Stage 5 TypeScript Verification Report
+      
+      ## Operation Implementation Verification
+      [Check every operation from design analysis has TypeScript implementation]
+      
+      ## Type Safety Verification
+      [Verify all code is type-safe with no any usage]
+      
+      ## Mathematical Property Preservation
+      [Validate categorical laws preserved in TypeScript]
+      
+      ## Package Integration Verification
+      [Confirm all packages integrated with proper types]
+      
+      ## Performance Optimization Verification
+      [Check optimizations applied appropriately]
+      
+      ## Success Criteria Compliance
+      [Complete checklist from impl.ts.prompt.md]

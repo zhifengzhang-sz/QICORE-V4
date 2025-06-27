@@ -1,11 +1,11 @@
 # src/qicore/base/result.py
-from typing import TypeVar, Generic, Callable, Union, Optional, Any
-from returns.result import Result as ReturnsResult, Success, Failure
-from returns.pipeline import pipe
-from returns.pointfree import bind, map_
-from dataclasses import dataclass
-import traceback
-import time
+from collections.abc import Callable
+from typing import Generic, TypeVar, Union
+
+from returns.result import Failure, Success
+from returns.result import Result as ReturnsResult
+
+from .error import QiError
 
 T = TypeVar('T')
 E = TypeVar('E')
@@ -54,10 +54,9 @@ class Result(Generic[T]):
         """Recover from error with fallback"""
         if isinstance(self._inner, Success):
             return self  # Already successful, return as-is
-        else:
-            # For failures, apply recovery function
-            error = self._inner.failure()
-            return Result.success(fn(error))
+        # For failures, apply recovery function
+        error = self._inner.failure()
+        return Result.success(fn(error))
     
     # Operation 7: Unwrap with default
     def unwrap_or(self, default: T) -> T:
@@ -73,8 +72,4 @@ class Result(Generic[T]):
         """Unwrap value (raises if failure)"""
         if self.is_success():
             return self._inner.unwrap()
-        else:
-            raise ValueError(f"Cannot unwrap failed Result: {self._inner.failure()}")
-
-# Import QiError for type checking
-from .error import QiError
+        raise ValueError(f"Cannot unwrap failed Result: {self._inner.failure()}")

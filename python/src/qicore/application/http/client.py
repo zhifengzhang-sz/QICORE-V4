@@ -1,24 +1,26 @@
 # src/qicore/application/http/client.py
+from typing import Any
+
 import httpx
-import asyncio
-from typing import Dict, Any, Optional, List
 from circuitbreaker import circuit
 from tenacity import retry, stop_after_attempt, wait_exponential
-from ...base.result import Result
+
 from ...base.error import QiError
+from ...base.result import Result
 from ...core.logging import StructuredLogger
+
 
 class HTTPClient:
     """Async HTTP client with circuit breaker and retry logic"""
     
     def __init__(
         self,
-        base_url: Optional[str] = None,
+        base_url: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 3,
         circuit_failure_threshold: int = 5,
         circuit_recovery_timeout: int = 60,
-        logger: Optional[StructuredLogger] = None
+        logger: StructuredLogger | None = None
     ):
         self.base_url = base_url
         self.timeout = timeout
@@ -45,8 +47,8 @@ class HTTPClient:
     async def get(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None
     ) -> Result[httpx.Response]:
         """GET request with circuit breaker"""
         try:
@@ -82,9 +84,9 @@ class HTTPClient:
     async def post(
         self,
         path: str,
-        json: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None
     ) -> Result[httpx.Response]:
         """POST request with circuit breaker"""
         try:
@@ -120,8 +122,8 @@ class HTTPClient:
     async def put(
         self,
         path: str,
-        json: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None
+        json: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None
     ) -> Result[httpx.Response]:
         """PUT request"""
         try:
@@ -137,7 +139,7 @@ class HTTPClient:
     async def delete(
         self,
         path: str,
-        headers: Optional[Dict[str, str]] = None
+        headers: dict[str, str] | None = None
     ) -> Result[httpx.Response]:
         """DELETE request"""
         try:
@@ -153,7 +155,7 @@ class HTTPClient:
     async def stream(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None
+        params: dict[str, Any] | None = None
     ) -> Result[httpx.Response]:
         """Stream response data"""
         try:

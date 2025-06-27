@@ -1,23 +1,23 @@
 # src/qicore/core/configuration.py
-from typing import Any, Dict, Optional, Type, TypeVar, Generic, List
-from pydantic import BaseModel, ValidationError
-from pydantic_settings import BaseSettings
-from cytoolz import merge
-import yaml
 import json
-import os
 from pathlib import Path
-from ..base.result import Result
+from typing import Any, Generic, TypeVar
+
+import yaml
+from cytoolz import merge
+from pydantic import BaseModel, ValidationError
+
 from ..base.error import QiError
+from ..base.result import Result
 
 T = TypeVar('T', bound=BaseModel)
 
 class Configuration(Generic[T]):
     """Type-safe configuration with monoid merge semantics"""
     
-    def __init__(self, schema: Type[T]):
+    def __init__(self, schema: type[T]):
         self.schema = schema
-        self._data: Optional[T] = None
+        self._data: T | None = None
     
     # Operation 1: Load from environment
     def load_from_env(self) -> Result[T]:
@@ -76,7 +76,7 @@ class Configuration(Generic[T]):
             )
     
     # Operation 3: Load from dict
-    def load_from_dict(self, data: Dict[str, Any]) -> Result[T]:
+    def load_from_dict(self, data: dict[str, Any]) -> Result[T]:
         """Load from dictionary"""
         try:
             config = self.schema(**data)
@@ -211,7 +211,7 @@ class Configuration(Generic[T]):
             )
     
     # Operation 9: Export
-    def export_to_dict(self) -> Result[Dict[str, Any]]:
+    def export_to_dict(self) -> Result[dict[str, Any]]:
         """Export configuration to dictionary"""
         if not self._data:
             return Result.failure(

@@ -1,9 +1,11 @@
 # src/qicore/application/database/db.py
+from contextlib import asynccontextmanager, suppress
+from typing import Any, Generic, TypeVar
+
 import aiosqlite
-from typing import List, Dict, Any, Optional, TypeVar, Generic
-from contextlib import asynccontextmanager
-from ...base.result import Result
+
 from ...base.error import QiError
+from ...base.result import Result
 from ...core.logging import StructuredLogger
 
 T = TypeVar('T')
@@ -14,11 +16,11 @@ class Database(Generic[T]):
     def __init__(
         self,
         db_path: str,
-        logger: Optional[StructuredLogger] = None
+        logger: StructuredLogger | None = None
     ):
         self.db_path = db_path
         self.logger = logger or StructuredLogger("database")
-        self._connection: Optional[aiosqlite.Connection] = None
+        self._connection: aiosqlite.Connection | None = None
     
     # Operation 1: Connect
     async def connect(self) -> Result[None]:
@@ -40,7 +42,7 @@ class Database(Generic[T]):
     async def execute(
         self,
         query: str,
-        params: Optional[tuple] = None
+        params: tuple | None = None
     ) -> Result[aiosqlite.Cursor]:
         """Execute a query"""
         if not self._connection:
@@ -57,10 +59,8 @@ class Database(Generic[T]):
             await self._connection.commit()
             return Result.success(cursor)
         except Exception as e:
-            try:
+            with suppress(Exception):
                 await self._connection.rollback()
-            except Exception:
-                pass  # Ignore if no transaction is active
             return Result.failure(
                 QiError.resource_error(
                     f"Query execution failed: {e}",
@@ -73,7 +73,7 @@ class Database(Generic[T]):
     async def execute_in_transaction(
         self,
         query: str,
-        params: Optional[tuple] = None
+        params: tuple | None = None
     ) -> Result[aiosqlite.Cursor]:
         """Execute a query within a transaction (no auto-commit)"""
         if not self._connection:
@@ -101,8 +101,8 @@ class Database(Generic[T]):
     async def fetch_all(
         self,
         query: str,
-        params: Optional[tuple] = None
-    ) -> Result[List[Dict[str, Any]]]:
+        params: tuple | None = None
+    ) -> Result[list[dict[str, Any]]]:
         """Fetch all results from query"""
         if not self._connection:
             return Result.failure(
@@ -119,7 +119,7 @@ class Database(Generic[T]):
             columns = [desc[0] for desc in cursor.description]
             
             results = [
-                dict(zip(columns, row))
+                dict(zip(columns, row, strict=False))
                 for row in rows
             ]
             
@@ -146,10 +146,8 @@ class Database(Generic[T]):
             yield self
             await self._connection.commit()
         except Exception as e:
-            try:
+            with suppress(Exception):
                 await self._connection.rollback()
-            except Exception:
-                pass  # Ignore rollback errors if transaction wasn't active
             raise e
     
     # Operation 5: Close connection

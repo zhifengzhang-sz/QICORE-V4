@@ -1,11 +1,13 @@
 # src/qicore/core/cache.py
-from typing import TypeVar, Generic, Optional, Dict, Any, Callable, List, Tuple
-from cachetools import TTLCache, LRUCache
 import asyncio
-import time
 import pickle
-from ..base.result import Result
+from collections.abc import Callable
+from typing import Any, Generic, TypeVar
+
+from cachetools import LRUCache, TTLCache
+
 from ..base.error import QiError
+from ..base.result import Result
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -16,15 +18,15 @@ class Cache(Generic[K, V]):
     def __init__(
         self,
         max_size: int = 1000,
-        ttl: Optional[float] = None,
-        eviction_callback: Optional[Callable[[K, V], None]] = None
+        ttl: float | None = None,
+        eviction_callback: Callable[[K, V], None] | None = None
     ):
         self.max_size = max_size
         self.ttl = ttl
         self.eviction_callback = eviction_callback
         
         if ttl:
-            self._cache: Dict[K, V] = TTLCache(maxsize=max_size, ttl=ttl)
+            self._cache: dict[K, V] = TTLCache(maxsize=max_size, ttl=ttl)
         else:
             self._cache = LRUCache(maxsize=max_size)
         
@@ -37,16 +39,15 @@ class Cache(Generic[K, V]):
         }
     
     # Operation 1: Get
-    async def get(self, key: K) -> Result[Optional[V]]:
+    async def get(self, key: K) -> Result[V | None]:
         """Get value from cache"""
         async with self._lock:
             try:
                 if key in self._cache:
                     self._stats['hits'] += 1
                     return Result.success(self._cache[key])
-                else:
-                    self._stats['misses'] += 1
-                    return Result.success(None)
+                self._stats['misses'] += 1
+                return Result.success(None)
             except Exception as e:
                 return Result.failure(
                     QiError.state_error(
@@ -120,7 +121,7 @@ class Cache(Generic[K, V]):
                 )
     
     # Operation 5: Get many
-    async def get_many(self, keys: List[K]) -> Result[Dict[K, Optional[V]]]:
+    async def get_many(self, keys: list[K]) -> Result[dict[K, V | None]]:
         """Get multiple values at once"""
         async with self._lock:
             try:
@@ -143,7 +144,7 @@ class Cache(Generic[K, V]):
                 )
     
     # Operation 6: Set many
-    async def set_many(self, items: Dict[K, V]) -> Result[None]:
+    async def set_many(self, items: dict[K, V]) -> Result[None]:
         """Set multiple values at once"""
         async with self._lock:
             try:
@@ -163,7 +164,7 @@ class Cache(Generic[K, V]):
                 )
     
     # Operation 7: Get stats
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics"""
         return {
             **self._stats,
@@ -186,7 +187,10 @@ class Cache(Generic[K, V]):
         
         # Compute and cache result
         try:
-            result = await fn(*args, **kwargs) if asyncio.iscoroutinefunction(fn) else fn(*args, **kwargs)
+            if asyncio.iscoroutinefunction(fn):
+                result = await fn(*args, **kwargs)
+            else:
+                result = fn(*args, **kwargs)
             await self.set(key, result)
             return Result.success(result)
         except Exception as e:

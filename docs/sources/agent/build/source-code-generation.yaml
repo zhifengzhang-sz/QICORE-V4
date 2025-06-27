@@ -1,0 +1,296 @@
+# QiCore v4.0 Source Code Generation Process
+# Version: 4.0.1
+# Purpose: Automated template selection and code generation workflow
+
+metadata:
+  name: "QiCore Source Code Generation"
+  version: "4.0.1"
+  description: "Template-driven source code generation with corrected template priority"
+  author: "QiCore Team"
+  created: "2025-06-27"
+  updated: "2025-06-27"
+
+# Supported programming languages
+languages:
+  - name: "python"
+    extension: "py"
+    runtime: "uv"
+    test_framework: "pytest"
+    linter: "ruff"
+    type_checker: "mypy"
+  
+  - name: "typescript"
+    extension: "ts"
+    runtime: "bun"
+    test_framework: "vitest"
+    linter: "eslint"
+    type_checker: "tsc"
+  
+  - name: "rust"
+    extension: "rs"
+    runtime: "cargo"
+    test_framework: "cargo test"
+    linter: "clippy"
+    type_checker: "cargo check"
+
+# Template selection logic
+template_selection:
+  priority_order:
+    1: "qi.v4.{lang}.template.corrected.md"  # Highest priority - empirically validated
+    2: "qi.v4.{lang}.template.md"             # Fallback - original template
+  
+  base_paths:
+    - "docs/build/impl/"
+    - "docs/sources/templates/"
+    - "templates/"
+  
+  validation:
+    check_exists: true
+    verify_syntax: true
+    validate_components: true
+
+# Source code generation workflow
+workflow:
+  stages:
+    0_knowledge_update:
+      name: "Knowledge Update"
+      description: "Research current 2024-2025 ecosystem and tools"
+      critical: true
+      steps:
+        - action: "research_language_ecosystem"
+          scope: ["package_managers", "testing_frameworks", "linters", "type_checkers", "build_tools"]
+          year: "2024-2025"
+          
+        - action: "update_tool_patterns"
+          language_specific:
+            python: ["uv", "ruff", "mypy", "pytest"]
+            typescript: ["bun", "eslint", "vitest", "typescript"]
+            rust: ["cargo", "clippy", "rust-analyzer"]
+            
+        - action: "verify_package_compatibility"
+          check: ["breaking_changes", "version_conflicts", "new_features"]
+          
+        - action: "document_debugging_processes"
+          patterns: ["file_by_file_linting", "incremental_testing", "error_recognition"]
+
+    1_template_resolution:
+      name: "Template Resolution"
+      description: "Select optimal template based on priority and availability"
+      steps:
+        - action: "check_corrected_template"
+          template_path: "{base_path}/qi.v4.{lang}.template.corrected.md"
+          condition: "file_exists"
+          priority: 1
+          
+        - action: "fallback_original_template"
+          template_path: "{base_path}/qi.v4.{lang}.template.md"
+          condition: "file_exists OR corrected_not_found"
+          priority: 2
+          
+        - action: "fail_no_template"
+          condition: "no_templates_found"
+          error: "No templates found for language: {lang}"
+
+    2_environment_setup:
+      name: "Development Environment Setup"
+      description: "Initialize runtime, dependencies, and tooling"
+      steps:
+        - action: "setup_runtime"
+          runtime: "{language.runtime}"
+          
+        - action: "install_dependencies"
+          package_manager: "{language.runtime}"
+          
+        - action: "configure_tooling"
+          tools:
+            - "{language.test_framework}"
+            - "{language.linter}"
+            - "{language.type_checker}"
+          validate_versions: true
+          apply_2024_2025_configs: true
+
+    3_code_generation:
+      name: "Source Code Generation"
+      description: "Generate code following template specifications"
+      steps:
+        - action: "generate_base_components"
+          components: ["Result", "QiError"]
+          
+        - action: "generate_core_components"
+          components: ["Configuration", "Logger", "Cache"]
+          
+        - action: "generate_application_components"
+          components: ["HTTP", "Database", "WebFramework", "CLI", "Document", "AI", "MCP", "ASGI"]
+          
+        - action: "generate_tests"
+          coverage: "all_components"
+          target: "100%"
+
+    4_quality_validation:
+      name: "Quality Validation"
+      description: "Ensure code meets all requirements"
+      steps:
+        - action: "run_linter"
+          command: "{language.linter}"
+          target_errors: 0
+          strategy: "auto_fix_then_file_by_file"
+          language_patterns:
+            python: "uv run ruff check --fix src/ && uv run ruff check src/"
+            typescript: "npx eslint src/ && npx eslint src/specific/file.ts"
+            rust: "cargo clippy --fix && cargo clippy"
+          
+        - action: "run_type_checker"
+          command: "{language.type_checker}"
+          target_errors: 0
+          
+        - action: "run_tests"
+          command: "{language.test_framework}"
+          target_pass_rate: "100%"
+          
+        - action: "validate_mathematical_contracts"
+          contracts: ["monad_laws", "functor_laws"]
+
+    5_template_feedback:
+      name: "Template Feedback Loop"
+      description: "Update templates based on implementation experience"
+      steps:
+        - action: "collect_issues"
+          types: ["compilation_errors", "test_failures", "linting_issues"]
+          
+        - action: "analyze_variance"
+          metrics: ["consistency", "success_rate", "error_patterns"]
+          
+        - action: "update_corrected_template"
+          condition: "issues_found AND solutions_verified"
+          target: "qi.v4.{lang}.template.corrected.md"
+
+# Template resolution implementation
+template_resolution_logic: |
+  function selectTemplate(language: string): string {
+    const basePaths = config.template_selection.base_paths;
+    
+    for (const basePath of basePaths) {
+      // Priority 1: Check for corrected template
+      const correctedPath = `${basePath}/qi.v4.${language}.template.corrected.md`;
+      if (fileExists(correctedPath)) {
+        log(`Using corrected template: ${correctedPath}`);
+        return correctedPath;
+      }
+      
+      // Priority 2: Fallback to original template
+      const originalPath = `${basePath}/qi.v4.${language}.template.md`;
+      if (fileExists(originalPath)) {
+        log(`Using original template: ${originalPath}`);
+        return originalPath;
+      }
+    }
+    
+    throw new Error(`No templates found for language: ${language}`);
+  }
+
+# Success criteria
+success_criteria:
+  compilation:
+    errors: 0
+    warnings: "acceptable"
+    
+  testing:
+    pass_rate: "100%"
+    coverage: ">= 95%"
+    
+  linting:
+    errors: 0
+    style_violations: 0
+    
+  mathematical_contracts:
+    monad_laws: "verified"
+    functor_laws: "verified"
+    error_categories: 8
+    operations_total: 99
+
+# Error handling and recovery
+error_handling:
+  template_not_found:
+    action: "try_fallback_template"
+    retry_count: 2
+    
+  compilation_errors:
+    action: "apply_known_fixes"
+    fix_database: "qi.v4.{lang}.template.corrected.md"
+    
+  test_failures:
+    action: "debug_and_fix"
+    max_iterations: 3
+    
+  linting_errors:
+    action: "auto_fix_and_validate"
+    tools: ["{language.linter} --fix"]
+
+# Reporting and metrics
+reporting:
+  metrics:
+    - "template_used" 
+    - "compilation_errors_count"
+    - "test_pass_rate"
+    - "linting_errors_count"
+    - "generation_time"
+    - "success_rate"
+    
+  outputs:
+    - "generation_report.json"
+    - "quality_metrics.json"
+    - "template_feedback.md"
+
+# Integration with build systems
+build_integration:
+  triggers:
+    - "manual_generation"
+    - "template_update"
+    - "dependency_change"
+    
+  hooks:
+    pre_generation:
+      - "validate_environment"
+      - "backup_existing_code"
+      
+    post_generation:
+      - "run_full_test_suite"
+      - "generate_documentation"
+      - "update_template_feedback"
+
+# Configuration examples
+examples:
+  typescript_generation:
+    language: "typescript"
+    template_priority: 
+      - "docs/build/impl/qi.v4.ts.template.corrected.md"  # Will be used
+      - "docs/build/impl/qi.v4.ts.template.md"            # Fallback
+    expected_outcome:
+      tests: "57/57 passing"
+      eslint_errors: "0/0"
+      typescript_errors: "0/0"
+      
+  python_generation:
+    language: "python"
+    template_priority:
+      - "docs/build/impl/qi.v4.py.template.corrected.md"  # If exists
+      - "docs/build/impl/qi.v4.py.template.md"            # Likely fallback
+    expected_outcome:
+      tests: "all passing"
+      ruff_errors: "0"
+      mypy_errors: "0"
+
+# Version control integration
+version_control:
+  template_tracking:
+    - track: "qi.v4.*.template.md"
+    - track: "qi.v4.*.template.corrected.md"
+    - ignore: "generated_code/*"
+    
+  commit_strategy:
+    templates: "Track template changes separately"
+    generated_code: "Optional - depends on use case"
+    
+  branching:
+    template_updates: "feature/template-{lang}-{version}"
+    code_generation: "generated/{lang}-{timestamp}"
