@@ -1,0 +1,685 @@
+# QiCore v4.0 TypeScript Implementation Instructions
+# YAML-based implementation guide for systematic source code generation
+
+metadata:
+  version: "4.0.1"
+  stage: 5
+  target_language: "TypeScript"
+  depends_on:
+    - "docs/build/design/qi.v4.design.analysis.md"
+    - "docs/build/package/ts.md"
+    - "docs/build/impl/qi.v4.ts.template.md"
+  generates:
+    - "typescript/src/**/*.ts"
+  purpose: "Systematic TypeScript implementation using YAML-driven instructions"
+
+# Environment setup and prerequisites
+environment:
+  runtime: "bun"
+  node_version: ">=18.0.0"
+  typescript_version: "^5.3.0"
+  package_manager: "bun"
+  linting: "eslint"
+  formatting: "prettier"
+  testing: "vitest"
+
+# Project structure creation logic
+project_structure:
+  base_directory: "typescript/"
+  
+  directories:
+    - "src/base"
+    - "src/core"
+    - "src/application/http"
+    - "src/application/web"
+    - "src/application/ai"
+    - "src/application/mcp"
+    - "src/application/database"
+    - "src/application/document"
+    - "src/application/cli"
+    - "tests/base"
+    - "tests/core"
+    - "tests/application"
+    - "examples"
+    - "benchmarks"
+
+  configuration_files:
+    - name: "package.json"
+      source: "template"
+      modifications:
+        - field: "scripts.lint"
+          value: "eslint src/ --ext .ts"
+        - field: "scripts.build"
+          value: "bun run tsc"
+        - field: "scripts.test"
+          value: "bun test"
+    
+    - name: "tsconfig.json"
+      source: "template"
+      strict_mode: true
+      target: "ES2022"
+    
+    - name: ".eslintrc.json"
+      source: "template"
+      extends: ["@typescript-eslint/recommended"]
+    
+    - name: ".prettierrc"
+      source: "template"
+      semi: true
+      singleQuote: true
+
+# Package installation sequence
+package_installation:
+  phase_1_base:
+    packages:
+      - "fp-ts@^2.16.2"
+      - "zod@^3.22.4"
+    
+  phase_2_core:
+    packages:
+      - "dotenv@^16.3.1"
+      - "winston@^3.11.0"
+      - "node-cache@^5.1.2"
+      - "ioredis@^5.3.2"
+    
+  phase_3_application:
+    packages:
+      - "axios@^1.6.2"
+      - "fastify@^4.24.3"
+      - "@fastify/cors@^8.4.0"
+      - "@fastify/static@^6.12.0"
+      - "drizzle-orm@^0.29.0"
+      - "better-sqlite3@^9.2.2"
+      - "kysely@^0.27.0"
+      - "handlebars@^4.7.8"
+      - "marked@^11.1.1"
+      - "puppeteer@^21.6.1"
+      - "commander@^11.1.0"
+      - "chalk@^5.3.0"
+      - "openai@^4.20.1"
+      - "@anthropic-ai/sdk@^0.9.1"
+      - "@modelcontextprotocol/sdk@^1.13.1"
+  
+  dev_dependencies:
+    packages:
+      - "typescript@^5.3.0"
+      - "@types/node@^20.10.0"
+      - "@types/better-sqlite3@^7.6.8"
+      - "vitest@^1.0.4"
+      - "eslint@^8.56.0"
+      - "@typescript-eslint/eslint-plugin@^6.18.0"
+      - "@typescript-eslint/parser@^6.18.0"
+      - "prettier@^3.1.1"
+
+# Source code generation rules
+source_generation:
+  
+  # Base components implementation
+  base_components:
+    - component: "QiError"
+      file_path: "src/base/error.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Base Component Templates > QiError Implementation"
+      dependencies:
+        imports:
+          - "import { z } from 'zod'"
+        packages: ["zod"]
+      operations:
+        - "create"
+        - "toString"
+        - "toStructuredData"
+        - "getCategory"
+        - "withContext"
+        - "withCause"
+      error_categories:
+        - "VALIDATION"
+        - "NETWORK"
+        - "FILESYSTEM"
+        - "CONFIGURATION"
+        - "CACHE"
+        - "TIMEOUT"
+        - "PERMISSION"
+        - "UNKNOWN"
+      mathematical_properties:
+        - "Immutability through readonly properties"
+        - "Builder pattern for context accumulation"
+      verification:
+        - "Check all 6 operations implemented"
+        - "Verify all 8 error categories present"
+        - "Test factory methods for each category"
+    
+    - component: "Result"
+      file_path: "src/base/result.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Base Component Templates > Result<T> Implementation"
+      dependencies:
+        imports:
+          - "import { Either, left, right } from 'fp-ts/Either'"
+          - "import { pipe } from 'fp-ts/function'"
+          - "import * as E from 'fp-ts/Either'"
+        packages: ["fp-ts"]
+      operations:
+        - "success"
+        - "failure"
+        - "fromTryCatch"
+        - "map"
+        - "flatMap"
+        - "unwrap"
+        - "unwrapOr"
+        - "match"
+        - "orElse"
+      mathematical_properties:
+        - "Monad laws: left identity, right identity, associativity"
+        - "Functor laws: identity, composition"
+        - "Railway-oriented programming pattern"
+      verification:
+        - "Test all 9 operations implemented"
+        - "Verify monad laws with property tests"
+        - "Check error propagation behavior"
+        - "Benchmark performance < 100μs per operation"
+
+  # Core components implementation
+  core_components:
+    - component: "Configuration"
+      file_path: "src/core/configuration.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Core Component Templates > Configuration Implementation"
+      dependencies:
+        imports:
+          - "import { z } from 'zod'"
+          - "import * as dotenv from 'dotenv'"
+          - "import * as fs from 'fs/promises'"
+          - "import * as yaml from 'js-yaml'"
+        packages: ["zod", "dotenv", "js-yaml"]
+      operations:
+        - "fromFile"
+        - "fromObject"
+        - "fromString"
+        - "fromEnvironment"
+        - "merge"
+        - "validate"
+        - "validateRequired"
+        - "validateType"
+        - "validateCustom"
+      mathematical_properties:
+        - "Monoid laws: identity, associativity, right-bias"
+        - "Layered configuration pattern"
+      verification:
+        - "Test all 9 operations implemented"
+        - "Verify monoid laws with property tests"
+        - "Test file format detection (JSON/YAML/TOML)"
+        - "Check environment variable loading"
+    
+    - component: "Logger"
+      file_path: "src/core/logger.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Core Component Templates > Logger Implementation"
+      dependencies:
+        imports:
+          - "import { createLogger, format, transports } from 'winston'"
+        packages: ["winston"]
+      operations:
+        - "create"
+        - "debug"
+        - "info"
+        - "warn"
+        - "error"
+        - "fatal"
+        - "isLevelEnabled"
+      mathematical_properties:
+        - "Effect interface with proper isolation"
+        - "Zero-allocation logging with lazy evaluation"
+      verification:
+        - "Test all 7 operations implemented"
+        - "Benchmark level check < 10ns"
+        - "Verify structured logging with context"
+        - "Test multiple transport support"
+    
+    - component: "Cache"
+      file_path: "src/core/cache.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Core Component Templates > Cache Implementation"
+      dependencies:
+        imports:
+          - "import NodeCache from 'node-cache'"
+          - "import Redis from 'ioredis'"
+        packages: ["node-cache", "ioredis"]
+      operations:
+        - "get"
+        - "set"
+        - "remove"
+        - "clear"
+        - "has"
+        - "size"
+        - "keys"
+        - "getOrSet"
+        - "flush"
+      mathematical_properties:
+        - "State management pattern"
+        - "LRU eviction with TTL support"
+      verification:
+        - "Test all 9 operations implemented"
+        - "Benchmark operations < 1ms"
+        - "Test both memory and Redis implementations"
+        - "Verify TTL and eviction behavior"
+
+  # Application components implementation
+  application_components:
+    - component: "HTTPClient"
+      file_path: "src/application/http/client.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Application Component Templates > HTTP Client Implementation"
+      dependencies:
+        imports:
+          - "import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'"
+        packages: ["axios"]
+      operations:
+        - "get"
+        - "post"
+        - "put"
+        - "patch"
+        - "delete"
+        - "stream"
+        - "withCircuitBreaker"
+      circuit_breaker:
+        states: ["CLOSED", "OPEN", "HALF_OPEN"]
+        config:
+          - "failureThreshold"
+          - "timeout"
+          - "monitoringPeriod"
+      mathematical_properties:
+        - "Circuit breaker state machine"
+        - "Request/response transformation"
+      verification:
+        - "Test all 7 operations implemented"
+        - "Verify circuit breaker state transitions"
+        - "Test streaming response handling"
+        - "Benchmark overhead < 1ms"
+    
+    - component: "WebFramework"
+      file_path: "src/application/web/framework.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Application Component Templates > Web Framework Implementation"
+      dependencies:
+        imports:
+          - "import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'"
+          - "import cors from '@fastify/cors'"
+          - "import staticFiles from '@fastify/static'"
+        packages: ["fastify", "@fastify/cors", "@fastify/static"]
+      operations:
+        - "route"
+        - "use"
+        - "listen"
+        - "close"
+        - "mount"
+        - "static"
+        - "getConfig"
+        - "errorHandler"
+      mathematical_properties:
+        - "Middleware composition pattern"
+        - "Request/response pipeline"
+      verification:
+        - "Test all 8 operations implemented"
+        - "Test middleware composition"
+        - "Verify route pattern matching"
+        - "Test static file serving"
+    
+    - component: "Database"
+      file_path: "src/application/database/db.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Application Component Templates > Database Implementation"
+      dependencies:
+        imports:
+          - "import { drizzle } from 'drizzle-orm/better-sqlite3'"
+          - "import Database from 'better-sqlite3'"
+        packages: ["drizzle-orm", "better-sqlite3"]
+      operations:
+        - "create"
+        - "read"
+        - "update"
+        - "delete"
+        - "begin"
+        - "commit"
+        - "migrate"
+        - "pool"
+      mathematical_properties:
+        - "Transaction monad pattern"
+        - "ACID property preservation"
+      verification:
+        - "Test all 8 operations implemented"
+        - "Verify transaction rollback"
+        - "Test connection pooling"
+        - "Benchmark query performance"
+    
+    - component: "DocumentGenerator"
+      file_path: "src/application/document/generator.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Application Component Templates > Document Generation Implementation"
+      dependencies:
+        imports:
+          - "import Handlebars from 'handlebars'"
+          - "import { marked } from 'marked'"
+          - "import puppeteer from 'puppeteer'"
+        packages: ["handlebars", "marked", "puppeteer"]
+      operations:
+        - "generate"
+        - "generateFromFile"
+        - "generateFromString"
+        - "stream"
+        - "batch"
+        - "validate"
+      mathematical_properties:
+        - "Template evaluation pattern"
+        - "Streaming document generation"
+      verification:
+        - "Test all 6 operations implemented"
+        - "Test template compilation"
+        - "Verify markdown processing"
+        - "Test PDF generation"
+    
+    - component: "CLIProcessor"
+      file_path: "src/application/cli/processor.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Application Component Templates > CLI Processing Implementation"
+      dependencies:
+        imports:
+          - "import { Command, Option, Argument } from 'commander'"
+          - "import chalk from 'chalk'"
+        packages: ["commander", "chalk"]
+      operations:
+        - "parse"
+        - "validate"
+        - "generateHelp"
+      mathematical_properties:
+        - "Parser combinator pattern"
+        - "Command composition"
+      verification:
+        - "Test all 3 operations implemented"
+        - "Test argument parsing"
+        - "Verify help generation"
+        - "Test validation pipeline"
+    
+    - component: "AIClient"
+      file_path: "src/application/ai/client.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Application Component Templates > AI/LLM Client Implementation"
+      dependencies:
+        imports:
+          - "import OpenAI from 'openai'"
+          - "import Anthropic from '@anthropic-ai/sdk'"
+        packages: ["openai", "@anthropic-ai/sdk"]
+      operations:
+        - "chat"
+        - "chatStream"
+        - "generate"
+        - "embedding"
+        - "withConfig"
+        - "withCircuitBreaker"
+        - "streamGenerate"
+      mathematical_properties:
+        - "Configuration reader pattern"
+        - "Streaming response handling"
+      verification:
+        - "Test all 7 operations implemented"
+        - "Test streaming responses"
+        - "Verify API key management"
+        - "Test circuit breaker integration"
+    
+    - component: "MCPProtocol"
+      file_path: "src/application/mcp/protocol.ts"
+      template_source: "qi.v4.ts.template.md"
+      template_section: "Application Component Templates > MCP Protocol Implementation"
+      dependencies:
+        imports:
+          - "import { Client } from '@modelcontextprotocol/sdk/client/index.js'"
+          - "import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'"
+        packages: ["@modelcontextprotocol/sdk"]
+      operations:
+        - "connect"
+        - "disconnect"
+        - "send"
+        - "receive"
+        - "listResources"
+        - "callTool"
+      mathematical_properties:
+        - "Message transformation pattern"
+        - "Protocol state management"
+      verification:
+        - "Test all 6 operations implemented"
+        - "Test message correlation"
+        - "Verify transport abstraction"
+        - "Test tool invocation"
+
+# Index file generation
+index_files:
+  - file_path: "src/base/index.ts"
+    exports:
+      - "export * from './error.js'"
+      - "export * from './result.js'"
+  
+  - file_path: "src/core/index.ts"
+    exports:
+      - "export * from './configuration.js'"
+      - "export * from './logger.js'"
+      - "export * from './cache.js'"
+  
+  - file_path: "src/application/index.ts"
+    exports:
+      - "export * from './http/client.js'"
+      - "export * from './web/framework.js'"
+      - "export * from './ai/client.js'"
+      - "export * from './mcp/protocol.js'"
+      - "export * from './database/db.js'"
+      - "export * from './document/generator.js'"
+      - "export * from './cli/processor.js'"
+  
+  - file_path: "src/index.ts"
+    exports:
+      - "export * from './base/index.js'"
+      - "export * from './core/index.js'"
+      - "export * from './application/index.js'"
+    metadata:
+      - "export const QICORE_VERSION = '4.0.1'"
+      - "export const QICORE_BUILD = 'typescript'"
+
+# Quality assurance pipeline
+quality_assurance:
+  
+  linting:
+    command: "bun run lint"
+    requirements:
+      - "Zero ESLint errors"
+      - "Zero TypeScript compilation errors"
+      - "All imports properly typed"
+    
+  testing:
+    unit_tests:
+      command: "bun test"
+      coverage_target: ">90%"
+      requirements:
+        - "All mathematical laws verified"
+        - "Performance benchmarks pass"
+        - "Error handling tested"
+    
+    property_tests:
+      framework: "fast-check"
+      requirements:
+        - "Monad laws for Result<T>"
+        - "Monoid laws for Configuration"
+        - "Circuit breaker state transitions"
+    
+    integration_tests:
+      requirements:
+        - "Component composition works"
+        - "End-to-end examples pass"
+        - "Package integrations verified"
+  
+  performance:
+    benchmarks:
+      command: "bun run benchmark"
+      targets:
+        - "Result operations: < 100μs"
+        - "Cache operations: < 1ms"
+        - "HTTP circuit check: < 1ms"
+        - "Log level check: < 10ns"
+    
+  build:
+    command: "bun run build"
+    requirements:
+      - "Clean TypeScript compilation"
+      - "Type declarations generated"
+      - "Source maps created"
+      - "Dist directory structure correct"
+
+# Implementation sequence
+implementation_sequence:
+  
+  phase_1_setup:
+    description: "Project initialization and configuration"
+    steps:
+      - "Create directory structure"
+      - "Install package.json dependencies"
+      - "Configure TypeScript, ESLint, Prettier"
+      - "Verify build pipeline works"
+    completion_criteria:
+      - "All configuration files present"
+      - "Dependencies installed"
+      - "Build command succeeds"
+  
+  phase_2_base:
+    description: "Base component implementation"
+    depends_on: ["phase_1_setup"]
+    steps:
+      - "Implement QiError with all operations"
+      - "Implement Result<T> with fp-ts integration"
+      - "Create base index file"
+      - "Run tests and benchmarks"
+    completion_criteria:
+      - "All base operations implemented"
+      - "Monad laws verified"
+      - "Performance targets met"
+  
+  phase_3_core:
+    description: "Core component implementation"
+    depends_on: ["phase_2_base"]
+    steps:
+      - "Implement Configuration with monoid"
+      - "Implement Logger with winston"
+      - "Implement Cache with node-cache/ioredis"
+      - "Create core index file"
+      - "Integration tests pass"
+    completion_criteria:
+      - "All core operations implemented"
+      - "Mathematical properties verified"
+      - "Package integrations working"
+  
+  phase_4_application:
+    description: "Application component implementation"
+    depends_on: ["phase_3_core"]
+    steps:
+      - "Implement HTTP Client with circuit breaker"
+      - "Implement Web Framework with fastify"
+      - "Implement remaining application components"
+      - "Create application index file"
+      - "End-to-end tests pass"
+    completion_criteria:
+      - "All application operations implemented"
+      - "Circuit breaker working"
+      - "Package integrations verified"
+  
+  phase_5_integration:
+    description: "Final integration and optimization"
+    depends_on: ["phase_4_application"]
+    steps:
+      - "Create main library index"
+      - "Run complete test suite"
+      - "Performance optimization"
+      - "Production build verification"
+    completion_criteria:
+      - "All 99 operations implemented"
+      - "Quality assurance passes"
+      - "Production build ready"
+
+# Success criteria
+success_criteria:
+  
+  completeness:
+    - "All 99 operations across 13 components implemented"
+    - "All package integrations working correctly"
+    - "Mathematical laws preserved and verified"
+    - "Performance targets met for interpreted tier"
+  
+  quality:
+    - "Zero linting errors"
+    - "Test coverage >90%"
+    - "All property tests pass"
+    - "Production build succeeds"
+  
+  mathematical_compliance:
+    - "Result<T> monad laws verified"
+    - "Configuration monoid laws verified"
+    - "Circuit breaker state machine correct"
+    - "All categorical abstractions preserved"
+  
+  performance:
+    - "Result operations < 100μs"
+    - "Cache operations < 1ms"
+    - "Logger level check < 10ns"
+    - "HTTP operations meet targets"
+
+# Error handling and recovery
+error_handling:
+  
+  common_issues:
+    - issue: "Package installation fails"
+      solution: "Verify Node.js version, clear cache, retry"
+      fallback: "Use npm if bun fails"
+    
+    - issue: "TypeScript compilation errors"
+      solution: "Check import paths, verify type definitions"
+      fallback: "Use explicit type annotations"
+    
+    - issue: "ESLint errors"
+      solution: "Fix code style, update configuration"
+      fallback: "Disable specific rules if needed"
+    
+    - issue: "Test failures"
+      solution: "Debug implementation, verify mathematical laws"
+      fallback: "Review template implementation"
+  
+  validation_checks:
+    - "Verify all dependencies installed"
+    - "Check TypeScript compilation clean"
+    - "Validate import paths correct"
+    - "Test basic functionality"
+    - "Benchmark performance targets"
+
+# Documentation requirements
+documentation:
+  
+  code_documentation:
+    - "TSDoc comments for all public APIs"
+    - "Usage examples for each component"
+    - "Mathematical property documentation"
+    - "Performance characteristics noted"
+  
+  integration_examples:
+    - file_path: "examples/complete-app.ts"
+      description: "Full integration example"
+      includes: ["all components working together"]
+    
+    - file_path: "examples/http-client.ts"
+      description: "HTTP client with circuit breaker"
+      includes: ["circuit breaker demonstration"]
+    
+    - file_path: "examples/configuration.ts"
+      description: "Configuration merging example"
+      includes: ["monoid operations"]
+  
+  readme:
+    sections:
+      - "Installation instructions"
+      - "Quick start guide"
+      - "Component overview"
+      - "Performance characteristics"
+      - "Mathematical properties"

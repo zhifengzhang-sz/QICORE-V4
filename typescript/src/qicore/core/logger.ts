@@ -1,13 +1,13 @@
 /**
  * QiCore v4.0 - Logger Component
- * 
+ *
  * Mathematical Contract-Based TypeScript Library
  * Component 4: StructuredLogger - High-performance logging with context (7 operations)
  */
 
 import pino, { type Logger as PinoLogger, type LoggerOptions } from "pino";
-import { Result } from "../base/result.js";
 import { QiError } from "../base/error.js";
+import { Result } from "../base/result.js";
 
 /**
  * Log level enumeration
@@ -57,7 +57,7 @@ export class StructuredLogger {
 
   constructor(config: LoggerConfig) {
     this.component = config.component;
-    
+
     const pinoConfig: LoggerOptions = {
       level: config.level,
       timestamp: () => `,"timestamp":${Date.now()}`,
@@ -180,13 +180,7 @@ export class StructuredLogger {
       this.logger[level](logContext, message);
       return Result.success(undefined);
     } catch (error) {
-      return Result.failure(
-        QiError.integrationError(
-          `Logging failed: ${error}`,
-          "logger",
-          "log",
-        ),
-      );
+      return Result.failure(QiError.integrationError(`Logging failed: ${error}`, "logger", "log"));
     }
   }
 
@@ -206,11 +200,7 @@ export class StructuredLogger {
       return Result.success(undefined);
     } catch (error) {
       return Result.failure(
-        QiError.configurationError(
-          `Setting log level failed: ${error}`,
-          "level",
-          "LogLevel",
-        ),
+        QiError.configurationError(`Setting log level failed: ${error}`, "level", "LogLevel")
       );
     }
   }
@@ -252,11 +242,7 @@ export class StructuredLogger {
       return Result.success(undefined);
     } catch (error) {
       return Result.failure(
-        QiError.integrationError(
-          `Log flush failed: ${error}`,
-          "logger",
-          "flush",
-        ),
+        QiError.integrationError(`Log flush failed: ${error}`, "logger", "flush")
       );
     }
   }
@@ -276,45 +262,45 @@ export class LoggerManager {
    * Get or create logger for component
    */
   static getLogger(component: string, config?: Partial<LoggerConfig>): StructuredLogger {
-    if (!this.loggers.has(component)) {
+    if (!LoggerManager.loggers.has(component)) {
       const fullConfig: LoggerConfig = {
         level: LogLevel.INFO,
         prettyPrint: true,
-        ...this.defaultConfig,
+        ...LoggerManager.defaultConfig,
         ...config,
         component,
       };
-      this.loggers.set(component, new StructuredLogger(fullConfig));
+      LoggerManager.loggers.set(component, new StructuredLogger(fullConfig));
     }
-    return this.loggers.get(component)!;
+    return LoggerManager.loggers.get(component)!;
   }
 
   /**
    * Configure default logger settings
    */
   static configure(config: Partial<LoggerConfig>): void {
-    this.defaultConfig = { ...this.defaultConfig, ...config };
+    LoggerManager.defaultConfig = { ...LoggerManager.defaultConfig, ...config };
   }
 
   /**
    * Remove logger for component
    */
   static removeLogger(component: string): boolean {
-    return this.loggers.delete(component);
+    return LoggerManager.loggers.delete(component);
   }
 
   /**
    * Clear all loggers
    */
   static clear(): void {
-    this.loggers.clear();
+    LoggerManager.loggers.clear();
   }
 
   /**
    * Get all logger components
    */
   static getComponents(): string[] {
-    return Array.from(this.loggers.keys());
+    return Array.from(LoggerManager.loggers.keys());
   }
 }
 
@@ -322,18 +308,18 @@ export class LoggerManager {
  * Performance monitoring decorator
  */
 export function LogPerformance(component: string) {
-  return function <T extends (...args: any[]) => any>(
-    target: any,
+  return <T extends (...args: any[]) => any>(
+    _target: any,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>,
-  ) {
+    descriptor: TypedPropertyDescriptor<T>
+  ) => {
     const originalMethod = descriptor.value;
     if (!originalMethod) return;
 
     descriptor.value = function (this: any, ...args: any[]) {
       const logger = LoggerManager.getLogger(component);
       const startTime = Date.now();
-      
+
       logger.debug(`Starting ${propertyKey}`, {
         method: propertyKey,
         args: args.length,
@@ -341,7 +327,7 @@ export function LogPerformance(component: string) {
 
       try {
         const result = originalMethod.apply(this, args);
-        
+
         // Handle both sync and async results
         if (result && typeof result.then === "function") {
           return result
@@ -363,15 +349,14 @@ export function LogPerformance(component: string) {
               });
               throw error;
             });
-        } else {
-          const duration = Date.now() - startTime;
-          logger.info(`Completed ${propertyKey}`, {
-            method: propertyKey,
-            duration,
-            success: true,
-          });
-          return result;
         }
+        const duration = Date.now() - startTime;
+        logger.info(`Completed ${propertyKey}`, {
+          method: propertyKey,
+          duration,
+          success: true,
+        });
+        return result;
       } catch (error) {
         const duration = Date.now() - startTime;
         logger.error(`Failed ${propertyKey}`, error as QiError, {
@@ -392,70 +377,66 @@ export function LogPerformance(component: string) {
  * Configure global logging
  */
 export function configureLogging(config: {
-    level?: LogLevel;
-    prettyPrint?: boolean;
-    format?: "json" | "pretty";
-  }): Result<void> {
-    try {
-      LoggerManager.configure({
-        level: config.level || LogLevel.INFO,
-        prettyPrint: config.prettyPrint ?? (config.format === "pretty"),
-      });
-      return Result.success(undefined);
-    } catch (error) {
-      return Result.failure(
-        QiError.configurationError(
-          `Logger configuration failed: ${error}`,
-          "logging",
-          "LoggerConfig",
-        ),
-      );
-    }
+  level?: LogLevel;
+  prettyPrint?: boolean;
+  format?: "json" | "pretty";
+}): Result<void> {
+  try {
+    LoggerManager.configure({
+      level: config.level || LogLevel.INFO,
+      prettyPrint: config.prettyPrint ?? config.format === "pretty",
+    });
+    return Result.success(undefined);
+  } catch (error) {
+    return Result.failure(
+      QiError.configurationError(`Logger configuration failed: ${error}`, "logging", "LoggerConfig")
+    );
   }
+}
 
 /**
  * Create logger with context
  */
 export function createLogger(
-    component: string,
-    context?: Record<string, unknown>,
-  ): StructuredLogger {
-    const logger = LoggerManager.getLogger(component);
-    return context ? logger.withContext(context) : logger;
-  }
+  component: string,
+  context?: Record<string, unknown>
+): StructuredLogger {
+  const logger = LoggerManager.getLogger(component);
+  return context ? logger.withContext(context) : logger;
+}
 
 /**
  * Log operation with timing
  */
 export async function logOperation<T>(
-    logger: StructuredLogger,
-    operation: string,
-    fn: () => Promise<T>,
-  ): Promise<T> {
-    const startTime = Date.now();
-    
-    logger.debug(`Starting operation: ${operation}`);
-    
-    try {
-      const result = await fn();
-      const duration = Date.now() - startTime;
-      
-      logger.info(`Operation completed: ${operation}`, {
-        operation,
-        duration,
-        success: true,
-      });
-      
-      return result;
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      
-      logger.error(`Operation failed: ${operation}`, error as QiError, {
-        operation,
-        duration,
-        success: false,
-      });
-      
-      throw error;
-    }
+  logger: StructuredLogger,
+  operation: string,
+  fn: () => Promise<T>
+): Promise<T> {
+  const startTime = Date.now();
+
+  logger.debug(`Starting operation: ${operation}`);
+
+  try {
+    const result = await fn();
+    const duration = Date.now() - startTime;
+
+    logger.info(`Operation completed: ${operation}`, {
+      operation,
+      duration,
+      success: true,
+    });
+
+    return result;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+
+    logger.error(`Operation failed: ${operation}`, error as QiError, {
+      operation,
+      duration,
+      success: false,
+    });
+
+    throw error;
   }
+}

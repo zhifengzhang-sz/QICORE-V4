@@ -1,0 +1,38 @@
+# Fourmolu configuration for modern Haskell formatting
+# https://fourmolu.github.io/
+
+# Column limit for formatting
+column-limit: 100
+
+# Indentation
+indentation: 2
+
+# Function declaration style  
+function-arrows: leading
+
+# How to format types
+comma-style: leading
+
+# Import formatting
+import-export-style: leading
+
+# Record formatting
+record-brace-space: true
+
+# List formatting  
+list-comp-brace-space: true
+
+# Diff-friendly formatting
+diff-friendly-import-export: true
+
+# Use leading commas for tuples and lists
+leading-commas: true
+
+# Haddock comment formatting
+haddock-style: multi-line
+
+# Unicode support
+unicode: detect
+
+# Respectful of existing newlines where possible
+respectful: true 

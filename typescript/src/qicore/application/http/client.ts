@@ -1,12 +1,12 @@
 /**
  * QiCore v4.0 - HTTP Client Component
- * 
+ *
  * Mathematical Contract-Based TypeScript Library
  * Component 6: HTTPClient - HTTP client with circuit breaker (7 operations)
  */
 
-import { Result } from "../../base/result.js";
 import { QiError } from "../../base/error.js";
+import { Result } from "../../base/result.js";
 
 /**
  * HTTP method types
@@ -42,7 +42,7 @@ export interface HttpResponse<T = unknown> {
  */
 enum CircuitState {
   CLOSED = "closed",
-  OPEN = "open", 
+  OPEN = "open",
   HALF_OPEN = "half-open",
 }
 
@@ -71,12 +71,18 @@ export class HTTPClient {
     monitoringPeriod: 10000, // 10 seconds
   };
 
-  constructor(private baseUrl = "", private defaultHeaders: Record<string, string> = {}) {}
+  constructor(
+    private baseUrl = "",
+    private defaultHeaders: Record<string, string> = {}
+  ) {}
 
   /**
    * Operation 1: GET request
    */
-  async get<T = unknown>(url: string, headers?: Record<string, string>): Promise<Result<HttpResponse<T>>> {
+  async get<T = unknown>(
+    url: string,
+    headers?: Record<string, string>
+  ): Promise<Result<HttpResponse<T>>> {
     return this.request<T>({
       url,
       method: "GET",
@@ -90,7 +96,7 @@ export class HTTPClient {
   async post<T = unknown>(
     url: string,
     body?: unknown,
-    headers?: Record<string, string>,
+    headers?: Record<string, string>
   ): Promise<Result<HttpResponse<T>>> {
     return this.request<T>({
       url,
@@ -106,7 +112,7 @@ export class HTTPClient {
   async put<T = unknown>(
     url: string,
     body?: unknown,
-    headers?: Record<string, string>,
+    headers?: Record<string, string>
   ): Promise<Result<HttpResponse<T>>> {
     return this.request<T>({
       url,
@@ -121,7 +127,7 @@ export class HTTPClient {
    */
   async delete<T = unknown>(
     url: string,
-    headers?: Record<string, string>,
+    headers?: Record<string, string>
   ): Promise<Result<HttpResponse<T>>> {
     return this.request<T>({
       url,
@@ -136,7 +142,7 @@ export class HTTPClient {
   async patch<T = unknown>(
     url: string,
     body?: unknown,
-    headers?: Record<string, string>,
+    headers?: Record<string, string>
   ): Promise<Result<HttpResponse<T>>> {
     return this.request<T>({
       url,
@@ -155,12 +161,7 @@ export class HTTPClient {
       if (Date.now() - this.lastFailureTime > this.circuitConfig.recoveryTimeout) {
         this.circuitState = CircuitState.HALF_OPEN;
       } else {
-        return Result.failure(
-          QiError.networkError(
-            "Circuit breaker is open",
-            config.url,
-          ),
-        );
+        return Result.failure(QiError.networkError("Circuit breaker is open", config.url));
       }
     }
 
@@ -169,14 +170,14 @@ export class HTTPClient {
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       const result = await this.performRequest<T>(config);
-      
+
       if (result.isSuccess()) {
         this.onSuccess();
         return result;
       }
 
       lastError = result.error();
-      
+
       // Don't retry on client errors (4xx)
       if (this.isClientError(lastError)) {
         this.onFailure();
@@ -185,12 +186,12 @@ export class HTTPClient {
 
       // Wait before retry (exponential backoff)
       if (attempt < retries) {
-        await this.delay(Math.pow(2, attempt) * 1000);
+        await this.delay(2 ** attempt * 1000);
       }
     }
 
     this.onFailure();
-    return Result.failure(lastError!);
+    return Result.failure(lastError || ({ message: "All retry attempts failed" } as QiError));
   }
 
   /**
@@ -226,8 +227,8 @@ export class HTTPClient {
         QiError.configurationError(
           `HTTP client configuration failed: ${error}`,
           "httpClient",
-          "HttpClientConfig",
-        ),
+          "HttpClientConfig"
+        )
       );
     }
   }
@@ -285,16 +286,15 @@ export class HTTPClient {
       };
 
       if (config.body) {
-        fetchConfig.body = typeof config.body === "string" 
-          ? config.body 
-          : JSON.stringify(config.body);
+        fetchConfig.body =
+          typeof config.body === "string" ? config.body : JSON.stringify(config.body);
       }
 
       const response = await fetch(url, fetchConfig);
       clearTimeout(timeoutId);
 
       const duration = Date.now() - startTime;
-      
+
       // Extract response headers
       const responseHeaders: Record<string, string> = {};
       response.headers.forEach((value, key) => {
@@ -304,7 +304,7 @@ export class HTTPClient {
       // Parse response body
       let data: T;
       const contentType = response.headers.get("content-type");
-      
+
       if (contentType?.includes("application/json")) {
         data = (await response.json()) as T;
       } else {
@@ -325,41 +325,30 @@ export class HTTPClient {
           QiError.networkError(
             `HTTP ${response.status}: ${response.statusText}`,
             url,
-            response.status,
-          ),
+            response.status
+          )
         );
       }
 
       return Result.success(httpResponse);
-
     } catch (error) {
       // Duration could be logged here for monitoring: Date.now() - startTime
-      
+
       if (error instanceof Error) {
         if (error.name === "AbortError") {
           return Result.failure(
             QiError.timeoutError(
               `Request timeout after ${timeout}ms`,
               "http_request",
-              timeout / 1000,
-            ),
+              timeout / 1000
+            )
           );
         }
-        
-        return Result.failure(
-          QiError.networkError(
-            `Request failed: ${error.message}`,
-            url,
-          ),
-        );
+
+        return Result.failure(QiError.networkError(`Request failed: ${error.message}`, url));
       }
 
-      return Result.failure(
-        QiError.networkError(
-          `Unknown request error: ${error}`,
-          url,
-        ),
-      );
+      return Result.failure(QiError.networkError(`Unknown request error: ${error}`, url));
     }
   }
 
@@ -370,10 +359,10 @@ export class HTTPClient {
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path;
     }
-    
+
     const base = this.baseUrl.endsWith("/") ? this.baseUrl.slice(0, -1) : this.baseUrl;
     const url = path.startsWith("/") ? path : `/${path}`;
-    
+
     return `${base}${url}`;
   }
 
@@ -393,7 +382,7 @@ export class HTTPClient {
   private onFailure(): void {
     this.failureCount++;
     this.lastFailureTime = Date.now();
-    
+
     if (this.failureCount >= this.circuitConfig.failureThreshold) {
       this.circuitState = CircuitState.OPEN;
     }
@@ -414,7 +403,7 @@ export class HTTPClient {
    * Delay helper for retries
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -425,56 +414,56 @@ export class HTTPClient {
  * Create HTTP client with base configuration
  */
 export function createClient(baseUrl: string, headers?: Record<string, string>): HTTPClient {
-    return new HTTPClient(baseUrl, headers);
-  }
+  return new HTTPClient(baseUrl, headers);
+}
 
 /**
  * Parse URL query parameters
  */
 export function parseQuery(url: string): Record<string, string> {
-    const urlObj = new URL(url);
-    const params: Record<string, string> = {};
-    
-    urlObj.searchParams.forEach((value, key) => {
-      params[key] = value;
-    });
-    
-    return params;
-  }
+  const urlObj = new URL(url);
+  const params: Record<string, string> = {};
+
+  urlObj.searchParams.forEach((value, key) => {
+    params[key] = value;
+  });
+
+  return params;
+}
 
 /**
  * Build URL with query parameters
  */
 export function buildUrl(base: string, params?: Record<string, unknown>): string {
-    if (!params || Object.keys(params).length === 0) {
-      return base;
-    }
-
-    const url = new URL(base);
-    
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null) {
-        url.searchParams.set(key, String(value));
-      }
-    }
-    
-    return url.toString();
+  if (!params || Object.keys(params).length === 0) {
+    return base;
   }
+
+  const url = new URL(base);
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      url.searchParams.set(key, String(value));
+    }
+  }
+
+  return url.toString();
+}
 
 /**
  * Check if response is successful
  */
 export function isSuccess(response: HttpResponse): boolean {
-    return response.status >= 200 && response.status < 300;
-  }
+  return response.status >= 200 && response.status < 300;
+}
 
 /**
  * Extract error message from response
  */
 export function extractErrorMessage(response: HttpResponse): string {
-    if (typeof response.data === "object" && response.data !== null) {
-      const data = response.data as Record<string, unknown>;
-      return data.message as string || data.error as string || response.statusText;
-    }
-    return response.statusText;
+  if (typeof response.data === "object" && response.data !== null) {
+    const data = response.data as Record<string, unknown>;
+    return (data.message as string) || (data.error as string) || response.statusText;
   }
+  return response.statusText;
+}

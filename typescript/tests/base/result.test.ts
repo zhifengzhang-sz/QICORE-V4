@@ -2,8 +2,8 @@
  * QiCore v4.0 - Result Monad Tests
  */
 
-import { test, expect, describe } from "vitest";
-import { Result, QiError } from "../../src/qicore/base/index.js";
+import { describe, expect, test } from "vitest";
+import { QiError, Result } from "../../src/qicore/base/index.js";
 
 describe("Result Monad", () => {
   test("should create success result", () => {
@@ -16,7 +16,7 @@ describe("Result Monad", () => {
   test("should create failure result", () => {
     const error = QiError.validationError("Test error", "field", "value");
     const result = Result.failure<number>(error);
-    
+
     expect(result.isSuccess()).toBe(false);
     expect(result.isFailure()).toBe(true);
     expect(result.error()).toEqual(error);
@@ -28,11 +28,11 @@ describe("Result Monad", () => {
     const g = (x: number) => x + 3;
 
     // Identity law: map(id) = id
-    const identity = result.map(x => x);
+    const identity = result.map((x) => x);
     expect(identity.unwrap()).toBe(result.unwrap());
 
     // Composition law: map(g ∘ f) = map(g) ∘ map(f)
-    const composed = result.map(x => g(f(x)));
+    const composed = result.map((x) => g(f(x)));
     const chained = result.map(f).map(g);
     expect(composed.unwrap()).toBe(chained.unwrap());
   });
@@ -49,23 +49,23 @@ describe("Result Monad", () => {
 
     // Right identity: flatMap(success)(m) = m
     const m = Result.success(value);
-    const rightIdentity = m.flatMap(x => Result.success(x));
+    const rightIdentity = m.flatMap((x) => Result.success(x));
     expect(rightIdentity.unwrap()).toBe(m.unwrap());
 
     // Associativity: flatMap(g)(flatMap(f)(m)) = flatMap(x => flatMap(g)(f(x)))(m)
     const assoc1 = m.flatMap(f).flatMap(g);
-    const assoc2 = m.flatMap(x => f(x).flatMap(g));
+    const assoc2 = m.flatMap((x) => f(x).flatMap(g));
     expect(assoc1.unwrap()).toBe(assoc2.unwrap());
   });
 
   test("should handle error mapping", () => {
     const error = QiError.validationError("Original error", "field", "value");
     const result = Result.failure<number>(error);
-    
-    const mapped = result.mapError(err => 
+
+    const mapped = result.mapError((err) =>
       QiError.configurationError("Mapped error", "config", "string")
     );
-    
+
     expect(mapped.isFailure()).toBe(true);
     expect(mapped.error().category).toBe("ConfigurationError");
   });
@@ -73,9 +73,9 @@ describe("Result Monad", () => {
   test("should recover from errors", () => {
     const error = QiError.validationError("Error", "field", "value");
     const result = Result.failure<number>(error);
-    
+
     const recovered = result.recover(() => 42);
-    
+
     expect(recovered.isSuccess()).toBe(true);
     expect(recovered.unwrap()).toBe(42);
   });
@@ -83,7 +83,7 @@ describe("Result Monad", () => {
   test("should unwrap with default", () => {
     const success = Result.success(42);
     const failure = Result.failure<number>(QiError.validationError("Error", "field", "value"));
-    
+
     expect(success.unwrapOr(0)).toBe(42);
     expect(failure.unwrapOr(0)).toBe(0);
   });
@@ -91,28 +91,24 @@ describe("Result Monad", () => {
   test("should implement match pattern", () => {
     const success = Result.success(42);
     const failure = Result.failure<number>(QiError.validationError("Error", "field", "value"));
-    
+
     const successResult = success.match({
       success: (value) => `Success: ${value}`,
       failure: (error) => `Error: ${error.message}`,
     });
-    
+
     const failureResult = failure.match({
       success: (value) => `Success: ${value}`,
       failure: (error) => `Error: ${error.message}`,
     });
-    
+
     expect(successResult).toBe("Success: 42");
     expect(failureResult).toBe("Error: Error");
   });
 
   test("should sequence results", () => {
-    const results = [
-      Result.success(1),
-      Result.success(2),
-      Result.success(3),
-    ];
-    
+    const results = [Result.success(1), Result.success(2), Result.success(3)];
+
     const sequenced = Result.sequence(results);
     expect(sequenced.isSuccess()).toBe(true);
     expect(sequenced.unwrap()).toEqual([1, 2, 3]);
@@ -124,7 +120,7 @@ describe("Result Monad", () => {
       Result.failure<number>(QiError.validationError("Error", "field", "value")),
       Result.success(3),
     ];
-    
+
     const sequenced = Result.sequence(results);
     expect(sequenced.isFailure()).toBe(true);
   });
@@ -136,9 +132,9 @@ describe("Result Monad", () => {
       Result.success(2),
       Result.failure<number>(QiError.validationError("Error2", "field", "value")),
     ];
-    
+
     const { successes, failures } = Result.partition(results);
-    
+
     expect(successes).toEqual([1, 2]);
     expect(failures).toHaveLength(2);
     expect(failures[0].message).toBe("Error1");
@@ -150,13 +146,13 @@ describe("Result Monad", () => {
       if (b === 0) throw new Error("Division by zero");
       return a / b;
     };
-    
+
     const success = Result.tryCatch(() => safeDiv(10, 2));
     const failure = Result.tryCatch(() => safeDiv(10, 0));
-    
+
     expect(success.isSuccess()).toBe(true);
     expect(success.unwrap()).toBe(5);
-    
+
     expect(failure.isFailure()).toBe(true);
     expect(failure.error().category).toBe("RuntimeError");
   });

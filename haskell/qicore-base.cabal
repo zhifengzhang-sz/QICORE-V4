@@ -1,0 +1,105 @@
+cabal-version: 3.0
+name: qicore-base
+version: 4.0.0
+synopsis: QiCore Base Components - Error handling and Result types
+description: 
+    QiCore Base provides the foundational error handling and result types
+    for the QiCore library ecosystem. It includes QiError for standardized
+    error representation and Result<T> for type-safe success/failure handling.
+    
+    This package implements the mathematical properties required for functional
+    composition, including Functor and Monad laws for the Result type.
+    
+homepage: https://github.com/qi-protocol/qicore-v4
+bug-reports: https://github.com/qi-protocol/qicore-v4/issues
+license: MIT
+author: QiCore Team
+maintainer: qicore@qi-protocol.com
+copyright: 2025 QiCore Team
+category: Control, Error Handling
+build-type: Simple
+extra-source-files: README.md
+
+common warnings
+    ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates
+                 -Wincomplete-uni-patterns -Wmissing-export-lists
+                 -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+                 -Wmissing-signatures -Wmissing-local-signatures
+                 -Wno-type-defaults
+
+library
+    import: warnings
+    exposed-modules: 
+        QiCore.Base
+        QiCore.Base.Error
+        QiCore.Base.Result
+    
+    build-depends: 
+        base >=4.16.0.0 && <5,
+        text >=2.0,
+        containers >=0.6,
+        time >=1.12,
+        aeson >=2.1,
+        
+    hs-source-dirs: .
+    default-language: GHC2021
+    default-extensions:
+        -- Modern ergonomic extensions (beyond GHC2021)
+        LambdaCase
+        MultiWayIf
+        ViewPatterns
+        PatternSynonyms
+        RecordWildCards
+        NamedFieldPuns
+        BlockArguments
+        
+        -- Advanced type-level programming
+        TypeFamilies
+        FunctionalDependencies
+        UndecidableInstances
+        
+        -- Better deriving
+        DerivingVia
+        DeriveAnyClass
+        
+        -- Quality of life
+        ApplicativeDo
+        OverloadedStrings
+        NumericUnderscores
+
+-- Commented out until test directory is created
+-- test-suite qicore-base-test
+--     import: warnings
+--     default-language: GHC2021
+--     type: exitcode-stdio-1.0
+--     hs-source-dirs: test
+--     main-is: Main.hs
+--     other-modules:
+--         Test.QiCore.Base.Error
+--         Test.QiCore.Base.Result
+--         Test.QiCore.Base.Laws
+--         
+--     build-depends:
+--         base,
+--         qicore-base,
+--         hspec >=2.10,
+--         QuickCheck >=2.14,
+--         aeson,
+--         text,
+--         containers,
+--         time
+
+-- Commented out until bench directory is created        
+-- benchmark qicore-base-bench
+--     import: warnings
+--     default-language: GHC2021
+--     type: exitcode-stdio-1.0
+--     hs-source-dirs: bench
+--     main-is: Main.hs
+--     
+--     build-depends:
+--         base,
+--         qicore-base,
+--         criterion >=1.6,
+--         text,
+--         containers

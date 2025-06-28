@@ -1,0 +1,254 @@
+# Base Component Haskell Implementation Instructions
+# YAML-based implementation for QiError and Result<T> in Haskell
+
+metadata:
+  version: "4.1"
+  scope: "base_components_only"
+  target_language: "Haskell"
+  components: ["QiError", "Result"]
+  uses:
+    contracts: "docs/experiment/sources/nl/base.contracts.md"
+  generates:
+    - "src/QiCore/Base/Error.hs"
+    - "src/QiCore/Base/Result.hs"
+    - "src/QiCore/Base.hs"
+
+# Haskell-specific environment
+environment:
+  compiler: "ghc >= 9.0"
+  build_tool: "cabal"
+  extensions:
+    - "OverloadedStrings"
+    - "DeriveGeneric"
+    - "DeriveFunctor"
+    - "DeriveFoldable"
+    - "DeriveTraversable"
+
+# Module structure
+modules:
+  error_module:
+    name: "QiCore.Base.Error"
+    file: "src/QiCore/Base/Error.hs"
+    exports:
+      - "ErrorCategory(..)"
+      - "QiError"
+      - "qiError"
+      - "validation"
+      - "network"
+      - "filesystem"
+      - "configuration"
+      - "cache"
+      - "timeout"
+      - "permission"
+      - "unknown"
+      - "withContext"
+      - "withCause"
+      - "getCategory"
+      - "errorCode"
+      - "errorMessage"
+    
+    types:
+      error_category:
+        type: "data"
+        name: "ErrorCategory"
+        constructors:
+          - "Validation"
+          - "Network"
+          - "Filesystem"
+          - "Configuration"
+          - "Cache"
+          - "Timeout"
+          - "Permission"
+          - "Unknown"
+        deriving: ["Show", "Eq", "Ord", "Generic"]
+      
+      qi_error:
+        type: "data"
+        name: "QiError"
+        fields:
+          - name: "errorCode"
+            type: "Text"
+          - name: "errorMessage"
+            type: "Text"
+          - name: "errorCategory"
+            type: "ErrorCategory"
+          - name: "errorContext"
+            type: "Maybe (Map Text Value)"
+          - name: "errorCause"
+            type: "Maybe QiError"
+          - name: "errorTimestamp"
+            type: "UTCTime"
+        deriving: ["Show", "Eq", "Generic"]
+    
+    functions:
+      constructor:
+        name: "qiError"
+        type: "Text -> Text -> ErrorCategory -> Maybe (Map Text Value) -> Maybe QiError -> IO QiError"
+        implementation: "create QiError with getCurrentTime for timestamp"
+      
+      factory_functions:
+        - name: "validation"
+          type: "Text -> Text -> IO QiError"
+          implementation: "qiError code message Validation Nothing Nothing"
+        - name: "network"
+          type: "Text -> Text -> IO QiError"
+          implementation: "qiError code message Network Nothing Nothing"
+        # ... other categories
+      
+      builder_functions:
+        - name: "withContext"
+          type: "QiError -> Map Text Value -> QiError"
+          implementation: "update errorContext field with Map.union"
+        - name: "withCause"
+          type: "QiError -> QiError -> QiError"
+          implementation: "update errorCause field"
+      
+      accessor_functions:
+        - name: "getCategory"
+          type: "QiError -> ErrorCategory"
+          implementation: "errorCategory"
+
+  result_module:
+    name: "QiCore.Base.Result"
+    file: "src/QiCore/Base/Result.hs"
+    exports:
+      - "Result"
+      - "success"
+      - "failure"
+      - "fromEither"
+      - "toEither"
+      - "fromMaybe"
+      - "unwrap"
+      - "unwrapOr"
+      - "mapResult"
+      - "flatMapResult"
+      - "orElse"
+    
+    types:
+      result:
+        type: "type"
+        name: "Result"
+        definition: "Result a = Either QiError a"
+        deriving: ["Show", "Eq", "Functor", "Applicative", "Monad"]
+    
+    functions:
+      constructors:
+        - name: "success"
+          type: "a -> Result a"
+          implementation: "Right"
+        - name: "failure"
+          type: "QiError -> Result a"
+          implementation: "Left"
+      
+      conversions:
+        - name: "fromEither"
+          type: "Either QiError a -> Result a"
+          implementation: "id"
+        - name: "toEither"
+          type: "Result a -> Either QiError a"
+          implementation: "id"
+        - name: "fromMaybe"
+          type: "QiError -> Maybe a -> Result a"
+          implementation: "maybe (Left error) Right"
+      
+      operations:
+        - name: "unwrap"
+          type: "Result a -> a"
+          implementation: "either (error . show) id"
+        - name: "unwrapOr"
+          type: "a -> Result a -> a"
+          implementation: "either (const defaultValue) id"
+        - name: "mapResult"
+          type: "(a -> b) -> Result a -> Result b"
+          implementation: "fmap"
+        - name: "flatMapResult"
+          type: "(a -> Result b) -> Result a -> Result b"
+          implementation: ">>="
+        - name: "orElse"
+          type: "(QiError -> Result a) -> Result a -> Result a"
+          implementation: "either alternative return"
+
+# Dependencies and imports
+dependencies:
+  base: ">= 4.16"
+  text: ">= 1.2"
+  containers: ">= 0.6"
+  time: ">= 1.9"
+  aeson: ">= 2.0"
+
+imports:
+  error_module:
+    - "import Data.Text (Text)"
+    - "import Data.Map (Map)"
+    - "import qualified Data.Map as Map"
+    - "import Data.Time (UTCTime, getCurrentTime)"
+    - "import Data.Aeson (Value)"
+    - "import GHC.Generics (Generic)"
+  
+  result_module:
+    - "import QiCore.Base.Error (QiError)"
+
+# Testing structure
+testing:
+  property_tests:
+    file: "test/QiCore/Base/Properties.hs"
+    framework: "QuickCheck"
+    tests:
+      monad_laws:
+        - name: "prop_leftIdentity"
+          type: "Eq b => a -> (a -> Result b) -> Bool"
+          implementation: "return a >>= f == f a"
+        - name: "prop_rightIdentity"
+          type: "Eq a => Result a -> Bool"
+          implementation: "m >>= return == m"
+        - name: "prop_associativity"
+          type: "(Eq c) => Result a -> (a -> Result b) -> (b -> Result c) -> Bool"
+          implementation: "(m >>= f) >>= g == m >>= (\\x -> f x >>= g)"
+      
+      functor_laws:
+        - name: "prop_functorIdentity"
+          type: "Eq a => Result a -> Bool"
+          implementation: "fmap id == id"
+        - name: "prop_functorComposition"
+          type: "(Eq c) => (b -> c) -> (a -> b) -> Result a -> Bool"
+          implementation: "fmap (f . g) == fmap f . fmap g"
+
+# Build configuration
+build:
+  cabal_file:
+    name: "qicore-base"
+    version: "4.1"
+    synopsis: "QiCore Base Components"
+    description: "Mathematical contract-based base components"
+    
+    library:
+      exposed_modules:
+        - "QiCore.Base"
+        - "QiCore.Base.Error"
+        - "QiCore.Base.Result"
+      other_modules: []
+      build_depends:
+        - "base >= 4.16"
+        - "text >= 1.2"
+        - "containers >= 0.6"
+        - "time >= 1.9"
+        - "aeson >= 2.0"
+    
+    test_suite:
+      type: "exitcode-stdio-1.0"
+      main_is: "Spec.hs"
+      other_modules:
+        - "QiCore.Base.Properties"
+      build_depends:
+        - "qicore-base"
+        - "QuickCheck"
+        - "hspec"
+
+# Performance targets (Functional tier - 50x baseline)
+performance:
+  targets:
+    result_creation: "< 50μs"
+    error_creation: "< 50μs"
+    map_operation: "< 25μs"
+    bind_operation: "< 50μs"
+    unwrap_operation: "< 5μs"

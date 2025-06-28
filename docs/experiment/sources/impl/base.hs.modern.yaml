@@ -1,0 +1,84 @@
+# Modern Haskell Implementation Instructions
+# Focus: Principles and approaches, not detailed specifications
+
+metadata:
+  version: "4.2"
+  scope: "base_components_modernized"
+  target_language: "Haskell"
+
+# INSTRUCTION 1: Update knowledge before coding (HIGHEST PRIORITY)
+knowledge_update:
+  priority: "critical"
+  action: "Research 2024-2025 Haskell best practices before implementing"
+  sources:
+    - "Latest GHC language editions (GHC2021 vs Haskell2010)"
+    - "Modern extension usage patterns"
+    - "Community-standard tooling (fourmolu, hlint, HLS)"
+    - "Performance optimization techniques"
+  impact: "10x improvement in code quality"
+
+# INSTRUCTION 2: Use modern language foundation
+language_modernization:
+  upgrade_language_edition: "Use GHC2021 instead of Haskell2010"
+  add_modern_extensions: "Research and add 10+ modern extensions beyond base"
+  reasoning: "Language editions provide curated sets of stable extensions"
+  examples:
+    - "LambdaCase for pattern matching"
+    - "ViewPatterns for advanced patterns"
+    - "DerivingVia for flexible instances"
+    - "TypeFamilies for type-level programming"
+
+# INSTRUCTION 3: Design comprehensive APIs
+api_design:
+  exceed_requirements: "Implement 3x more functions than minimum contracts require"
+  add_smart_constructors: "Create convenient functions for common patterns"
+  include_collection_operations: "Add functions for working with lists of Results"
+  provide_validation_helpers: "Include advanced validation and retry logic"
+  reasoning: "Comprehensive APIs provide better developer experience"
+
+# INSTRUCTION 4: Optimize for performance
+performance_approach:
+  use_strict_fields: "Add ! annotations to data type fields"
+  modern_deriving: "Use 'deriving stock' and 'deriving anyclass'"
+  efficient_patterns: "Research GHC optimization techniques"
+  reasoning: "Modern Haskell can be very fast with right patterns"
+
+# INSTRUCTION 5: Enhanced validation and safety
+safety_patterns:
+  input_validation: "Validate all constructor inputs"
+  circular_detection: "Prevent infinite recursion in cause chains"
+  exception_integration: "Provide safe exception conversion"
+  reasoning: "Robust error handling prevents runtime failures"
+
+# INSTRUCTION 6: Professional documentation
+documentation_approach:
+  rich_haddock: "Write comprehensive module and function documentation"
+  include_examples: "Provide usage examples in documentation"
+  explain_design: "Document design principles and mathematical properties"
+  reasoning: "Good documentation makes code maintainable and usable"
+
+# INSTRUCTION 7: Modern build patterns
+build_modernization:
+  common_stanzas: "Use common stanzas for shared build configuration"
+  flexible_bounds: "Use >= bounds instead of ^>= for better compatibility"
+  modern_cabal: "Use latest cabal file format features"
+  reasoning: "Modern build patterns improve maintainability"
+
+# Key insight: The APPROACH matters more than specific details
+success_principle: |
+  The wonderful results came from:
+  1. Researching modern practices FIRST
+  2. Using latest stable language features
+  3. Setting up quality infrastructure
+  4. Going beyond minimum requirements
+  5. Focusing on developer experience
+  
+  This approach can be applied to any language or project.
+
+# What NOT to do (anti-patterns from original YAML)
+avoid:
+  - "Specifying exact function signatures in YAML"
+  - "Writing pseudocode as 'configuration'"
+  - "Using old language editions without research"
+  - "Implementing only minimum requirements"
+  - "Skipping quality tools setup" 

@@ -1,6 +1,6 @@
 /**
  * QiCore v4.0 - Result<T> Monad Implementation
- * 
+ *
  * Mathematical Contract-Based TypeScript Library
  * Component 1: Result<T> - Monad for error handling (8 operations)
  */
@@ -104,9 +104,8 @@ export abstract class Result<T> {
   }): U {
     if (this.isSuccess()) {
       return cases.success(this.unwrap());
-    } else {
-      return cases.failure(this.error());
     }
+    return cases.failure(this.error());
   }
 }
 
@@ -253,10 +252,7 @@ export namespace Result {
   /**
    * Traverse a list with a function that returns Results
    */
-  export function traverse<T, U>(
-    items: T[],
-    fn: (item: T) => Result<U>,
-  ): Result<U[]> {
+  export function traverse<T, U>(items: T[], fn: (item: T) => Result<U>): Result<U[]> {
     return sequence(items.map(fn));
   }
 

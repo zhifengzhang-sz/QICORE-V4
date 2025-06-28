@@ -1,0 +1,193 @@
+# Haskell Project Setup Configuration
+# Focus: Technical infrastructure and project structure
+
+metadata:
+  purpose: "Infrastructure setup for modern Haskell development"
+  scope: "Nix + Haskell + Development Environment"
+  complements: "base.hs.modern.yaml (principles and approaches)"
+
+# Nix Environment Configuration
+nix_setup:
+  flake_config:
+    inputs:
+      nixpkgs: "github:NixOS/nixpkgs/nixos-unstable"
+      flake_parts: "github:hercules-ci/flake-parts"
+    
+    structure: "modern flake-parts architecture"
+    systems: ["x86_64-linux", "aarch64-linux", "aarch64-darwin", "x86_64-darwin"]
+  
+  haskell_environment:
+    ghc_version: "ghc98"  # Latest stable
+    package_set: "nixpkgs haskell.packages.ghc98"
+    override_strategy: "callCabal2nix for local packages"
+  
+  development_tools:
+    - "cabal-install"
+    - "haskell-language-server"
+    - "fourmolu"
+    - "hlint"
+    - "apply-refact" 
+    - "ghcid"
+    - "hoogle"
+    - "retrie"
+  
+  shell_outputs:
+    default: "Full development environment"
+    minimal: "Just GHC and cabal"
+    
+  package_outputs:
+    library: "qicore-base package"
+    documentation: "Generated Haddock docs"
+
+# Haskell Project Structure
+project_structure:
+  cabal_file:
+    name: "qicore-base"
+    version: "4.0.0"
+    language: "GHC2021"
+    
+    common_stanza: |
+      common warnings
+        ghc-options: -Wall -Wcompat -Widentities 
+                     -Wincomplete-record-updates
+                     -Wincomplete-uni-patterns
+                     -Wmissing-export-lists
+                     -Wmissing-signatures
+    
+    library:
+      import: "warnings"
+      exposed_modules:
+        - "QiCore.Base"
+        - "QiCore.Base.Error" 
+        - "QiCore.Base.Result"
+      dependencies:
+        - "base >=4.16.0.0 && <5"
+        - "text >=2.0"
+        - "containers >=0.6"
+        - "time >=1.12"
+        - "aeson >=2.1"
+      
+      default_extensions:
+        - "LambdaCase"
+        - "MultiWayIf"
+        - "ViewPatterns"
+        - "RecordWildCards"
+        - "DerivingVia"
+        - "DeriveAnyClass"
+        - "TypeFamilies"
+        - "OverloadedStrings"
+        - "NumericUnderscores"
+
+  directory_structure:
+    source: "QiCore/Base/"
+    files:
+      - "Error.hs"
+      - "Result.hs"
+      - "Base.hs"
+
+# Quality Infrastructure Setup (CRITICAL for excellent results)
+quality_infrastructure:
+  priority: "establish early in project"
+  comprehensive_warnings: "Enable all GHC warnings that don't conflict"
+  formatting: "Configure fourmolu for consistent modern style"
+  linting: "Set up hlint for code quality suggestions"
+  reasoning: "Quality infrastructure catches issues early and maintains consistency"
+
+# Development Environment Configuration  
+development_config:
+  formatting:
+    tool: "fourmolu"
+    config_file: "fourmolu.yaml"
+    settings:
+      column_limit: 100
+      indentation: 2
+      comma_style: "leading"
+      diff_friendly: true
+      
+  linting:
+    tool: "hlint"
+    config_file: ".hlint.yaml"
+    rules: "modern patterns, performance hints"
+    
+  editor_integration:
+    haskell_language_server: "automatic via Nix"
+    vscode_extensions: "haskell, nix-ide"
+    
+  build_commands:
+    develop: "nix develop"
+    build: "cabal build"
+    test: "cabal test"
+    format: "fourmolu --mode inplace ."
+    lint: "hlint ."
+    docs: "cabal haddock"
+
+# Quality Assurance Setup
+qa_setup:
+  git_hooks:
+    pre_commit:
+      - "fourmolu --mode check ."
+      - "hlint ."
+      - "cabal build"
+  
+  ci_integration:
+    github_actions: "haskell.yml workflow"
+    checks:
+      - "build on multiple GHC versions"
+      - "formatting check"
+      - "linting check"
+      - "documentation generation"
+
+# Performance Optimization
+performance_config:
+  ghc_options:
+    development: "-O0 -Wall"
+    production: "-O2 -funbox-strict-fields"
+  
+  optimization_techniques:
+    - "strict fields in data types"
+    - "INLINE pragmas for hot paths"
+    - "unboxed types where appropriate"
+
+# Documentation Generation
+docs_config:
+  haddock:
+    theme: "default"
+    hyperlink_source: true
+    html_location: "dist-newstyle/doc"
+    
+  readme:
+    sections:
+      - "Installation"
+      - "Usage Examples"
+      - "API Documentation"
+      - "Development Setup"
+
+# Package Management
+package_config:
+  cabal_project:
+    optimization: true
+    documentation: true
+    tests: true
+    
+  freeze_file: "cabal.project.freeze"
+  allow_newer: "selective for compatibility"
+
+# Example Usage Instructions
+usage_examples:
+  setup_project: |
+    1. nix develop
+    2. cabal build
+    3. cabal test
+    
+  development_workflow: |
+    1. Make changes
+    2. fourmolu --mode inplace .
+    3. hlint .
+    4. cabal build
+    5. cabal test
+    
+  release_process: |
+    1. Update version in cabal file
+    2. Generate documentation
+    3. Tag release
+    4. Build and upload to Hackage 

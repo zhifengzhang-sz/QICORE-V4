@@ -1,0 +1,26 @@
+# Simple Haskell Source Code Generation from NL Contracts
+
+metadata:
+  version: "4.1"
+  scope: "base_components_only"
+  target_language: "Haskell"
+
+task: "generate Haskell source code from nl contracts"
+
+input:
+  contracts: "docs/experiment/sources/nl/base.contracts.md"
+
+output:
+  directory: "haskell/src/"
+  files:
+    - "QiCore/Base/Error.hs"
+    - "QiCore/Base/Result.hs"
+    - "QiCore/Base.hs"
+
+language: "haskell"
+
+requirements:
+  - "implement all operations specified in contracts"
+  - "preserve mathematical properties (monad laws, functor laws)"
+  - "use idiomatic Haskell patterns"
+  - "generate property tests for mathematical laws"

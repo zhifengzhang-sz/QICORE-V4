@@ -1,14 +1,14 @@
 /**
  * QiCore v4.0 - Configuration Component
- * 
+ *
  * Mathematical Contract-Based TypeScript Library
  * Component 3: Configuration - Type-safe config with monoid merge (9 operations)
  */
 
-import { z, type ZodSchema } from "zod";
-import { readFile } from "fs/promises";
-import { Result } from "../base/result.js";
+import { readFile } from "node:fs/promises";
+import { type ZodSchema, z } from "zod";
 import { QiError } from "../base/error.js";
+import { Result } from "../base/result.js";
 
 /**
  * Configuration class provides type-safe configuration management with validation,
@@ -34,18 +34,14 @@ export class Configuration<T> {
       if (error instanceof z.ZodError) {
         return Result.failure(
           QiError.validationError(
-            `Configuration validation failed: ${error.issues.map(i => i.message).join(", ")}`,
+            `Configuration validation failed: ${error.issues.map((i) => i.message).join(", ")}`,
             "config",
-            obj,
-          ),
+            obj
+          )
         );
       }
       return Result.failure(
-        QiError.configurationError(
-          `Configuration parsing failed: ${error}`,
-          "unknown",
-          "object",
-        ),
+        QiError.configurationError(`Configuration parsing failed: ${error}`, "unknown", "object")
       );
     }
   }
@@ -59,11 +55,7 @@ export class Configuration<T> {
       return this.loadFromObject(envObj);
     } catch (error) {
       return Result.failure(
-        QiError.configurationError(
-          `Environment loading failed: ${error}`,
-          "env",
-          "environment",
-        ),
+        QiError.configurationError(`Environment loading failed: ${error}`, "env", "environment")
       );
     }
   }
@@ -77,11 +69,7 @@ export class Configuration<T> {
       return this.loadFromObject(obj);
     } catch (error) {
       return Result.failure(
-        QiError.configurationError(
-          `JSON parsing failed: ${error}`,
-          "json",
-          "string",
-        ),
+        QiError.configurationError(`JSON parsing failed: ${error}`, "json", "string")
       );
     }
   }
@@ -92,20 +80,15 @@ export class Configuration<T> {
   async loadFromFile(filePath: string): Promise<Result<T>> {
     try {
       const content = await readFile(filePath, "utf-8");
-      
+
       if (filePath.endsWith(".json")) {
         return this.loadFromJson(content);
-      } else {
-        // Try to parse as JSON anyway
-        return this.loadFromJson(content);
       }
+      // Try to parse as JSON anyway
+      return this.loadFromJson(content);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `File loading failed: ${error}`,
-          "file",
-          filePath,
-        ),
+        QiError.resourceError(`File loading failed: ${error}`, "file", filePath)
       );
     }
   }
@@ -119,8 +102,8 @@ export class Configuration<T> {
         QiError.stateError(
           "Cannot merge uninitialized configurations",
           "uninitialized",
-          "initialized",
-        ),
+          "initialized"
+        )
       );
     }
 
@@ -128,7 +111,7 @@ export class Configuration<T> {
       // Merge the original data (without defaults applied)
       // This ensures that defaults from the second config don't override explicit values from the first
       const mergedOriginal = this.deepMerge(
-        (this.originalData ?? {}) as T, 
+        (this.originalData ?? {}) as T,
         (other.originalData ?? {}) as T
       );
       const result = new Configuration(this.schema);
@@ -136,11 +119,7 @@ export class Configuration<T> {
       return result.loadFromObject(mergedOriginal).map(() => result);
     } catch (error) {
       return Result.failure(
-        QiError.configurationError(
-          `Merge failed: ${error}`,
-          "merge",
-          "object",
-        ),
+        QiError.configurationError(`Merge failed: ${error}`, "merge", "object")
       );
     }
   }
@@ -153,11 +132,7 @@ export class Configuration<T> {
       return Result.success(this.data);
     }
     return Result.failure(
-      QiError.stateError(
-        "Configuration not loaded",
-        "uninitialized",
-        "initialized",
-      ),
+      QiError.stateError("Configuration not loaded", "uninitialized", "initialized")
     );
   }
 
@@ -167,11 +142,7 @@ export class Configuration<T> {
   validate(): Result<T> {
     if (!this.data) {
       return Result.failure(
-        QiError.stateError(
-          "No configuration to validate",
-          "uninitialized",
-          "initialized",
-        ),
+        QiError.stateError("No configuration to validate", "uninitialized", "initialized")
       );
     }
 
@@ -182,18 +153,14 @@ export class Configuration<T> {
       if (error instanceof z.ZodError) {
         return Result.failure(
           QiError.validationError(
-            `Validation failed: ${error.issues.map(i => i.message).join(", ")}`,
+            `Validation failed: ${error.issues.map((i) => i.message).join(", ")}`,
             "config",
-            this.data,
-          ),
+            this.data
+          )
         );
       }
       return Result.failure(
-        QiError.configurationError(
-          `Validation error: ${error}`,
-          "validation",
-          "object",
-        ),
+        QiError.configurationError(`Validation error: ${error}`, "validation", "object")
       );
     }
   }
@@ -216,8 +183,8 @@ export class Configuration<T> {
         QiError.stateError(
           "Cannot clone uninitialized configuration",
           "uninitialized",
-          "initialized",
-        ),
+          "initialized"
+        )
       );
     }
 
@@ -265,12 +232,14 @@ export class Configuration<T> {
     if (value.toLowerCase() === "false") return false;
 
     // Try number
-    if (/^-?\\d+$/.test(value)) return parseInt(value, 10);
-    if (/^-?\\d+\\.\\d+$/.test(value)) return parseFloat(value);
+    if (/^-?\\d+$/.test(value)) return Number.parseInt(value, 10);
+    if (/^-?\\d+\\.\\d+$/.test(value)) return Number.parseFloat(value);
 
     // Try JSON
-    if ((value.startsWith("{") && value.endsWith("}")) || 
-        (value.startsWith("[") && value.endsWith("]"))) {
+    if (
+      (value.startsWith("{") && value.endsWith("}")) ||
+      (value.startsWith("[") && value.endsWith("]"))
+    ) {
       try {
         return JSON.parse(value);
       } catch {
@@ -287,19 +256,22 @@ export class Configuration<T> {
    */
   private deepMerge(target: T, source: T): T {
     if (this.isObject(target) && this.isObject(source)) {
-      const result = { ...target } as any;
-      
+      const result = { ...target } as Record<string, unknown>;
+
       for (const key in source) {
-        if (this.isObject((source as any)[key]) && this.isObject((target as any)[key])) {
-          (result as any)[key] = this.deepMerge((target as any)[key], (source as any)[key]);
+        const sourceValue = (source as Record<string, unknown>)[key];
+        const targetValue = (target as Record<string, unknown>)[key];
+
+        if (this.isObject(sourceValue) && this.isObject(targetValue)) {
+          result[key] = this.deepMerge(targetValue as T, sourceValue as T);
         } else {
-          (result as any)[key] = (source as any)[key];
+          result[key] = sourceValue;
         }
       }
-      
-      return result;
+
+      return result as T;
     }
-    
+
     return source;
   }
 
@@ -431,7 +403,7 @@ export class ConfigurationBuilder<T> {
    * Set a specific value (for fluent API)
    */
   set<K extends keyof T>(key: K, value: T[K]): this {
-    const currentData = this.config.isLoaded() ? this.config.get().unwrap() : {} as T;
+    const currentData = this.config.isLoaded() ? this.config.get().unwrap() : ({} as T);
     const newData = { ...currentData, [key]: value };
     const result = this.config.loadFromObject(newData);
     if (result.isFailure()) {
@@ -472,7 +444,7 @@ export namespace ConfigurationUtils {
   export function mergeAll<T>(configs: Configuration<T>[]): Result<Configuration<T>> {
     if (configs.length === 0) {
       return Result.failure(
-        QiError.validationError("Cannot merge empty configuration list", "configs", configs),
+        QiError.validationError("Cannot merge empty configuration list", "configs", configs)
       );
     }
 

@@ -1,6 +1,6 @@
 /**
  * QiCore v4.0 - Base Components
- * 
+ *
  * Mathematical Contract-Based TypeScript Library
  * Base layer: Fundamental building blocks for functional programming
  */

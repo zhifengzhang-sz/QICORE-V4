@@ -1,0 +1,632 @@
+# Base Component TypeScript Implementation Instructions
+# YAML-based implementation for QiError and Result<T> only
+
+metadata:
+  version: "4.1"
+  scope: "base_components_only"
+  target_language: "TypeScript"
+  components: ["QiError", "Result<T>"]
+  uses:
+    contracts: "docs/experiment/sources/nl/base.contracts.md"
+    guides: 
+      - "docs/experiment/sources/guides/base/design.prompt.md"
+      - "docs/experiment/sources/guides/base/design.ts.prompt.md"
+  generates:
+    - "typescript/src/base/error.ts"
+    - "typescript/src/base/result.ts"
+    - "typescript/src/base/index.ts"
+  purpose: "Complete implementation driver for base components"
+
+# Environment setup for base components only
+environment:
+  runtime: "bun"
+  node_version: ">=18.0.0"
+  typescript_version: "^5.3.0"
+  package_manager: "bun"
+  linting: "eslint"
+  formatting: "prettier"
+  testing: "vitest"
+
+# Minimal project structure for base components
+project_structure:
+  base_directory: "typescript/"
+  
+  directories:
+    - "src/base"
+    - "tests/base"
+    - "benchmarks"
+
+  configuration_files:
+    - name: "package.json"
+      content:
+        name: "qicore-base-experiment"
+        version: "4.1"
+        type: "module"
+        engines:
+          bun: ">=1.0.0"
+        scripts:
+          build: "bun run tsc"
+          test: "bun test"
+          lint: "eslint src/ --ext .ts"
+          format: "prettier --write src/**/*.ts"
+          benchmark: "bun run benchmarks/base-performance.ts"
+        dependencies:
+          fp-ts: "^2.16.2"
+        devDependencies:
+          typescript: "^5.3.0"
+          "@types/node": "^20.10.0"
+          vitest: "^1.0.4"
+          eslint: "^8.56.0"
+          "@typescript-eslint/eslint-plugin": "^6.18.0"
+          "@typescript-eslint/parser": "^6.18.0"
+          prettier: "^3.1.1"
+    
+    - name: "tsconfig.json"
+      content:
+        compilerOptions:
+          target: "ES2022"
+          lib: ["ES2022"]
+          module: "ESNext"
+          moduleResolution: "node"
+          allowSyntheticDefaultImports: true
+          esModuleInterop: true
+          strict: true
+          noImplicitAny: true
+          strictNullChecks: true
+          noImplicitReturns: true
+          declaration: true
+          outDir: "./dist"
+          sourceMap: true
+        include: ["src/**/*"]
+        exclude: ["node_modules", "dist", "tests"]
+    
+    - name: ".eslintrc.json"
+      content:
+        parser: "@typescript-eslint/parser"
+        plugins: ["@typescript-eslint"]
+        extends: ["eslint:recommended", "@typescript-eslint/recommended"]
+        parserOptions:
+          ecmaVersion: 2022
+          sourceType: "module"
+          project: "./tsconfig.json"
+        rules:
+          "@typescript-eslint/no-unused-vars": "error"
+          "@typescript-eslint/no-explicit-any": "warn"
+          "@typescript-eslint/explicit-function-return-type": "off"
+          prefer-const: "error"
+          no-var: "error"
+        env:
+          node: true
+          es2022: true
+
+    - name: ".prettierrc"
+      content:
+        semi: true
+        singleQuote: true
+        tabWidth: 2
+        trailingComma: "es5"
+        printWidth: 100
+        endOfLine: "lf"
+
+# Base component package installation
+package_installation:
+  base_dependencies:
+    packages:
+      - "fp-ts@^2.16.2"
+  
+  dev_dependencies:
+    packages:
+      - "typescript@^5.3.0"
+      - "@types/node@^20.10.0"
+      - "vitest@^1.0.4"
+      - "eslint@^8.56.0"
+      - "@typescript-eslint/eslint-plugin@^6.18.0"
+      - "@typescript-eslint/parser@^6.18.0"
+      - "prettier@^3.1.1"
+
+# Source code generation for base components
+source_generation:
+
+  qierror_component:
+    file_path: "src/base/error.ts"
+    dependencies:
+      imports: []
+      packages: []
+    
+    error_categories:
+      enum_name: "ErrorCategory"
+      values:
+        - "VALIDATION"
+        - "NETWORK"
+        - "FILESYSTEM"
+        - "CONFIGURATION"
+        - "CACHE"
+        - "TIMEOUT"
+        - "PERMISSION"
+        - "UNKNOWN"
+    
+    interface_definition:
+      name: "QiErrorData"
+      properties:
+        - name: "code"
+          type: "string"
+          readonly: true
+          required: true
+        - name: "message"
+          type: "string"
+          readonly: true
+          required: true
+        - name: "category"
+          type: "ErrorCategory"
+          readonly: true
+          required: true
+        - name: "context"
+          type: "Record<string, unknown> | null"
+          readonly: true
+          required: false
+        - name: "cause"
+          type: "QiError | null"
+          readonly: true
+          required: false
+        - name: "timestamp"
+          type: "number"
+          readonly: true
+          required: true
+    
+    class_definition:
+      name: "QiError"
+      implements: "QiErrorData"
+      constructor:
+        parameters:
+          - name: "data"
+            type: "QiErrorData"
+        implementation: "assign all properties from data"
+      
+      methods:
+        - name: "create"
+          type: "static"
+          parameters:
+            - name: "code"
+              type: "string"
+            - name: "message"
+              type: "string"
+            - name: "category"
+              type: "ErrorCategory"
+            - name: "context"
+              type: "Record<string, unknown> | undefined"
+              optional: true
+            - name: "cause"
+              type: "QiError | undefined"
+              optional: true
+          return_type: "QiError"
+          implementation: "create QiError with timestamp auto-generated"
+        
+        - name: "toString"
+          parameters: []
+          return_type: "string"
+          implementation: "format as '[CODE] message (category)'"
+        
+        - name: "toStructuredData"
+          parameters: []
+          return_type: "Record<string, unknown>"
+          implementation: "return serializable object with all properties"
+        
+        - name: "getCategory"
+          parameters: []
+          return_type: "ErrorCategory"
+          implementation: "return this.category"
+        
+        - name: "withContext"
+          parameters:
+            - name: "additionalContext"
+              type: "Record<string, unknown>"
+          return_type: "QiError"
+          implementation: "create new QiError with merged context"
+        
+        - name: "withCause"
+          parameters:
+            - name: "causeError"
+              type: "QiError"
+          return_type: "QiError"
+          implementation: "create new QiError with cause chain"
+    
+    factory_methods:
+      - category: "VALIDATION"
+        method_name: "validation"
+      - category: "NETWORK"
+        method_name: "network"
+      - category: "FILESYSTEM"
+        method_name: "filesystem"
+      - category: "CONFIGURATION"
+        method_name: "configuration"
+      - category: "CACHE"
+        method_name: "cache"
+      - category: "TIMEOUT"
+        method_name: "timeout"
+      - category: "PERMISSION"
+        method_name: "permission"
+      - category: "UNKNOWN"
+        method_name: "unknown"
+    
+    validation_rules:
+      - rule: "code must be non-empty string"
+        implementation: "throw error if code.length === 0"
+      - rule: "category must be valid ErrorCategory"
+        implementation: "validate against enum values"
+      - rule: "cause chain max depth 10"
+        implementation: "check recursively, throw if exceeded"
+    
+    performance_targets:
+      creation: "< 100μs"
+      context_merge: "< 10μs"
+      serialization: "< 50μs"
+
+  result_component:
+    file_path: "src/base/result.ts"
+    dependencies:
+      imports:
+        - "import { Either, left, right, isLeft, isRight } from 'fp-ts/Either'"
+        - "import { pipe } from 'fp-ts/function'"
+        - "import * as E from 'fp-ts/Either'"
+        - "import { QiError } from './error.js'"
+      packages: ["fp-ts"]
+    
+    type_definitions:
+      - name: "Result"
+        definition: "type Result<T> = Either<QiError, T>"
+        export: true
+    
+    factory_functions:
+      - name: "success"
+        generic: "<T>"
+        parameters:
+          - name: "data"
+            type: "T"
+        return_type: "Result<T>"
+        implementation: "return right(data)"
+        export: true
+      
+      - name: "failure"
+        generic: "<T>"
+        parameters:
+          - name: "error"
+            type: "QiError"
+        return_type: "Result<T>"
+        implementation: "return left(error)"
+        export: true
+      
+      - name: "fromTryCatch"
+        generic: "<T>"
+        parameters:
+          - name: "operation"
+            type: "() => T"
+        return_type: "Result<T>"
+        implementation: "try operation(), catch and return failure with QiError"
+        export: true
+    
+    transformation_functions:
+      - name: "map"
+        generic: "<T, U>"
+        parameters:
+          - name: "fn"
+            type: "(value: T) => U"
+        return_type: "(result: Result<T>) => Result<U>"
+        implementation: "return E.map(fn)"
+        export: true
+      
+      - name: "flatMap"
+        generic: "<T, U>"
+        parameters:
+          - name: "fn"
+            type: "(value: T) => Result<U>"
+        return_type: "(result: Result<T>) => Result<U>"
+        implementation: "return E.chain(fn)"
+        export: true
+    
+    elimination_functions:
+      - name: "unwrap"
+        generic: "<T>"
+        parameters:
+          - name: "result"
+            type: "Result<T>"
+        return_type: "T"
+        implementation: "if success return data, else throw error"
+        export: true
+      
+      - name: "unwrapOr"
+        generic: "<T>"
+        parameters:
+          - name: "defaultValue"
+            type: "T"
+        return_type: "(result: Result<T>) => T"
+        implementation: "return E.getOrElse(() => defaultValue)"
+        export: true
+      
+      - name: "match"
+        generic: "<T, U>"
+        parameters:
+          - name: "onSuccess"
+            type: "(value: T) => U"
+          - name: "onError"
+            type: "(error: QiError) => U"
+        return_type: "(result: Result<T>) => U"
+        implementation: "return E.fold(onError, onSuccess)"
+        export: true
+      
+      - name: "orElse"
+        generic: "<T>"
+        parameters:
+          - name: "alternative"
+            type: "(error: QiError) => Result<T>"
+        return_type: "(result: Result<T>) => Result<T>"
+        implementation: "return E.orElse(alternative)"
+        export: true
+    
+    utility_functions:
+      - name: "isSuccess"
+        generic: "<T>"
+        parameters:
+          - name: "result"
+            type: "Result<T>"
+        return_type: "boolean"
+        implementation: "return isRight(result)"
+        export: true
+      
+      - name: "isFailure"
+        generic: "<T>"
+        parameters:
+          - name: "result"
+            type: "Result<T>"
+        return_type: "boolean"
+        implementation: "return isLeft(result)"
+        export: true
+    
+    mathematical_properties:
+      monad_laws:
+        - name: "left_identity"
+          description: "success(a).flatMap(f) === f(a)"
+          test_required: true
+        - name: "right_identity"
+          description: "m.flatMap(success) === m"
+          test_required: true
+        - name: "associativity"
+          description: "(m.flatMap(f)).flatMap(g) === m.flatMap(x => f(x).flatMap(g))"
+          test_required: true
+      
+      functor_laws:
+        - name: "identity"
+          description: "m.map(x => x) === m"
+          test_required: true
+        - name: "composition"
+          description: "m.map(f).map(g) === m.map(x => g(f(x)))"
+          test_required: true
+    
+    performance_targets:
+      creation: "< 100μs"
+      map_operation: "< 50μs"
+      flatmap_operation: "< 100μs"
+      unwrap_operation: "< 10μs"
+
+# Index file generation
+index_files:
+  - file_path: "src/base/index.ts"
+    exports:
+      - "export * from './error.js'"
+      - "export * from './result.js'"
+
+# Testing requirements
+testing:
+  unit_tests:
+    qierror_tests:
+      file_path: "tests/base/error.test.ts"
+      test_categories:
+        - "error creation and properties"
+        - "factory methods for each category"
+        - "context merging functionality"
+        - "cause chaining functionality"
+        - "serialization methods"
+        - "immutability enforcement"
+        - "validation rules"
+    
+    result_tests:
+      file_path: "tests/base/result.test.ts"
+      test_categories:
+        - "factory functions (success, failure, fromTryCatch)"
+        - "transformation functions (map, flatMap)"
+        - "elimination functions (unwrap, unwrapOr, match, orElse)"
+        - "utility functions (isSuccess, isFailure)"
+        - "error propagation"
+        - "functional composition chains"
+  
+  property_tests:
+    monad_laws:
+      file_path: "tests/base/result.laws.test.ts"
+      tests:
+        - "left identity law"
+        - "right identity law"
+        - "associativity law"
+    
+    functor_laws:
+      file_path: "tests/base/result.laws.test.ts"
+      tests:
+        - "identity law"
+        - "composition law"
+  
+  integration_tests:
+    file_path: "tests/base/integration.test.ts"
+    test_scenarios:
+      - "Result<T> with QiError integration"
+      - "error context preservation through Result operations"
+      - "functional composition with mixed success/failure"
+      - "performance under load"
+
+# Performance benchmarks
+benchmarks:
+  file_path: "benchmarks/base-performance.ts"
+  
+  qierror_benchmarks:
+    - name: "error creation"
+      target: "< 100μs per operation"
+      iterations: 1000
+    - name: "context merging"
+      target: "< 10μs per operation"
+      iterations: 10000
+    - name: "serialization"
+      target: "< 50μs per operation"
+      iterations: 1000
+  
+  result_benchmarks:
+    - name: "success creation"
+      target: "< 100μs per operation"
+      iterations: 1000
+    - name: "map operations"
+      target: "< 50μs per operation"
+      iterations: 10000
+    - name: "flatMap chains"
+      target: "< 100μs per operation"
+      iterations: 1000
+    - name: "unwrap operations"
+      target: "< 10μs per operation"
+      iterations: 10000
+
+# Quality assurance
+quality_assurance:
+  linting:
+    command: "bun run lint"
+    requirements:
+      - "zero ESLint errors"
+      - "zero TypeScript compilation errors"
+      - "all imports properly typed"
+  
+  testing:
+    command: "bun test"
+    requirements:
+      - "all unit tests pass"
+      - "all property tests pass"
+      - "all integration tests pass"
+      - "test coverage > 95%"
+  
+  performance:
+    command: "bun run benchmark"
+    requirements:
+      - "all performance targets met"
+      - "no memory leaks detected"
+      - "stable performance across runs"
+  
+  build:
+    command: "bun run build"
+    requirements:
+      - "clean TypeScript compilation"
+      - "type declarations generated"
+      - "source maps created"
+
+# Implementation sequence
+implementation_sequence:
+  
+  phase_1_setup:
+    description: "Project initialization"
+    steps:
+      - "create directory structure"
+      - "install dependencies"
+      - "configure TypeScript, ESLint, Prettier"
+      - "verify build pipeline"
+    completion_criteria:
+      - "all configuration files present"
+      - "dependencies installed successfully"
+      - "build command succeeds"
+  
+  phase_2_qierror:
+    description: "QiError implementation"
+    depends_on: ["phase_1_setup"]
+    steps:
+      - "implement ErrorCategory enum"
+      - "implement QiErrorData interface"
+      - "implement QiError class with all methods"
+      - "implement factory methods for each category"
+      - "add validation rules"
+      - "test immutability and performance"
+    completion_criteria:
+      - "all 6 operations implemented"
+      - "all 8 error categories supported"
+      - "validation rules enforced"
+      - "performance targets met"
+  
+  phase_3_result:
+    description: "Result<T> implementation"
+    depends_on: ["phase_2_qierror"]
+    steps:
+      - "set up fp-ts integration"
+      - "implement Result<T> type alias"
+      - "implement factory functions"
+      - "implement transformation functions"
+      - "implement elimination functions"
+      - "test mathematical laws"
+    completion_criteria:
+      - "all 9 operations implemented"
+      - "monad laws verified"
+      - "functor laws verified"
+      - "performance targets met"
+  
+  phase_4_integration:
+    description: "Integration and validation"
+    depends_on: ["phase_3_result"]
+    steps:
+      - "create base index file"
+      - "run complete test suite"
+      - "run performance benchmarks"
+      - "verify mathematical properties"
+      - "validate type safety"
+    completion_criteria:
+      - "all tests pass"
+      - "performance benchmarks pass"
+      - "mathematical laws verified"
+      - "ready for core components"
+
+# Success criteria
+success_criteria:
+  completeness:
+    - "QiError: all 6 operations implemented"
+    - "Result<T>: all 9 operations implemented"
+    - "ErrorCategory: all 8 categories supported"
+    - "fp-ts integration: working correctly"
+  
+  quality:
+    - "zero linting errors"
+    - "test coverage > 95%"
+    - "all property tests pass"
+    - "clean TypeScript compilation"
+  
+  mathematical_compliance:
+    - "monad laws verified for Result<T>"
+    - "functor laws verified for Result<T>"
+    - "immutability enforced for QiError"
+    - "error propagation works correctly"
+  
+  performance:
+    - "error creation < 100μs"
+    - "result operations < 100μs"
+    - "context merging < 10μs"
+    - "unwrap operations < 10μs"
+  
+  integration_readiness:
+    - "no external dependencies except fp-ts"
+    - "clean public API exported"
+    - "ready for core component consumption"
+    - "documentation complete"
+
+# Next steps preparation
+next_steps:
+  core_components_ready:
+    description: "When base components are complete"
+    next_experiment: "core components (Configuration, Logger, Cache)"
+    dependencies_satisfied: "Result<T> and QiError available"
+    incremental_approach: "add one core component at a time"
+  
+  validation_checkpoint:
+    description: "Validate approach before scaling"
+    success_indicators:
+      - "pattern matching worked for base components"
+      - "YAML instructions were sufficient"
+      - "mathematical properties preserved"
+      - "performance targets achievable"
+    go_no_go_decision: "proceed to core components or adjust approach"

@@ -54,7 +54,7 @@ workflow:
   stages:
     0_knowledge_update:
       name: "Knowledge Update"
-      description: "Research current 2024-2025 ecosystem and tools"
+      description: "Research current 2024-2025 ecosystem and tools for ALL 13 components"
       critical: true
       steps:
         - action: "research_language_ecosystem"
@@ -64,14 +64,80 @@ workflow:
         - action: "update_tool_patterns"
           language_specific:
             python: ["uv", "ruff", "mypy", "pytest"]
-            typescript: ["bun", "eslint", "vitest", "typescript"]
+            typescript: ["bun", "biome", "vitest", "typescript"]
             rust: ["cargo", "clippy", "rust-analyzer"]
             
+        - action: "research_component_dependencies"
+          components:
+            # Components 1-5: Already implemented and corrected
+            result: ["fp-ts", "effect-ts"]
+            error: ["native_typescript"]
+            configuration: ["zod"]
+            logger: ["pino", "pino-pretty"]
+            cache: ["ioredis", "lru-cache"]
+            
+            # Components 6-13: Need implementation with current packages
+            http_client: ["axios", "node-fetch", "undici", "opossum"]
+            document_generator: 
+              current_2024_2025: ["puppeteer", "@puppeteer/browsers", "playwright", "jspdf@3.0.1", "markdown-it@14.1.0", "handlebars@4.7.8"]
+              breaking_changes: ["jspdf v3 API changes", "handlebars security updates"]
+              alternatives: ["puppeteer > weasyprint equivalent", "@playwright/test for PDF generation"]
+              
+            cli_application:
+              current_2024_2025: ["commander@14.0.0", "chalk@5.4.1", "ora@8.2.0", "cli-table3@0.6.5", "inquirer@12.6.3"]
+              breaking_changes: 
+                commander: ["requires Node.js v20+", "allowExcessArguments now false by default"]
+                chalk: ["v5 is ESM-only", "removed template literal support", "smaller bundle size"]
+                ora: ["ESM support improved", "spinner API stable"]
+              migration_notes: ["Commander v14 breaking changes", "Chalk v5 ESM migration required"]
+              
+            web_framework:
+              current_2024_2025: ["fastify@5.4.0", "express@4.x", "koa", "hapi"]
+              performance_2024: ["fastify 38% faster than express", "48k req/sec vs 24k req/sec"]
+              recommendations: ["fastify preferred for new projects", "full TypeScript support", "ESM compatible"]
+              breaking_changes: ["fastify v5 API changes", "improved TypeScript generics"]
+              
+            asgi_server:
+              note: "ASGI is Python-specific protocol"
+              typescript_equivalent: ["Node.js HTTP server", "fastify as ASGI-like framework"]
+              python_reference: ["uvicorn", "hypercorn", "daphne"]
+              implementation: "simulate ASGI interface for compatibility"
+              
+            mcp_client:
+              current_2024_2025: ["@modelcontextprotocol/sdk", "official TypeScript SDK"]
+              status: "November 2024 release by Anthropic, March 2025 OpenAI adoption"
+              ecosystem: "5000+ MCP servers as of May 2025"
+              features: ["resources", "tools", "prompts", "stdio transport", "HTTP transport"]
+              integrations: ["OpenAI ChatGPT", "Cursor", "Windsurf", "Claude desktop"]
+              
+            database:
+              current_2024_2025: ["drizzle-orm", "prisma", "typeorm", "pg", "better-sqlite3"]
+              typescript_focus: ["drizzle-orm preferred for TypeScript", "type-safe queries"]
+              
+            ai_client:
+              current_2024_2025: 
+                anthropic: ["@anthropic-ai/sdk@0.55.0", "Claude 4 models", "streaming support"]
+                openai: ["openai@4.x", "GPT-4", "function calling", "streaming"]
+                ollama: ["ollama npm package", "OpenAI-compatible API", "local models"]
+              features: ["streaming responses", "function calling", "vision models", "multimodal support"]
+              breaking_changes: ["Anthropic SDK regular updates", "OpenAI v4 breaking changes from v3"]
+          
         - action: "verify_package_compatibility"
-          check: ["breaking_changes", "version_conflicts", "new_features"]
+          check: ["breaking_changes", "version_conflicts", "new_features", "esm_compatibility", "typescript_support"]
+          focus_areas:
+            esm_migration: ["chalk v5", "commander v14", "ora v8"]
+            node_version: ["Node.js v20+ required for commander v14"]
+            typescript_strict: ["all packages must support strict TypeScript"]
+            bun_runtime: ["verify Bun compatibility for all packages"]
           
         - action: "document_debugging_processes"
           patterns: ["file_by_file_linting", "incremental_testing", "error_recognition"]
+          component_specific:
+            document_generator: ["PDF generation debugging", "template compilation errors"]
+            cli_application: ["commander argument parsing", "chalk ESM imports"]
+            web_framework: ["fastify plugin loading", "TypeScript generic errors"]
+            mcp_client: ["MCP protocol compliance", "transport debugging"]
+            ai_client: ["streaming response handling", "rate limiting", "token counting"]
 
     1_template_resolution:
       name: "Template Resolution"

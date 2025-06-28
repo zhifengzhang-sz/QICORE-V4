@@ -1,12 +1,12 @@
 /**
  * QiCore v4.0 - Cache Component
- * 
+ *
  * Mathematical Contract-Based TypeScript Library
  * Component 5: Cache - High-performance caching with state (9 operations)
  */
 
-import { Result } from "../base/result.js";
 import { QiError } from "../base/error.js";
+import { Result } from "../base/result.js";
 
 /**
  * Cache entry with metadata
@@ -69,7 +69,7 @@ export class Cache<K, V> {
       evictionPolicy: "lru",
       ...config,
     };
-    
+
     this.stats.maxSize = this.config.maxSize;
     this.startCleanupTimer();
   }
@@ -100,11 +100,7 @@ export class Cache<K, V> {
       return Result.success(undefined);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Cache set failed: ${error}`,
-          "cache",
-          String(key),
-        ),
+        QiError.resourceError(`Cache set failed: ${error}`, "cache", String(key))
       );
     }
   }
@@ -115,16 +111,10 @@ export class Cache<K, V> {
   async get(key: K): Promise<Result<V>> {
     try {
       const entry = this.store.get(key);
-      
+
       if (!entry) {
         this.stats.misses++;
-        return Result.failure(
-          QiError.resourceError(
-            "Cache miss",
-            "cache",
-            String(key),
-          ),
-        );
+        return Result.failure(QiError.resourceError("Cache miss", "cache", String(key)));
       }
 
       // Check TTL expiration
@@ -137,8 +127,8 @@ export class Cache<K, V> {
           QiError.timeoutError(
             "Cache entry expired",
             "cache_get",
-            entry.ttl || this.config.defaultTtl,
-          ),
+            entry.ttl || this.config.defaultTtl
+          )
         );
       }
 
@@ -152,11 +142,7 @@ export class Cache<K, V> {
     } catch (error) {
       this.stats.misses++;
       return Result.failure(
-        QiError.resourceError(
-          `Cache get failed: ${error}`,
-          "cache",
-          String(key),
-        ),
+        QiError.resourceError(`Cache get failed: ${error}`, "cache", String(key))
       );
     }
   }
@@ -175,11 +161,7 @@ export class Cache<K, V> {
       return Result.success(existed);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Cache delete failed: ${error}`,
-          "cache",
-          String(key),
-        ),
+        QiError.resourceError(`Cache delete failed: ${error}`, "cache", String(key))
       );
     }
   }
@@ -204,11 +186,7 @@ export class Cache<K, V> {
       return Result.success(true);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Cache has failed: ${error}`,
-          "cache",
-          String(key),
-        ),
+        QiError.resourceError(`Cache has failed: ${error}`, "cache", String(key))
       );
     }
   }
@@ -223,13 +201,7 @@ export class Cache<K, V> {
       this.stats.size = 0;
       return Result.success(undefined);
     } catch (error) {
-      return Result.failure(
-        QiError.resourceError(
-          `Cache clear failed: ${error}`,
-          "cache",
-          "all",
-        ),
-      );
+      return Result.failure(QiError.resourceError(`Cache clear failed: ${error}`, "cache", "all"));
     }
   }
 
@@ -251,7 +223,7 @@ export class Cache<K, V> {
    * Operation 8: Get all values
    */
   values(): V[] {
-    return Array.from(this.store.values()).map(entry => entry.value);
+    return Array.from(this.store.values()).map((entry) => entry.value);
   }
 
   /**
@@ -260,7 +232,7 @@ export class Cache<K, V> {
   getStats(): CacheStats {
     const totalRequests = this.stats.hits + this.stats.misses;
     const hitRate = totalRequests > 0 ? this.stats.hits / totalRequests : 0;
-    
+
     return {
       ...this.stats,
       hitRate,
@@ -281,11 +253,7 @@ export class Cache<K, V> {
       return Result.success(undefined);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Cache setMany failed: ${error}`,
-          "cache",
-          "bulk",
-        ),
+        QiError.resourceError(`Cache setMany failed: ${error}`, "cache", "bulk")
       );
     }
   }
@@ -296,22 +264,18 @@ export class Cache<K, V> {
   async getMany(keys: K[]): Promise<Result<Map<K, V>>> {
     try {
       const results = new Map<K, V>();
-      
+
       for (const key of keys) {
         const result = await this.get(key);
         if (result.isSuccess()) {
           results.set(key, result.unwrap());
         }
       }
-      
+
       return Result.success(results);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Cache getMany failed: ${error}`,
-          "cache",
-          "bulk",
-        ),
+        QiError.resourceError(`Cache getMany failed: ${error}`, "cache", "bulk")
       );
     }
   }
@@ -334,11 +298,7 @@ export class Cache<K, V> {
       return Result.success(value);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Cache getOrSet factory failed: ${error}`,
-          "cache",
-          String(key),
-        ),
+        QiError.resourceError(`Cache getOrSet factory failed: ${error}`, "cache", String(key))
       );
     }
   }
@@ -350,7 +310,7 @@ export class Cache<K, V> {
     try {
       let cleaned = 0;
       const now = Date.now();
-      
+
       for (const [key, entry] of this.store.entries()) {
         if (this.isExpired(entry, now)) {
           this.store.delete(key);
@@ -358,16 +318,12 @@ export class Cache<K, V> {
           cleaned++;
         }
       }
-      
+
       this.stats.size = this.store.size;
       return Result.success(cleaned);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Cache cleanup failed: ${error}`,
-          "cache",
-          "cleanup",
-        ),
+        QiError.resourceError(`Cache cleanup failed: ${error}`, "cache", "cleanup")
       );
     }
   }
@@ -389,7 +345,7 @@ export class Cache<K, V> {
    */
   private isExpired(entry: CacheEntry<V>, now = Date.now()): boolean {
     if (!entry.ttl) return false;
-    return (now - entry.timestamp) > entry.ttl;
+    return now - entry.timestamp > entry.ttl;
   }
 
   /**
@@ -475,24 +431,24 @@ export class CacheManager {
    * Create or get named cache
    */
   static getCache<K, V>(name: string, config?: CacheConfig): Cache<K, V> {
-    if (!this.caches.has(name)) {
+    if (!CacheManager.caches.has(name)) {
       const defaultConfig: CacheConfig = {
         maxSize: 1000,
         defaultTtl: 300000, // 5 minutes
       };
-      this.caches.set(name, new Cache({ ...defaultConfig, ...config }));
+      CacheManager.caches.set(name, new Cache({ ...defaultConfig, ...config }));
     }
-    return this.caches.get(name)!;
+    return CacheManager.caches.get(name)!;
   }
 
   /**
    * Remove named cache
    */
   static removeCache(name: string): boolean {
-    const cache = this.caches.get(name);
+    const cache = CacheManager.caches.get(name);
     if (cache) {
       cache.destroy();
-      return this.caches.delete(name);
+      return CacheManager.caches.delete(name);
     }
     return false;
   }
@@ -501,7 +457,7 @@ export class CacheManager {
    * Clear all caches
    */
   static async clearAll(): Promise<void> {
-    for (const cache of this.caches.values()) {
+    for (const cache of CacheManager.caches.values()) {
       await cache.clear();
     }
   }
@@ -510,10 +466,10 @@ export class CacheManager {
    * Destroy all caches
    */
   static destroyAll(): void {
-    for (const cache of this.caches.values()) {
+    for (const cache of CacheManager.caches.values()) {
       cache.destroy();
     }
-    this.caches.clear();
+    CacheManager.caches.clear();
   }
 
   /**
@@ -521,7 +477,7 @@ export class CacheManager {
    */
   static getAllStats(): Record<string, CacheStats> {
     const stats: Record<string, CacheStats> = {};
-    for (const [name, cache] of this.caches.entries()) {
+    for (const [name, cache] of CacheManager.caches.entries()) {
       stats[name] = cache.getStats();
     }
     return stats;
@@ -531,16 +487,12 @@ export class CacheManager {
 /**
  * Caching decorator
  */
-export function Cached<K, V>(
-  cacheKey: (args: any[]) => K,
-  ttl?: number,
-  cacheName = "default",
-) {
-  return function <T extends (...args: any[]) => Promise<V>>(
-    target: any,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>,
-  ) {
+export function Cached<K, V>(cacheKey: (args: any[]) => K, ttl?: number, cacheName = "default") {
+  return <T extends (...args: any[]) => Promise<V>>(
+    _target: any,
+    _propertyKey: string,
+    descriptor: TypedPropertyDescriptor<T>
+  ) => {
     const originalMethod = descriptor.value;
     if (!originalMethod) return;
 
@@ -567,37 +519,37 @@ export function Cached<K, V>(
  * Create a memoized function
  */
 export function memoize<Args extends any[], Return>(
-    fn: (...args: Args) => Return,
-    keyFn?: (...args: Args) => string,
-    ttl?: number,
-  ): (...args: Args) => Return {
-    const cache = new Cache<string, Return>({ maxSize: 100 });
-    const getKey = keyFn || ((...args: Args) => JSON.stringify(args));
+  fn: (...args: Args) => Return,
+  keyFn?: (...args: Args) => string,
+  ttl?: number
+): (...args: Args) => Return {
+  const cache = new Cache<string, Return>({ maxSize: 100 });
+  const getKey = keyFn || ((...args: Args) => JSON.stringify(args));
 
-    return (...args: Args): Return => {
-      const key = getKey(...args);
-      
-      // This is a sync version - for demo purposes
-      // In real implementation, you'd need to handle async properly
-      cache.get(key); // Placeholder for future optimization
-      // For simplicity, this won't work with async - needs redesign
-      
-      const result = fn(...args);
-      cache.set(key, result, ttl);
-      return result;
-    };
-  }
+  return (...args: Args): Return => {
+    const key = getKey(...args);
+
+    // This is a sync version - for demo purposes
+    // In real implementation, you'd need to handle async properly
+    cache.get(key); // Placeholder for future optimization
+    // For simplicity, this won't work with async - needs redesign
+
+    const result = fn(...args);
+    cache.set(key, result, ttl);
+    return result;
+  };
+}
 
 /**
  * Create cache key from object
  */
 export function createKey(obj: Record<string, any>): string {
-    return JSON.stringify(obj, Object.keys(obj).sort());
-  }
+  return JSON.stringify(obj, Object.keys(obj).sort());
+}
 
 /**
  * Create cache key with prefix
  */
 export function prefixedKey(prefix: string, key: string): string {
-    return `${prefix}:${key}`;
-  }
+  return `${prefix}:${key}`;
+}

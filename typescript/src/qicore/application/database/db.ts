@@ -1,12 +1,12 @@
 /**
  * QiCore v4.0 - Database Component
- * 
+ *
  * Mathematical Contract-Based TypeScript Library
  * Component 12: Database - Database operations with transactions (5 operations)
  */
 
-import { Result } from "../../base/result.js";
 import { QiError } from "../../base/error.js";
+import { Result } from "../../base/result.js";
 
 /**
  * Database query result
@@ -59,26 +59,26 @@ export class Database {
       if (this.config.type === "memory") {
         this.isConnected = true;
         return Result.success(undefined);
-      } else if (this.config.type === "sqlite") {
+      }
+      if (this.config.type === "sqlite") {
         // In real implementation, use Bun's built-in SQLite or a driver
         this.isConnected = true;
         return Result.success(undefined);
-      } else {
-        return Result.failure(
-          QiError.configurationError(
-            `Unsupported database type: ${this.config.type}`,
-            "type",
-            "sqlite | memory",
-          ),
-        );
       }
+      return Result.failure(
+        QiError.configurationError(
+          `Unsupported database type: ${this.config.type}`,
+          "type",
+          "sqlite | memory"
+        )
+      );
     } catch (error) {
       return Result.failure(
         QiError.resourceError(
           `Database connection failed: ${error}`,
           "database",
-          this.config.path || "memory",
-        ),
+          this.config.path || "memory"
+        )
       );
     }
   }
@@ -89,11 +89,7 @@ export class Database {
   async query<T = unknown>(sql: string, params?: unknown[]): Promise<Result<QueryResult<T>>> {
     if (!this.isConnected) {
       return Result.failure(
-        QiError.stateError(
-          "Database not connected",
-          "disconnected",
-          "connected",
-        ),
+        QiError.stateError("Database not connected", "disconnected", "connected")
       );
     }
 
@@ -112,11 +108,7 @@ export class Database {
       });
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Query execution failed: ${error}`,
-          "query",
-          sql,
-        ),
+        QiError.resourceError(`Query execution failed: ${error}`, "query", sql)
       );
     }
   }
@@ -127,11 +119,7 @@ export class Database {
   async transaction(): Promise<Result<Transaction>> {
     if (!this.isConnected) {
       return Result.failure(
-        QiError.stateError(
-          "Database not connected",
-          "disconnected",
-          "connected",
-        ),
+        QiError.stateError("Database not connected", "disconnected", "connected")
       );
     }
 
@@ -140,11 +128,7 @@ export class Database {
       return Result.success(txn);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Transaction start failed: ${error}`,
-          "transaction",
-          "start",
-        ),
+        QiError.resourceError(`Transaction start failed: ${error}`, "transaction", "start")
       );
     }
   }
@@ -162,8 +146,8 @@ export class Database {
         QiError.resourceError(
           `Database close failed: ${error}`,
           "database",
-          this.config.path || "memory",
-        ),
+          this.config.path || "memory"
+        )
       );
     }
   }
@@ -173,15 +157,11 @@ export class Database {
    */
   async healthCheck(): Promise<Result<{ status: string; duration: number }>> {
     const startTime = Date.now();
-    
+
     try {
       if (!this.isConnected) {
         return Result.failure(
-          QiError.stateError(
-            "Database not connected",
-            "disconnected",
-            "connected",
-          ),
+          QiError.stateError("Database not connected", "disconnected", "connected")
         );
       }
 
@@ -198,11 +178,7 @@ export class Database {
       });
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Health check failed: ${error}`,
-          "database",
-          "health",
-        ),
+        QiError.resourceError(`Health check failed: ${error}`, "database", "health")
       );
     }
   }
@@ -220,20 +196,23 @@ export class Database {
   private async executeQuery<T>(sql: string, params?: unknown[]): Promise<T[]> {
     // Simple SQL parsing for demo purposes
     const normalizedSql = sql.trim().toLowerCase();
-    
+
     if (normalizedSql.startsWith("select")) {
       return this.handleSelect<T>(sql);
-    } else if (normalizedSql.startsWith("insert")) {
-      return this.handleInsert<T>(sql, params);
-    } else if (normalizedSql.startsWith("update")) {
-      return this.handleUpdate<T>(sql, params);
-    } else if (normalizedSql.startsWith("delete")) {
-      return this.handleDelete<T>(sql);
-    } else if (normalizedSql.startsWith("create")) {
-      return this.handleCreate<T>(sql);
-    } else {
-      throw new Error(`Unsupported SQL operation: ${sql}`);
     }
+    if (normalizedSql.startsWith("insert")) {
+      return this.handleInsert<T>(sql, params);
+    }
+    if (normalizedSql.startsWith("update")) {
+      return this.handleUpdate<T>(sql, params);
+    }
+    if (normalizedSql.startsWith("delete")) {
+      return this.handleDelete<T>(sql);
+    }
+    if (normalizedSql.startsWith("create")) {
+      return this.handleCreate<T>(sql);
+    }
+    throw new Error(`Unsupported SQL operation: ${sql}`);
   }
 
   /**
@@ -243,13 +222,13 @@ export class Database {
     if (sql.includes("1 as health")) {
       return [{ health: 1 } as T];
     }
-    
+
     // Extract table name (very basic parsing)
     const match = sql.match(/from\\s+(\\w+)/i);
     if (!match) {
       return [];
     }
-    
+
     const tableName = match[1];
     const table = this.tables.get(tableName) || [];
     return table as T[];
@@ -263,19 +242,22 @@ export class Database {
     if (!match) {
       throw new Error("Invalid INSERT syntax");
     }
-    
+
     const tableName = match[1];
     if (!this.tables.has(tableName)) {
       this.tables.set(tableName, []);
     }
-    
-    const table = this.tables.get(tableName)!;
-    
+
+    const table = this.tables.get(tableName);
+    if (!table) {
+      return Result.failure({ message: `Table ${tableName} not found` } as QiError);
+    }
+
     // Simplified: just add the params as a record
     if (params && params.length > 0) {
       table.push(params[0]);
     }
-    
+
     return [{ insertId: table.length, affectedRows: 1 } as T];
   }
 
@@ -319,17 +301,13 @@ class DatabaseTransaction implements Transaction {
   async query<T = unknown>(sql: string, params?: unknown[]): Promise<Result<QueryResult<T>>> {
     if (this.committed || this.rolledBack) {
       return Result.failure(
-        QiError.stateError(
-          "Transaction already completed",
-          "completed",
-          "active",
-        ),
+        QiError.stateError("Transaction already completed", "completed", "active")
       );
     }
 
     // Store operation for potential rollback
     this.operations.push({ sql, params });
-    
+
     // Execute query within transaction context
     return this.db.query<T>(sql, params);
   }
@@ -337,11 +315,7 @@ class DatabaseTransaction implements Transaction {
   async commit(): Promise<Result<void>> {
     if (this.committed || this.rolledBack) {
       return Result.failure(
-        QiError.stateError(
-          "Transaction already completed",
-          "completed",
-          "active",
-        ),
+        QiError.stateError("Transaction already completed", "completed", "active")
       );
     }
 
@@ -351,11 +325,7 @@ class DatabaseTransaction implements Transaction {
       return Result.success(undefined);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Transaction commit failed: ${error}`,
-          "transaction",
-          "commit",
-        ),
+        QiError.resourceError(`Transaction commit failed: ${error}`, "transaction", "commit")
       );
     }
   }
@@ -363,11 +333,7 @@ class DatabaseTransaction implements Transaction {
   async rollback(): Promise<Result<void>> {
     if (this.committed || this.rolledBack) {
       return Result.failure(
-        QiError.stateError(
-          "Transaction already completed",
-          "completed",
-          "active",
-        ),
+        QiError.stateError("Transaction already completed", "completed", "active")
       );
     }
 
@@ -377,11 +343,7 @@ class DatabaseTransaction implements Transaction {
       return Result.success(undefined);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Transaction rollback failed: ${error}`,
-          "transaction",
-          "rollback",
-        ),
+        QiError.resourceError(`Transaction rollback failed: ${error}`, "transaction", "rollback")
       );
     }
   }
@@ -404,23 +366,19 @@ export class DatabasePool {
       for (let i = 0; i < (this.config.poolSize || 5); i++) {
         const db = new Database(this.config);
         const connectResult = await db.connect();
-        
+
         if (connectResult.isFailure()) {
           return connectResult;
         }
-        
+
         this.connections.push(db);
         this.available.push(db);
       }
-      
+
       return Result.success(undefined);
     } catch (error) {
       return Result.failure(
-        QiError.resourceError(
-          `Pool initialization failed: ${error}`,
-          "pool",
-          "initialize",
-        ),
+        QiError.resourceError(`Pool initialization failed: ${error}`, "pool", "initialize")
       );
     }
   }
@@ -428,15 +386,16 @@ export class DatabasePool {
   async getConnection(): Promise<Result<Database>> {
     if (this.available.length === 0) {
       return Result.failure(
-        QiError.resourceError(
-          "No available connections in pool",
-          "pool",
-          "connection",
-        ),
+        QiError.resourceError("No available connections in pool", "pool", "connection")
       );
     }
 
-    const connection = this.available.pop()!;
+    const connection = this.available.pop();
+    if (!connection) {
+      return Result.failure(
+        QiError.resourceError("Failed to get connection from pool", "pool", "connection")
+      );
+    }
     return Result.success(connection);
   }
 
@@ -455,13 +414,7 @@ export class DatabasePool {
       this.available = [];
       return Result.success(undefined);
     } catch (error) {
-      return Result.failure(
-        QiError.resourceError(
-          `Pool close failed: ${error}`,
-          "pool",
-          "close",
-        ),
-      );
+      return Result.failure(QiError.resourceError(`Pool close failed: ${error}`, "pool", "close"));
     }
   }
 
@@ -485,79 +438,77 @@ export class DatabasePool {
  * Create database connection
  */
 export function createDatabase(config: DatabaseConfig): Database {
-    return new Database(config);
-  }
+  return new Database(config);
+}
 
 /**
  * Create database pool
  */
 export function createPool(config: DatabaseConfig & { poolSize: number }): DatabasePool {
-    return new DatabasePool(config);
-  }
+  return new DatabasePool(config);
+}
 
 /**
  * Execute multiple queries in transaction
  */
 export async function withTransaction<T>(
-    db: Database,
-    operations: (txn: Transaction) => Promise<Result<T>>,
-  ): Promise<Result<T>> {
-    const txnResult = await db.transaction();
-    if (txnResult.isFailure()) {
-      return txnResult as Result<T>;
-    }
-
-    const txn = txnResult.unwrap();
-
-    try {
-      const result = await operations(txn);
-      
-      if (result.isSuccess()) {
-        const commitResult = await txn.commit();
-        if (commitResult.isFailure()) {
-          return commitResult as Result<T>;
-        }
-        return result;
-      } else {
-        await txn.rollback();
-        return result;
-      }
-    } catch (error) {
-      await txn.rollback();
-      return Result.failure(
-        QiError.resourceError(
-          `Transaction failed: ${error}`,
-          "transaction",
-          "execute",
-        ),
-      );
-    }
+  db: Database,
+  operations: (txn: Transaction) => Promise<Result<T>>
+): Promise<Result<T>> {
+  const txnResult = await db.transaction();
+  if (txnResult.isFailure()) {
+    return txnResult as Result<T>;
   }
+
+  const txn = txnResult.unwrap();
+
+  try {
+    const result = await operations(txn);
+
+    if (result.isSuccess()) {
+      const commitResult = await txn.commit();
+      if (commitResult.isFailure()) {
+        return commitResult as Result<T>;
+      }
+      return result;
+    }
+    await txn.rollback();
+    return result;
+  } catch (error) {
+    await txn.rollback();
+    return Result.failure(
+      QiError.resourceError(`Transaction failed: ${error}`, "transaction", "execute")
+    );
+  }
+}
 
 /**
  * Escape SQL string (basic implementation)
  */
 export function escapeSql(value: string): string {
-    return value.replace(/'/g, "''");
-  }
+  return value.replace(/'/g, "''");
+}
 
 /**
  * Build parameterized query
  */
-export function buildQuery(template: string, params: Record<string, unknown>): {
-    sql: string;
-    values: unknown[];
-  } {
-    const values: unknown[] = [];
-    let paramIndex = 0;
-    
-    const sql = template.replace(/:(\w+)/g, (match, paramName) => {
-      if (paramName in params) {
-        values.push(params[paramName]);
-        return `$${++paramIndex}`;
-      }
-      return match;
-    });
+export function buildQuery(
+  template: string,
+  params: Record<string, unknown>
+): {
+  sql: string;
+  values: unknown[];
+} {
+  const values: unknown[] = [];
+  let paramIndex = 0;
 
-    return { sql, values };
-  }
+  const sql = template.replace(/:(\w+)/g, (match, paramName) => {
+    if (paramName in params) {
+      values.push(params[paramName]);
+      return `$${++paramIndex}`;
+    }
+    return match;
+  });
+
+  return { sql, values };
+}

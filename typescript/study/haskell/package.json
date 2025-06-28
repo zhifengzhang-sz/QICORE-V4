@@ -1,0 +1,20 @@
+{
+  "name": "haskell-code-evaluator",
+  "version": "1.0.0",
+  "description": "Haskell code compilation and evaluation for AI consistency study",
+  "main": "build.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build.ts",
+    "compile": "bun compile-haskell.ts",
+    "evaluate": "bun evaluate-code.ts",
+    "score": "bun score-haskell.ts"
+  },
+  "dependencies": {
+    "@types/bun": "latest"
+  },
+  "files": [
+    "generated-code/",
+    "evaluation-results/"
+  ]
+} 

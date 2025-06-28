@@ -1,0 +1,83 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "noUndeclaredDependencies": "error",
+        "noUnusedFunctionParameters": "warn",
+        "useImportExtensions": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn",
+        "noConsole": "off",
+        "noEvolvingTypes": "error",
+        "noMisplacedAssertion": "error",
+        "useErrorMessage": "error"
+      },
+      "style": {
+        "useImportType": "error",
+        "noYodaExpression": "error",
+        "useDefaultSwitchClause": "error",
+        "useExplicitLengthCheck": "error",
+        "useThrowNewError": "error",
+        "useThrowOnlyError": "error",
+        "useConsistentBuiltinInstantiation": "error"
+      },
+      "complexity": {
+        "noUselessStringConcat": "error",
+        "noUselessUndefinedInitialization": "error",
+        "useDateNow": "error"
+      },
+      "performance": {
+        "useTopLevelRegex": "error"
+      },
+      "nursery": {
+        "noCommonJs": "error",
+        "noDynamicNamespaceImportAccess": "error",
+        "noEnum": "warn",
+        "noSecrets": "error",
+        "noUselessEscapeInRegex": "error",
+        "useConsistentMemberAccessibility": "error",
+        "useTrimStartEnd": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "es5"
+    }
+  },
+  "files": {
+    "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "eslint.config.js"],
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      "haskell/**",
+      "coverage/**",
+      "**/*.d.ts",
+      "**/node_modules/**",
+      ".next/**",
+      "build/**"
+    ]
+  }
+}
