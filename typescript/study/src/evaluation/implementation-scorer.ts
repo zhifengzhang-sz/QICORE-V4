@@ -141,6 +141,11 @@ export class ImplementationScorer {
   }
 
   private scoreQuality(code: string): number {
+    // Handle empty code - no quality score for no code
+    if (code.trim().length === 0) {
+      return 0;
+    }
+
     let totalScore = 0;
     const maxScore = 100;
 

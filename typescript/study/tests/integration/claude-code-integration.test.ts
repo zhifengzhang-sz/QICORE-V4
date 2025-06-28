@@ -63,8 +63,10 @@ describe('Claude Code SDK Integration', () => {
     it('should handle missing API key gracefully', async () => {
       // Temporarily remove API key for this test
       const originalKey = process.env.ANTHROPIC_API_KEY;
-      process.env.ANTHROPIC_API_KEY = undefined;
+      // biome-ignore lint/performance/noDelete: Required for proper env var removal in tests
+      delete process.env.ANTHROPIC_API_KEY;
 
+      // Create generator AFTER removing the key
       const testGenerator = new AICodeGenerator();
       const result = await testGenerator.generateCode(testModel, testInstruction);
 

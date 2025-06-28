@@ -38,16 +38,106 @@ export interface StudyResult {
   };
 }
 
+interface ScoringAnomalyDetector {
+  scores: number[];
+  generationAttempts: number;
+  successfulGenerations: number;
+}
+
 export class HaskellImplementationStudy {
   private readonly claudeCodeRunner: ClaudeCodeRunner;
   private readonly scorer: ImplementationScorer;
   private readonly resultsStore: StudyResultsStore;
   private progressCallback?: (progress: StudyProgress) => void;
+  private anomalyDetector: ScoringAnomalyDetector = {
+    scores: [],
+    generationAttempts: 0,
+    successfulGenerations: 0,
+  };
 
   constructor(resultsDir = 'results/haskell-study') {
     this.claudeCodeRunner = new ClaudeCodeRunner();
     this.scorer = new ImplementationScorer();
     this.resultsStore = new StudyResultsStore(resultsDir);
+  }
+
+  /**
+   * Circuit breaker: Detect if scoring behavior is anomalous and should stop the study
+   * This prevents wasting money on meaningless results
+   */
+  private checkForScoringAnomalies(): void {
+    const { scores, generationAttempts, successfulGenerations } = this.anomalyDetector;
+
+    // Need at least 3 data points to detect patterns
+    if (scores.length < 3) {
+      return;
+    }
+
+    // Anomaly 1: Too many generation failures (>50% failure rate after 10 attempts)
+    if (generationAttempts >= 10 && successfulGenerations / generationAttempts < 0.5) {
+      throw new Error(
+        `💰 CIRCUIT BREAKER: High failure rate (${Math.round((1 - successfulGenerations / generationAttempts) * 100)}%). Stopping to prevent money waste.`
+      );
+    }
+
+    // Anomaly 2: All scores are zero (scorer is broken)
+    if (scores.every((score) => score === 0)) {
+      throw new Error(
+        '💰 CIRCUIT BREAKER: All scores are 0. Scorer appears broken. Stopping to prevent money waste.'
+      );
+    }
+
+    // Anomaly 3: All scores are identical (no differentiation)
+    const uniqueScores = new Set(scores);
+    if (uniqueScores.size === 1 && scores.length >= 5) {
+      throw new Error(
+        `💰 CIRCUIT BREAKER: All scores identical (${scores[0]}). No differentiation detected. Stopping to prevent money waste.`
+      );
+    }
+
+    // Anomaly 4: All scores negative (impossible - should be 0-100)
+    if (scores.every((score) => score < 0)) {
+      throw new Error(
+        '💰 CIRCUIT BREAKER: All scores negative. Scoring system malfunction. Stopping to prevent money waste.'
+      );
+    }
+
+    // Anomaly 5: Scores outside valid range (should be 0-100)
+    const invalidScores = scores.filter((score) => score < 0 || score > 100);
+    if (invalidScores.length > 0) {
+      throw new Error(
+        `💰 CIRCUIT BREAKER: Invalid scores detected: ${invalidScores.join(', ')}. Should be 0-100. Stopping to prevent money waste.`
+      );
+    }
+
+    // Anomaly 6: Very low variance suggests scoring isn't working properly
+    if (scores.length >= 8) {
+      const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+      const variance = scores.reduce((sum, score) => sum + (score - mean) ** 2, 0) / scores.length;
+      const standardDeviation = Math.sqrt(variance);
+
+      // If standard deviation is very low, all scores are clustered together
+      if (standardDeviation < 2 && mean < 20) {
+        throw new Error(
+          `💰 CIRCUIT BREAKER: Suspiciously low variance (σ=${standardDeviation.toFixed(1)}) with low scores. Likely scoring malfunction. Stopping to prevent money waste.`
+        );
+      }
+    }
+
+    console.log(
+      `✅ Scoring health check passed (${scores.length} samples, σ=${this.calculateStandardDeviation().toFixed(1)})`
+    );
+  }
+
+  private calculateStandardDeviation(): number {
+    const { scores } = this.anomalyDetector;
+    if (scores.length < 2) {
+      return 0;
+    }
+
+    const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    const variance = scores.reduce((sum, score) => sum + (score - mean) ** 2, 0) / scores.length;
+    return Math.sqrt(variance);
   }
 
   async runStudy(
@@ -73,6 +163,13 @@ export class HaskellImplementationStudy {
     const studyId = await this.resultsStore.initializeNewStudy();
     console.log(`📊 Study ID: ${studyId}`);
 
+    // Reset anomaly detector for new study
+    this.anomalyDetector = {
+      scores: [],
+      generationAttempts: 0,
+      successfulGenerations: 0,
+    };
+
     const totalRuns = config.models.length * config.instructions.length * config.runsPerCombination;
     let completedRuns = 0;
     const startTime = Date.now();
@@ -86,16 +183,30 @@ export class HaskellImplementationStudy {
           );
 
           try {
+            // Track generation attempt
+            this.anomalyDetector.generationAttempts++;
+
             // Generate code
             const generatedCode = await this.claudeCodeRunner.generateCode(model, instruction);
 
             if (!generatedCode.success) {
               console.warn(`❌ Generation failed: ${generatedCode.error}`);
+              // Check for anomalies even on failures (high failure rate detection)
+              this.checkForScoringAnomalies();
               continue;
             }
 
+            // Track successful generation
+            this.anomalyDetector.successfulGenerations++;
+
             // Score implementation
             const score = await this.scorer.scoreImplementation(generatedCode);
+
+            // Track score for anomaly detection
+            this.anomalyDetector.scores.push(score.overallScore);
+
+            // 💰 MONEY-SAVING CHECK: Stop if scoring behavior is anomalous
+            this.checkForScoringAnomalies();
 
             // Store result (keeps best/worst, discards middle)
             await this.resultsStore.addImplementation(
@@ -110,6 +221,11 @@ export class HaskellImplementationStudy {
             );
           } catch (error) {
             console.error(`❌ Error in run ${completedRuns + 1}:`, error);
+
+            // If it's our circuit breaker, re-throw to stop the study
+            if (error instanceof Error && error.message.includes('CIRCUIT BREAKER')) {
+              throw error;
+            }
           }
 
           completedRuns++;
