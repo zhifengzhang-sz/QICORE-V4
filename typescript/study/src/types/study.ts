@@ -27,6 +27,26 @@ export interface InstructionSet {
   category: 'modern' | 'simple' | 'setup';
 }
 
+export interface GeneratedCode {
+  code: string;
+  model: string;
+  instruction: string;
+  timestamp: string;
+  duration: number;
+  success: boolean;
+  error?: string;
+  metadata: {
+    provider: string;
+    temperature?: number;
+    maxTokens?: number;
+    reasoning?: string;
+    messageCount?: number;
+    sessionId?: string;
+    thinkingTokens?: number;
+    note?: string;
+  };
+}
+
 export interface GenerationResult {
   id: string;
   studyId: string;

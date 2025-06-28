@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { getStudyConfig, quickStudyConfig } from './config/study-config';
+import { getQuickStudyConfig, getStudyConfig } from './config/study-config';
 import { StudyDatabase } from './database/study-db';
 import { StudyRunner } from './generators/study-runner';
 
@@ -22,7 +22,7 @@ async function main() {
   const studyId = args.find((arg) => arg.startsWith('--study-id='))?.split('=')[1];
 
   try {
-    const config = isQuickRun ? quickStudyConfig : getStudyConfig();
+    const config = isQuickRun ? await getQuickStudyConfig() : await getStudyConfig();
     const db = new StudyDatabase();
     const runner = new StudyRunner(config, db);
 

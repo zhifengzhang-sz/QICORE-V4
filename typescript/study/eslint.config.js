@@ -140,7 +140,13 @@ export default [
     },
   },
   {
-    files: ['src/index.ts', 'src/generators/study-runner.ts', 'tests/setup.ts', '**/cli/**/*.ts'],
+    files: [
+      'src/index.ts',
+      'src/generators/study-runner.ts',
+      'tests/setup.ts',
+      'run-study.ts',
+      '**/cli/**/*.ts',
+    ],
     rules: {
       'no-console': 'off', // Allow console in CLI files and test setup
     },

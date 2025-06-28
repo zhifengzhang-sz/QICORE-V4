@@ -1,0 +1,73 @@
+# Haskell AI Consistency Study Configuration
+# Testing AI model consistency in generating functionally equivalent Haskell code
+
+name: "Haskell AI Consistency Study - Basic vs Advanced"
+description: "Testing consistency of AI code generation across different models for Haskell implementations"
+
+# AI Models to test
+models:
+  - id: "claude-3.5-sonnet"
+    name: "Claude 3.5 Sonnet"
+    provider: "anthropic"
+    modelName: "claude-3-5-sonnet-20241022"
+    temperature: 0.1
+    maxTokens: 2000
+    
+  - id: "gpt-4-turbo"
+    name: "GPT-4 Turbo"
+    provider: "openai"
+    modelName: "gpt-4-turbo-preview"
+    temperature: 0.1
+    maxTokens: 2000
+
+# Instruction sets for code generation
+instructions:
+  - id: "basic-module"
+    name: "Basic Haskell Module"
+    filePath: "./instructions/haskell-basic-module.md"
+    content: ""
+    category: "simple"
+    description: "Test consistency on simple list operations with Maybe types"
+    
+  - id: "advanced-types"
+    name: "Advanced Haskell Types"
+    filePath: "./instructions/haskell-advanced-types.md"
+    content: ""
+    category: "modern"
+    description: "Test consistency on algebraic data types and type classes"
+
+# Study parameters
+runsPerCombination: 5  # Number of runs for each model × instruction combination
+outputDir: "./results/haskell-study"
+timeout: 30000  # 30 seconds per generation
+
+# Study metadata
+studyMetadata:
+  objective: "Measure consistency of AI models in generating functionally equivalent Haskell code"
+  hypothesis: "Different AI models will show varying levels of consistency, with some preferring different implementation patterns"
+  
+  # Metrics to evaluate
+  metrics:
+    - "Syntactic similarity (AST structure)"
+    - "Semantic equivalence (behavior)"
+    - "Code style consistency"  
+    - "Error handling patterns"
+    - "Type signature consistency"
+    - "Documentation quality"
+    
+  # Expected study characteristics
+  expectedDuration: "15-20 minutes"
+  expectedFiles: 20  # 2 models × 2 instructions × 5 runs
+  
+  # Research questions
+  researchQuestions:
+    - "Do different AI models generate structurally similar Haskell code?"
+    - "Is there consistency in error handling approach (Maybe vs Either vs exceptions)?"
+    - "Do models consistently use modern Haskell features vs basic patterns?"
+    - "How much variation exists in type signature design?"
+    
+  # Success criteria
+  successCriteria:
+    minSyntacticSimilarity: 0.7  # 70% AST similarity within model
+    minSemanticEquivalence: 0.9  # 90% behavioral equivalence
+    maxCoefficientOfVariation: 0.3  # Consistency measure 

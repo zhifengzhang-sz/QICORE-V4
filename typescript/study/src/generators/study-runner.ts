@@ -20,7 +20,7 @@ export class StudyRunner {
     private readonly config: StudyConfig,
     private readonly db: StudyDatabase
   ) {
-    this.generator = new AICodeGenerator(config);
+    this.generator = new AICodeGenerator();
     this.evaluator = new CodeEvaluator();
     this.analyzer = new StatisticalAnalyzer();
   }
@@ -146,11 +146,26 @@ export class StudyRunner {
       compilationResult,
       scores,
       metadata: {
-        tokensUsed: generationResponse.tokensUsed,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        tokensUsed:
+          typeof generationResponse.metadata?.tokensUsed === 'number'
+            ? generationResponse.metadata.tokensUsed
+            : 0,
         responseTime,
-        promptTokens: generationResponse.promptTokens,
-        completionTokens: generationResponse.completionTokens,
-        embeddingVector: generationResponse.embeddingVector,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        promptTokens:
+          typeof generationResponse.metadata?.promptTokens === 'number'
+            ? generationResponse.metadata.promptTokens
+            : 0,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        completionTokens:
+          typeof generationResponse.metadata?.completionTokens === 'number'
+            ? generationResponse.metadata.completionTokens
+            : 0,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        embeddingVector: Array.isArray(generationResponse.metadata?.embeddingVector)
+          ? generationResponse.metadata.embeddingVector
+          : undefined,
       },
     };
 
