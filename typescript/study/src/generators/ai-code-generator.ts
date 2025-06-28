@@ -74,6 +74,7 @@ export class AICodeGenerator {
           provider: model.provider,
           temperature: model.temperature,
           maxTokens: model.maxTokens,
+          sessionId: options.sessionId,
         },
       };
     }
@@ -168,10 +169,23 @@ export class AICodeGenerator {
         },
       };
     } catch (error) {
-      const _duration = Date.now() - startTime;
-      throw new Error(
-        `Claude Code generation failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      const duration = Date.now() - startTime;
+      return {
+        code: '',
+        model: model.id,
+        instruction: instruction.id,
+        timestamp: new Date().toISOString(),
+        duration,
+        success: false,
+        error: `Claude Code generation failed: ${error instanceof Error ? error.message : String(error)}`,
+        metadata: {
+          provider: model.provider,
+          temperature: model.temperature,
+          maxTokens: model.maxTokens,
+          messageCount: messages.length,
+          sessionId: options.sessionId,
+        },
+      };
     }
   }
 

@@ -27,7 +27,8 @@
     "src/**/*",
     "tests/**/*",
     "vitest.config.ts",
-    "run-study.ts"
+    "run-study.ts",
+    "run-haskell-study.ts"
   ],
   "exclude": [
     "node_modules",
