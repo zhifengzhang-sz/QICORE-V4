@@ -1,0 +1,52 @@
+{
+  "name": "@qicore/claude-code-manager",
+  "version": "1.0.0",
+  "description": "Request manager for Claude Code CLI and SDK integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "dev": "bun run src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:haskell": "bun run src/test-haskell-generation.ts",
+    "lint": "bun run lint:biome && bun run lint:eslint",
+    "lint:biome": "biome lint src/",
+    "lint:eslint": "eslint src/",
+    "format": "biome format --write src/",
+    "format:check": "biome format src/",
+    "check": "bun run format:check && bun run lint && bun run test",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "claude",
+    "ai",
+    "code-generation",
+    "typescript",
+    "qicore",
+    "bun"
+  ],
+  "author": "QiCore Team",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@eslint/js": "^9.18.0",
+    "@types/bun": "^1.1.13",
+    "@types/node": "^22.10.1",
+    "eslint": "^9.18.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
+}
