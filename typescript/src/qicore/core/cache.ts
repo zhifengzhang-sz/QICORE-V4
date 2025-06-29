@@ -1,555 +1,503 @@
 /**
- * QiCore v4.0 - Cache Component
+ * QiCore v4.0 Core Component - High-Performance Cache
  *
- * Mathematical Contract-Based TypeScript Library
- * Component 5: Cache - High-performance caching with state (9 operations)
+ * Mathematical Foundation:
+ * - State Management: Consistent cache operations with TTL and eviction
+ * - Performance Tier: TypeScript (interpreted) = 100× baseline
+ *
+ * Package Implementation:
+ * - Uses node-cache@5.1.2 for high-performance in-memory caching
+ * - Uses ioredis@5.3.2 for distributed caching scenarios
+ * - Production-ready with comprehensive error handling
  */
 
-import { QiError } from "../base/error.js";
-import { Result } from "../base/result.js";
+import Redis from "ioredis";
+import NodeCache from "node-cache";
+import { createQiError } from "../base/error.js";
+import { type Result, failure, success } from "../base/result.js";
+
+// ============================================================================
+// Cache Types and Configuration
+// ============================================================================
 
 /**
- * Cache entry with metadata
- */
-interface CacheEntry<T> {
-  value: T;
-  timestamp: number;
-  ttl?: number;
-  hitCount: number;
-  lastAccessed: number;
-}
-
-/**
- * Cache statistics
- */
-export interface CacheStats {
-  hits: number;
-  misses: number;
-  sets: number;
-  deletes: number;
-  evictions: number;
-  size: number;
-  maxSize: number;
-  hitRate: number;
-}
-
-/**
- * Cache configuration
+ * Cache Configuration Options
  */
 export interface CacheConfig {
-  maxSize: number;
-  defaultTtl?: number;
-  cleanupInterval?: number;
-  evictionPolicy?: "lru" | "lfu" | "fifo";
+  readonly type: "memory" | "redis";
+  readonly maxSize?: number; // Maximum number of entries
+  readonly ttl?: number; // Default TTL in seconds
+  readonly checkPeriod?: number; // Check period for expired keys (seconds)
+  // Redis-specific options
+  readonly redisUrl?: string;
+  readonly redisHost?: string;
+  readonly redisPort?: number;
+  readonly redisPassword?: string;
+  readonly redisDb?: number;
 }
 
 /**
- * Cache class provides high-performance in-memory caching with TTL, LRU eviction,
- * and mathematical state management
+ * Cache Statistics
  */
-export class Cache<K, V> {
-  private store = new Map<K, CacheEntry<V>>();
-  private accessOrder: K[] = []; // For LRU tracking
-  private config: Required<CacheConfig>;
-  private stats: Omit<CacheStats, "hitRate"> = {
-    hits: 0,
-    misses: 0,
-    sets: 0,
-    deletes: 0,
-    evictions: 0,
-    size: 0,
-    maxSize: 0,
-  };
-  private cleanupTimer?: NodeJS.Timeout;
+export interface CacheStats {
+  readonly hits: number;
+  readonly misses: number;
+  readonly keys: number;
+  readonly size: number;
+  readonly hitRate: number;
+}
+
+/**
+ * Cache Interface
+ */
+export interface Cache {
+  readonly get: <T>(key: string) => Promise<Result<T | null>>;
+  readonly set: <T>(key: string, value: T, ttl?: number) => Promise<Result<void>>;
+  readonly delete: (key: string) => Promise<Result<boolean>>;
+  readonly has: (key: string) => Promise<Result<boolean>>;
+  readonly clear: () => Promise<Result<void>>;
+  readonly keys: () => Promise<Result<string[]>>;
+  readonly getStats: () => Promise<Result<CacheStats>>;
+  readonly close: () => Promise<Result<void>>;
+}
+
+// ============================================================================
+// Memory Cache Implementation (NodeCache)
+// ============================================================================
+
+class MemoryCache implements Cache {
+  private readonly cache: NodeCache;
+  private stats = { hits: 0, misses: 0 };
 
   constructor(config: CacheConfig) {
-    this.config = {
-      defaultTtl: 300000, // 5 minutes
-      cleanupInterval: 60000, // 1 minute
-      evictionPolicy: "lru",
+    this.cache = new NodeCache({
+      stdTTL: config.ttl || 600, // Default 10 minutes
+      checkperiod: config.checkPeriod || 120, // Check every 2 minutes
+      maxKeys: config.maxSize || 1000,
+      useClones: false, // Performance optimization
+    });
+
+    // Track statistics
+    this.cache.on("hit", () => {
+      this.stats.hits++;
+    });
+
+    this.cache.on("missed", () => {
+      this.stats.misses++;
+    });
+  }
+
+  async get<T>(key: string): Promise<Result<T | null>> {
+    try {
+      const value = this.cache.get<T>(key);
+      return success(value ?? null);
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_GET_ERROR", `Failed to get key ${key}: ${error}`, "SYSTEM", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<Result<void>> {
+    try {
+      const success_result = this.cache.set(key, value, ttl || 0);
+      if (success_result) {
+        return success(undefined);
+      }
+      return failure(
+        createQiError("CACHE_SET_ERROR", `Failed to set key ${key}`, "SYSTEM", { key })
+      );
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_SET_ERROR", `Failed to set key ${key}: ${error}`, "SYSTEM", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async delete(key: string): Promise<Result<boolean>> {
+    try {
+      const deleteCount = this.cache.del(key);
+      return success(deleteCount > 0);
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_DELETE_ERROR", `Failed to delete key ${key}: ${error}`, "SYSTEM", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async has(key: string): Promise<Result<boolean>> {
+    try {
+      const exists = this.cache.has(key);
+      return success(exists);
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_HAS_ERROR", `Failed to check key ${key}: ${error}`, "SYSTEM", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async clear(): Promise<Result<void>> {
+    try {
+      this.cache.flushAll();
+      return success(undefined);
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_CLEAR_ERROR", `Failed to clear cache: ${error}`, "SYSTEM", {
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async keys(): Promise<Result<string[]>> {
+    try {
+      const allKeys = this.cache.keys();
+      return success(allKeys);
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_KEYS_ERROR", `Failed to get keys: ${error}`, "SYSTEM", {
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async getStats(): Promise<Result<CacheStats>> {
+    try {
+      const stats = this.cache.getStats();
+      const hitRate =
+        this.stats.hits + this.stats.misses > 0
+          ? this.stats.hits / (this.stats.hits + this.stats.misses)
+          : 0;
+
+      return success({
+        hits: this.stats.hits,
+        misses: this.stats.misses,
+        keys: stats.keys,
+        size: stats.ksize + stats.vsize,
+        hitRate,
+      });
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_STATS_ERROR", `Failed to get stats: ${error}`, "SYSTEM", {
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async close(): Promise<Result<void>> {
+    try {
+      this.cache.close();
+      return success(undefined);
+    } catch (error) {
+      return failure(
+        createQiError("CACHE_CLOSE_ERROR", `Failed to close cache: ${error}`, "SYSTEM", {
+          error: String(error),
+        })
+      );
+    }
+  }
+}
+
+// ============================================================================
+// Redis Cache Implementation (IORedis)
+// ============================================================================
+
+class RedisCache implements Cache {
+  private readonly redis: Redis;
+  private stats = { hits: 0, misses: 0 };
+
+  constructor(config: CacheConfig) {
+    const redisConfig: Redis.RedisOptions = {
+      host: config.redisHost || "localhost",
+      port: config.redisPort || 6379,
+      password: config.redisPassword,
+      db: config.redisDb || 0,
+      retryDelayOnFailover: 100,
+      maxRetriesPerRequest: 3,
+      lazyConnect: true,
+    };
+
+    if (config.redisUrl) {
+      this.redis = new Redis(config.redisUrl, redisConfig);
+    } else {
+      this.redis = new Redis(redisConfig);
+    }
+  }
+
+  async get<T>(key: string): Promise<Result<T | null>> {
+    try {
+      const value = await this.redis.get(key);
+      if (value === null) {
+        this.stats.misses++;
+        return success(null);
+      }
+
+      this.stats.hits++;
+      const parsed = JSON.parse(value) as T;
+      return success(parsed);
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_GET_ERROR", `Failed to get key ${key}: ${error}`, "NETWORK", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<Result<void>> {
+    try {
+      const serialized = JSON.stringify(value);
+
+      if (ttl && ttl > 0) {
+        await this.redis.setex(key, ttl, serialized);
+      } else {
+        await this.redis.set(key, serialized);
+      }
+
+      return success(undefined);
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_SET_ERROR", `Failed to set key ${key}: ${error}`, "NETWORK", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async delete(key: string): Promise<Result<boolean>> {
+    try {
+      const deleteCount = await this.redis.del(key);
+      return success(deleteCount > 0);
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_DELETE_ERROR", `Failed to delete key ${key}: ${error}`, "NETWORK", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async has(key: string): Promise<Result<boolean>> {
+    try {
+      const exists = await this.redis.exists(key);
+      return success(exists === 1);
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_HAS_ERROR", `Failed to check key ${key}: ${error}`, "NETWORK", {
+          key,
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async clear(): Promise<Result<void>> {
+    try {
+      await this.redis.flushdb();
+      return success(undefined);
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_CLEAR_ERROR", `Failed to clear cache: ${error}`, "NETWORK", {
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async keys(): Promise<Result<string[]>> {
+    try {
+      const allKeys = await this.redis.keys("*");
+      return success(allKeys);
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_KEYS_ERROR", `Failed to get keys: ${error}`, "NETWORK", {
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async getStats(): Promise<Result<CacheStats>> {
+    try {
+      const info = await this.redis.info("keyspace");
+      const dbInfo = info.match(/db0:keys=(\d+),expires=(\d+),avg_ttl=(\d+)/);
+      const keyCount = dbInfo ? Number.parseInt(dbInfo[1], 10) : 0;
+
+      const hitRate =
+        this.stats.hits + this.stats.misses > 0
+          ? this.stats.hits / (this.stats.hits + this.stats.misses)
+          : 0;
+
+      return success({
+        hits: this.stats.hits,
+        misses: this.stats.misses,
+        keys: keyCount,
+        size: 0, // Redis doesn't easily provide memory usage per DB
+        hitRate,
+      });
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_STATS_ERROR", `Failed to get stats: ${error}`, "NETWORK", {
+          error: String(error),
+        })
+      );
+    }
+  }
+
+  async close(): Promise<Result<void>> {
+    try {
+      this.redis.disconnect();
+      return success(undefined);
+    } catch (error) {
+      return failure(
+        createQiError(
+          "REDIS_CLOSE_ERROR",
+          `Failed to close Redis connection: ${error}`,
+          "NETWORK",
+          {
+            error: String(error),
+          }
+        )
+      );
+    }
+  }
+}
+
+// ============================================================================
+// Cache Factory Functions
+// ============================================================================
+
+/**
+ * createMemoryCache: CacheConfig → Result<Cache>
+ * Create high-performance in-memory cache
+ * Performance: < 50μs per operation (TypeScript interpreted tier)
+ */
+export const createMemoryCache = (config: Partial<CacheConfig> = {}): Result<Cache> => {
+  try {
+    const cacheConfig: CacheConfig = {
+      type: "memory",
+      maxSize: 1000,
+      ttl: 600,
+      checkPeriod: 120,
       ...config,
     };
 
-    this.stats.maxSize = this.config.maxSize;
-    this.startCleanupTimer();
+    const cache = new MemoryCache(cacheConfig);
+    return success(cache);
+  } catch (error) {
+    return failure(
+      createQiError(
+        "MEMORY_CACHE_CREATE_ERROR",
+        `Failed to create memory cache: ${error}`,
+        "SYSTEM",
+        {
+          config,
+          error: String(error),
+        }
+      )
+    );
   }
+};
 
-  /**
-   * Operation 1: Set value in cache
-   */
-  async set(key: K, value: V, ttl?: number): Promise<Result<void>> {
-    try {
-      // Check if we need to evict
-      if (this.store.size >= this.config.maxSize && !this.store.has(key)) {
-        await this.evictOne();
-      }
-
-      const entry: CacheEntry<V> = {
-        value,
-        timestamp: Date.now(),
-        ttl: ttl || this.config.defaultTtl,
-        hitCount: 0,
-        lastAccessed: Date.now(),
-      };
-
-      this.store.set(key, entry);
-      this.updateAccessOrder(key);
-      this.stats.sets++;
-      this.stats.size = this.store.size;
-
-      return Result.success(undefined);
-    } catch (error) {
-      return Result.failure(
-        QiError.resourceError(`Cache set failed: ${error}`, "cache", String(key))
-      );
-    }
-  }
-
-  /**
-   * Operation 2: Get value from cache
-   */
-  async get(key: K): Promise<Result<V>> {
-    try {
-      const entry = this.store.get(key);
-
-      if (!entry) {
-        this.stats.misses++;
-        return Result.failure(QiError.resourceError("Cache miss", "cache", String(key)));
-      }
-
-      // Check TTL expiration
-      if (this.isExpired(entry)) {
-        this.store.delete(key);
-        this.removeFromAccessOrder(key);
-        this.stats.misses++;
-        this.stats.size = this.store.size;
-        return Result.failure(
-          QiError.timeoutError(
-            "Cache entry expired",
-            "cache_get",
-            entry.ttl || this.config.defaultTtl
-          )
-        );
-      }
-
-      // Update access statistics
-      entry.hitCount++;
-      entry.lastAccessed = Date.now();
-      this.updateAccessOrder(key);
-      this.stats.hits++;
-
-      return Result.success(entry.value);
-    } catch (error) {
-      this.stats.misses++;
-      return Result.failure(
-        QiError.resourceError(`Cache get failed: ${error}`, "cache", String(key))
-      );
-    }
-  }
-
-  /**
-   * Operation 3: Delete value from cache
-   */
-  async delete(key: K): Promise<Result<boolean>> {
-    try {
-      const existed = this.store.delete(key);
-      if (existed) {
-        this.removeFromAccessOrder(key);
-        this.stats.deletes++;
-        this.stats.size = this.store.size;
-      }
-      return Result.success(existed);
-    } catch (error) {
-      return Result.failure(
-        QiError.resourceError(`Cache delete failed: ${error}`, "cache", String(key))
-      );
-    }
-  }
-
-  /**
-   * Operation 4: Check if key exists in cache
-   */
-  async has(key: K): Promise<Result<boolean>> {
-    try {
-      const entry = this.store.get(key);
-      if (!entry) {
-        return Result.success(false);
-      }
-
-      if (this.isExpired(entry)) {
-        this.store.delete(key);
-        this.removeFromAccessOrder(key);
-        this.stats.size = this.store.size;
-        return Result.success(false);
-      }
-
-      return Result.success(true);
-    } catch (error) {
-      return Result.failure(
-        QiError.resourceError(`Cache has failed: ${error}`, "cache", String(key))
-      );
-    }
-  }
-
-  /**
-   * Operation 5: Clear all cache entries
-   */
-  async clear(): Promise<Result<void>> {
-    try {
-      this.store.clear();
-      this.accessOrder = [];
-      this.stats.size = 0;
-      return Result.success(undefined);
-    } catch (error) {
-      return Result.failure(QiError.resourceError(`Cache clear failed: ${error}`, "cache", "all"));
-    }
-  }
-
-  /**
-   * Operation 6: Get cache size
-   */
-  size(): number {
-    return this.store.size;
-  }
-
-  /**
-   * Operation 7: Get all keys
-   */
-  keys(): K[] {
-    return Array.from(this.store.keys());
-  }
-
-  /**
-   * Operation 8: Get all values
-   */
-  values(): V[] {
-    return Array.from(this.store.values()).map((entry) => entry.value);
-  }
-
-  /**
-   * Operation 9: Get cache statistics
-   */
-  getStats(): CacheStats {
-    const totalRequests = this.stats.hits + this.stats.misses;
-    const hitRate = totalRequests > 0 ? this.stats.hits / totalRequests : 0;
-
-    return {
-      ...this.stats,
-      hitRate,
+/**
+ * createRedisCache: CacheConfig → Promise<Result<Cache>>
+ * Create distributed Redis cache
+ * Performance: < 2ms per operation (network bound)
+ */
+export const createRedisCache = async (
+  config: Partial<CacheConfig> = {}
+): Promise<Result<Cache>> => {
+  try {
+    const cacheConfig: CacheConfig = {
+      type: "redis",
+      redisHost: "localhost",
+      redisPort: 6379,
+      redisDb: 0,
+      ...config,
     };
-  }
 
-  /**
-   * Set multiple key-value pairs
-   */
-  async setMany(entries: Array<[K, V]>, ttl?: number): Promise<Result<void>> {
+    const cache = new RedisCache(cacheConfig);
+
+    // Test connection
     try {
-      for (const [key, value] of entries) {
-        const result = await this.set(key, value, ttl);
-        if (result.isFailure()) {
-          return result;
+      await (cache as RedisCache).redis.ping();
+    } catch (error) {
+      return failure(
+        createQiError("REDIS_CONNECTION_ERROR", `Failed to connect to Redis: ${error}`, "NETWORK", {
+          config: cacheConfig,
+          error: String(error),
+        })
+      );
+    }
+
+    return success(cache);
+  } catch (error) {
+    return failure(
+      createQiError(
+        "REDIS_CACHE_CREATE_ERROR",
+        `Failed to create Redis cache: ${error}`,
+        "SYSTEM",
+        {
+          config,
+          error: String(error),
         }
-      }
-      return Result.success(undefined);
-    } catch (error) {
-      return Result.failure(
-        QiError.resourceError(`Cache setMany failed: ${error}`, "cache", "bulk")
+      )
+    );
+  }
+};
+
+/**
+ * createCache: CacheConfig → Promise<Result<Cache>>
+ * Auto-select cache implementation based on configuration
+ */
+export const createCache = async (config: Partial<CacheConfig> = {}): Promise<Result<Cache>> => {
+  const cacheType = config.type || "memory";
+
+  switch (cacheType) {
+    case "memory":
+      return createMemoryCache(config);
+    case "redis":
+      return createRedisCache(config);
+    default:
+      return failure(
+        createQiError("INVALID_CACHE_TYPE", `Unknown cache type: ${cacheType}`, "VALIDATION", {
+          type: cacheType,
+          config,
+        })
       );
-    }
   }
+};
 
-  /**
-   * Get multiple values
-   */
-  async getMany(keys: K[]): Promise<Result<Map<K, V>>> {
-    try {
-      const results = new Map<K, V>();
-
-      for (const key of keys) {
-        const result = await this.get(key);
-        if (result.isSuccess()) {
-          results.set(key, result.unwrap());
-        }
-      }
-
-      return Result.success(results);
-    } catch (error) {
-      return Result.failure(
-        QiError.resourceError(`Cache getMany failed: ${error}`, "cache", "bulk")
-      );
-    }
-  }
-
-  /**
-   * Get or set pattern
-   */
-  async getOrSet(key: K, factory: () => Promise<V>, ttl?: number): Promise<Result<V>> {
-    const existing = await this.get(key);
-    if (existing.isSuccess()) {
-      return existing;
-    }
-
-    try {
-      const value = await factory();
-      const setResult = await this.set(key, value, ttl);
-      if (setResult.isFailure()) {
-        return setResult as Result<V>;
-      }
-      return Result.success(value);
-    } catch (error) {
-      return Result.failure(
-        QiError.resourceError(`Cache getOrSet factory failed: ${error}`, "cache", String(key))
-      );
-    }
-  }
-
-  /**
-   * Cleanup expired entries
-   */
-  async cleanup(): Promise<Result<number>> {
-    try {
-      let cleaned = 0;
-      const now = Date.now();
-
-      for (const [key, entry] of this.store.entries()) {
-        if (this.isExpired(entry, now)) {
-          this.store.delete(key);
-          this.removeFromAccessOrder(key);
-          cleaned++;
-        }
-      }
-
-      this.stats.size = this.store.size;
-      return Result.success(cleaned);
-    } catch (error) {
-      return Result.failure(
-        QiError.resourceError(`Cache cleanup failed: ${error}`, "cache", "cleanup")
-      );
-    }
-  }
-
-  /**
-   * Destroy cache and cleanup resources
-   */
-  destroy(): void {
-    if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
-      this.cleanupTimer = undefined;
-    }
-    this.store.clear();
-    this.accessOrder = [];
-  }
-
-  /**
-   * Check if entry is expired
-   */
-  private isExpired(entry: CacheEntry<V>, now = Date.now()): boolean {
-    if (!entry.ttl) return false;
-    return now - entry.timestamp > entry.ttl;
-  }
-
-  /**
-   * Evict one entry based on policy
-   */
-  private async evictOne(): Promise<void> {
-    if (this.store.size === 0) return;
-
-    let keyToEvict: K;
-
-    switch (this.config.evictionPolicy) {
-      case "lru":
-        keyToEvict = this.accessOrder[0];
-        break;
-      case "lfu":
-        keyToEvict = this.findLeastFrequentlyUsed();
-        break;
-      case "fifo":
-        keyToEvict = this.store.keys().next().value!;
-        break;
-      default:
-        keyToEvict = this.accessOrder[0];
-    }
-
-    this.store.delete(keyToEvict);
-    this.removeFromAccessOrder(keyToEvict);
-    this.stats.evictions++;
-    this.stats.size = this.store.size;
-  }
-
-  /**
-   * Find least frequently used key
-   */
-  private findLeastFrequentlyUsed(): K {
-    let minHits = Number.MAX_SAFE_INTEGER;
-    let leastUsedKey: K = this.store.keys().next().value!;
-
-    for (const [key, entry] of this.store.entries()) {
-      if (entry.hitCount < minHits) {
-        minHits = entry.hitCount;
-        leastUsedKey = key;
-      }
-    }
-
-    return leastUsedKey;
-  }
-
-  /**
-   * Update access order for LRU
-   */
-  private updateAccessOrder(key: K): void {
-    this.removeFromAccessOrder(key);
-    this.accessOrder.push(key);
-  }
-
-  /**
-   * Remove key from access order
-   */
-  private removeFromAccessOrder(key: K): void {
-    const index = this.accessOrder.indexOf(key);
-    if (index > -1) {
-      this.accessOrder.splice(index, 1);
-    }
-  }
-
-  /**
-   * Start cleanup timer
-   */
-  private startCleanupTimer(): void {
-    this.cleanupTimer = setInterval(async () => {
-      await this.cleanup();
-    }, this.config.cleanupInterval);
-  }
-}
+// ============================================================================
+// Complete Cache API
+// ============================================================================
 
 /**
- * Cache manager for managing multiple cache instances
+ * Cache API following QiCore v4 mathematical specification
  */
-export class CacheManager {
-  private static caches = new Map<string, Cache<any, any>>();
+export const QiCache = {
+  // Factory functions
+  create: createCache,
+  createMemory: createMemoryCache,
+  createRedis: createRedisCache,
+} as const;
 
-  /**
-   * Create or get named cache
-   */
-  static getCache<K, V>(name: string, config?: CacheConfig): Cache<K, V> {
-    if (!CacheManager.caches.has(name)) {
-      const defaultConfig: CacheConfig = {
-        maxSize: 1000,
-        defaultTtl: 300000, // 5 minutes
-      };
-      CacheManager.caches.set(name, new Cache({ ...defaultConfig, ...config }));
-    }
-    return CacheManager.caches.get(name)!;
-  }
-
-  /**
-   * Remove named cache
-   */
-  static removeCache(name: string): boolean {
-    const cache = CacheManager.caches.get(name);
-    if (cache) {
-      cache.destroy();
-      return CacheManager.caches.delete(name);
-    }
-    return false;
-  }
-
-  /**
-   * Clear all caches
-   */
-  static async clearAll(): Promise<void> {
-    for (const cache of CacheManager.caches.values()) {
-      await cache.clear();
-    }
-  }
-
-  /**
-   * Destroy all caches
-   */
-  static destroyAll(): void {
-    for (const cache of CacheManager.caches.values()) {
-      cache.destroy();
-    }
-    CacheManager.caches.clear();
-  }
-
-  /**
-   * Get statistics for all caches
-   */
-  static getAllStats(): Record<string, CacheStats> {
-    const stats: Record<string, CacheStats> = {};
-    for (const [name, cache] of CacheManager.caches.entries()) {
-      stats[name] = cache.getStats();
-    }
-    return stats;
-  }
-}
-
-/**
- * Caching decorator
- */
-export function Cached<K, V>(cacheKey: (args: any[]) => K, ttl?: number, cacheName = "default") {
-  return <T extends (...args: any[]) => Promise<V>>(
-    _target: any,
-    _propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
-  ) => {
-    const originalMethod = descriptor.value;
-    if (!originalMethod) return;
-
-    descriptor.value = async function (this: any, ...args: any[]): Promise<V> {
-      const cache = CacheManager.getCache<K, V>(cacheName);
-      const key = cacheKey(args);
-
-      const cached = await cache.get(key);
-      if (cached.isSuccess()) {
-        return cached.unwrap();
-      }
-
-      const result = await originalMethod.apply(this, args);
-      await cache.set(key, result, ttl);
-      return result;
-    } as T;
-  };
-}
-
-/**
- * Utility functions for caching
- */
-/**
- * Create a memoized function
- */
-export function memoize<Args extends any[], Return>(
-  fn: (...args: Args) => Return,
-  keyFn?: (...args: Args) => string,
-  ttl?: number
-): (...args: Args) => Return {
-  const cache = new Cache<string, Return>({ maxSize: 100 });
-  const getKey = keyFn || ((...args: Args) => JSON.stringify(args));
-
-  return (...args: Args): Return => {
-    const key = getKey(...args);
-
-    // This is a sync version - for demo purposes
-    // In real implementation, you'd need to handle async properly
-    cache.get(key); // Placeholder for future optimization
-    // For simplicity, this won't work with async - needs redesign
-
-    const result = fn(...args);
-    cache.set(key, result, ttl);
-    return result;
-  };
-}
-
-/**
- * Create cache key from object
- */
-export function createKey(obj: Record<string, any>): string {
-  return JSON.stringify(obj, Object.keys(obj).sort());
-}
-
-/**
- * Create cache key with prefix
- */
-export function prefixedKey(prefix: string, key: string): string {
-  return `${prefix}:${key}`;
-}
+// Export types for external use
+export type { Cache, CacheConfig, CacheStats };

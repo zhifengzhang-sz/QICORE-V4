@@ -1,442 +1,528 @@
-/**
- * QiCore v4.0 - Logger Component
- *
- * Mathematical Contract-Based TypeScript Library
- * Component 4: StructuredLogger - High-performance logging with context (7 operations)
- */
+import winston from "winston";
+import { z } from "zod";
+import { createQiError } from "../base/error";
+import { type Result, failure, success } from "../base/result";
 
-import pino, { type Logger as PinoLogger, type LoggerOptions } from "pino";
-import { QiError } from "../base/error.js";
-import { Result } from "../base/result.js";
+// ============================================================================
+// LOG LEVEL SYSTEM (Winston Integration)
+// ============================================================================
 
 /**
- * Log level enumeration
+ * Log Levels mapped to Winston levels
+ * Mathematical Structure: TRACE < DEBUG < INFO < WARN < ERROR < FATAL
  */
-export enum LogLevel {
-  TRACE = "trace",
-  DEBUG = "debug",
-  INFO = "info",
-  WARN = "warn",
-  ERROR = "error",
-  FATAL = "fatal",
-}
+export const LogLevel = {
+  TRACE: "verbose" as const,
+  DEBUG: "debug" as const,
+  INFO: "info" as const,
+  WARN: "warn" as const,
+  ERROR: "error" as const,
+  FATAL: "error" as const, // Winston doesn't have fatal, maps to error
+} as const;
+
+// eslint-disable-next-line no-redeclare
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 /**
- * Log entry interface
+ * Zod schema for log level validation
  */
-export interface LogEntry {
-  level: LogLevel;
-  message: string;
-  context?: Record<string, unknown>;
-  timestamp: number;
-  component?: string;
-  error?: QiError;
-}
+const LogLevelSchema = z.enum(["verbose", "debug", "info", "warn", "error"]);
 
 /**
- * Logger configuration
+ * Parse log level with Zod validation
+ * @pure
  */
+export const parseLogLevel = (level: string): Result<LogLevel> => {
+  const normalized = level.toLowerCase();
+  const result = LogLevelSchema.safeParse(normalized);
+
+  if (result.success) {
+    return success(result.data);
+  }
+
+  return failure(
+    createQiError("INVALID_LOG_LEVEL", `Invalid log level: ${level}`, "VALIDATION", {
+      level,
+      validLevels: LogLevelSchema.options,
+      zodError: result.error.message,
+    })
+  );
+};
+
+/**
+ * Convert LogLevel to string for display
+ * @pure
+ */
+export const logLevelToString = (level: LogLevel): string => {
+  switch (level) {
+    case LogLevel.TRACE:
+      return "TRACE";
+    case LogLevel.DEBUG:
+      return "DEBUG";
+    case LogLevel.INFO:
+      return "INFO";
+    case LogLevel.WARN:
+      return "WARN";
+    case LogLevel.ERROR:
+      return "ERROR";
+    case LogLevel.FATAL:
+      return "FATAL";
+    default:
+      return "UNKNOWN";
+  }
+};
+
+// ============================================================================
+// LOGGER CONFIGURATION
+// ============================================================================
+
 export interface LoggerConfig {
-  level: LogLevel;
-  component: string;
-  prettyPrint?: boolean;
-  destination?: string;
-  hooks?: {
-    logMethod?: (args: unknown[], method: string) => void;
-  };
+  readonly level: LogLevel;
+  readonly enableColors: boolean;
+  readonly enableTimestamp: boolean;
+  readonly timestampFormat: "iso" | "relative" | "none";
+  readonly output: LogOutput;
+  readonly prefix?: string;
+  readonly formatter?: LogFormatter;
+  readonly outputFile?: string; // For Winston file transport
+  readonly enableConsole?: boolean; // Control console transport
+  // Advanced features
+  readonly logEndpoint?: string; // HTTP transport endpoint
+  readonly logHost?: string; // HTTP transport host
+  readonly logPort?: number; // HTTP transport port
+  readonly logPath?: string; // HTTP transport path
+  readonly enableStructuredContext?: boolean; // Structured context support
 }
 
+export type LogOutput = "console" | "silent" | "winston" | LogOutputFunction;
+export type LogOutputFunction = (message: string) => void;
+export type LogFormatter = (
+  level: LogLevel,
+  message: string,
+  context?: Record<string, unknown>,
+  timestamp?: Date
+) => string;
+
 /**
- * StructuredLogger provides high-performance structured logging with context preservation
- * and mathematical effects tracking
+ * Structured Context for Enhanced Logging
  */
-export class StructuredLogger {
-  private logger: PinoLogger;
-  private component: string;
-  private context: Record<string, unknown> = {};
-
-  constructor(config: LoggerConfig) {
-    this.component = config.component;
-
-    const pinoConfig: LoggerOptions = {
-      level: config.level,
-      timestamp: () => `,"timestamp":${Date.now()}`,
-      base: {
-        component: this.component,
-      },
-    };
-
-    if (config.hooks) {
-      pinoConfig.hooks = config.hooks as any;
-    }
-
-    if (config.prettyPrint) {
-      pinoConfig.transport = {
-        target: "pino-pretty",
-        options: {
-          colorize: true,
-          translateTime: true,
-          ignore: "pid,hostname",
-        },
-      };
-    }
-
-    this.logger = pino(pinoConfig);
-  }
-
-  /**
-   * Operation 1: Log trace message
-   */
-  trace(message: string, context?: Record<string, unknown>): Result<void> {
-    return this.log(LogLevel.TRACE, message, context);
-  }
-
-  /**
-   * Operation 2: Log debug message
-   */
-  debug(message: string, context?: Record<string, unknown>): Result<void> {
-    return this.log(LogLevel.DEBUG, message, context);
-  }
-
-  /**
-   * Operation 3: Log info message
-   */
-  info(message: string, context?: Record<string, unknown>): Result<void> {
-    return this.log(LogLevel.INFO, message, context);
-  }
-
-  /**
-   * Operation 4: Log warning message
-   */
-  warn(message: string, context?: Record<string, unknown>): Result<void> {
-    return this.log(LogLevel.WARN, message, context);
-  }
-
-  /**
-   * Operation 5: Log error message
-   */
-  error(message: string, error?: QiError, context?: Record<string, unknown>): Result<void> {
-    const fullContext = {
-      ...this.context,
-      ...context,
-      ...(error && {
-        error: {
-          category: error.category,
-          message: error.message,
-          context: error.context,
-          timestamp: error.timestamp,
-        },
-      }),
-    };
-
-    return this.log(LogLevel.ERROR, message, fullContext);
-  }
-
-  /**
-   * Operation 6: Log fatal message
-   */
-  fatal(message: string, error?: QiError, context?: Record<string, unknown>): Result<void> {
-    const fullContext = {
-      ...this.context,
-      ...context,
-      ...(error && {
-        error: {
-          category: error.category,
-          message: error.message,
-          context: error.context,
-          timestamp: error.timestamp,
-        },
-      }),
-    };
-
-    return this.log(LogLevel.FATAL, message, fullContext);
-  }
-
-  /**
-   * Operation 7: Add persistent context
-   */
-  withContext(context: Record<string, unknown>): StructuredLogger {
-    const newLogger = new StructuredLogger({
-      level: this.getLevel(),
-      component: this.component,
-    });
-    newLogger.logger = this.logger.child(context);
-    newLogger.context = { ...this.context, ...context };
-    return newLogger;
-  }
-
-  /**
-   * Core logging implementation
-   */
-  private log(level: LogLevel, message: string, context?: Record<string, unknown>): Result<void> {
-    try {
-      const logContext = {
-        ...this.context,
-        ...context,
-        timestamp: Date.now(),
-        component: this.component,
-      };
-
-      this.logger[level](logContext, message);
-      return Result.success(undefined);
-    } catch (error) {
-      return Result.failure(QiError.integrationError(`Logging failed: ${error}`, "logger", "log"));
-    }
-  }
-
-  /**
-   * Get current log level
-   */
-  getLevel(): LogLevel {
-    return this.logger.level as LogLevel;
-  }
-
-  /**
-   * Set log level
-   */
-  setLevel(level: LogLevel): Result<void> {
-    try {
-      this.logger.level = level;
-      return Result.success(undefined);
-    } catch (error) {
-      return Result.failure(
-        QiError.configurationError(`Setting log level failed: ${error}`, "level", "LogLevel")
-      );
-    }
-  }
-
-  /**
-   * Check if level is enabled
-   */
-  isLevelEnabled(level: LogLevel): boolean {
-    return this.logger.isLevelEnabled(level);
-  }
-
-  /**
-   * Get component name
-   */
-  getComponent(): string {
-    return this.component;
-  }
-
-  /**
-   * Get current context
-   */
-  getContext(): Record<string, unknown> {
-    return { ...this.context };
-  }
-
-  /**
-   * Flush logs (useful for testing)
-   */
-  async flush(): Promise<Result<void>> {
-    try {
-      await new Promise<void>((resolve) => {
-        this.logger.flush((error) => {
-          if (error) {
-            console.error("Log flush error:", error);
-          }
-          resolve();
-        });
-      });
-      return Result.success(undefined);
-    } catch (error) {
-      return Result.failure(
-        QiError.integrationError(`Log flush failed: ${error}`, "logger", "flush")
-      );
-    }
-  }
+export interface StructuredContext {
+  readonly traceId?: string;
+  readonly userId?: string;
+  readonly requestId?: string;
+  readonly operation?: string;
+  readonly [key: string]: unknown;
 }
 
-/**
- * Global logger management
- */
-export class LoggerManager {
-  private static loggers = new Map<string, StructuredLogger>();
-  private static defaultConfig: Partial<LoggerConfig> = {
-    level: LogLevel.INFO,
-    prettyPrint: true,
-  };
+export const createDefaultLoggerConfig = (): LoggerConfig => ({
+  level: LogLevel.INFO,
+  enableColors: true,
+  enableTimestamp: true,
+  timestampFormat: "iso",
+  output: "winston",
+  enableConsole: true,
+});
 
-  /**
-   * Get or create logger for component
-   */
-  static getLogger(component: string, config?: Partial<LoggerConfig>): StructuredLogger {
-    if (!LoggerManager.loggers.has(component)) {
-      const fullConfig: LoggerConfig = {
-        level: LogLevel.INFO,
-        prettyPrint: true,
-        ...LoggerManager.defaultConfig,
-        ...config,
-        component,
-      };
-      LoggerManager.loggers.set(component, new StructuredLogger(fullConfig));
-    }
-    return LoggerManager.loggers.get(component)!;
-  }
+export const createSilentLoggerConfig = (): LoggerConfig => ({
+  level: LogLevel.FATAL,
+  enableColors: false,
+  enableTimestamp: false,
+  timestampFormat: "none",
+  output: "silent",
+  enableConsole: false,
+});
 
-  /**
-   * Configure default logger settings
-   */
-  static configure(config: Partial<LoggerConfig>): void {
-    LoggerManager.defaultConfig = { ...LoggerManager.defaultConfig, ...config };
-  }
+export const createTestLoggerConfig = (): LoggerConfig => ({
+  level: LogLevel.TRACE,
+  enableColors: false,
+  enableTimestamp: false,
+  timestampFormat: "none",
+  output: "silent",
+  enableConsole: false,
+});
 
-  /**
-   * Remove logger for component
-   */
-  static removeLogger(component: string): boolean {
-    return LoggerManager.loggers.delete(component);
-  }
-
-  /**
-   * Clear all loggers
-   */
-  static clear(): void {
-    LoggerManager.loggers.clear();
-  }
-
-  /**
-   * Get all logger components
-   */
-  static getComponents(): string[] {
-    return Array.from(LoggerManager.loggers.keys());
-  }
-}
+// ============================================================================
+// WINSTON LOGGER CREATION
+// ============================================================================
 
 /**
- * Performance monitoring decorator
+ * Create Winston logger instance with proper configuration
  */
-export function LogPerformance(component: string) {
-  return <T extends (...args: any[]) => any>(
-    _target: any,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
-  ) => {
-    const originalMethod = descriptor.value;
-    if (!originalMethod) return;
+const createWinstonLogger = (config: LoggerConfig): winston.Logger => {
+  const transports: winston.transport[] = [];
 
-    descriptor.value = function (this: any, ...args: any[]) {
-      const logger = LoggerManager.getLogger(component);
-      const startTime = Date.now();
-
-      logger.debug(`Starting ${propertyKey}`, {
-        method: propertyKey,
-        args: args.length,
-      });
-
-      try {
-        const result = originalMethod.apply(this, args);
-
-        // Handle both sync and async results
-        if (result && typeof result.then === "function") {
-          return result
-            .then((value: any) => {
-              const duration = Date.now() - startTime;
-              logger.info(`Completed ${propertyKey}`, {
-                method: propertyKey,
-                duration,
-                success: true,
-              });
-              return value;
-            })
-            .catch((error: any) => {
-              const duration = Date.now() - startTime;
-              logger.error(`Failed ${propertyKey}`, error, {
-                method: propertyKey,
-                duration,
-                success: false,
-              });
-              throw error;
-            });
-        }
-        const duration = Date.now() - startTime;
-        logger.info(`Completed ${propertyKey}`, {
-          method: propertyKey,
-          duration,
-          success: true,
-        });
-        return result;
-      } catch (error) {
-        const duration = Date.now() - startTime;
-        logger.error(`Failed ${propertyKey}`, error as QiError, {
-          method: propertyKey,
-          duration,
-          success: false,
-        });
-        throw error;
-      }
-    } as T;
-  };
-}
-
-/**
- * Utility functions for logging
- */
-/**
- * Configure global logging
- */
-export function configureLogging(config: {
-  level?: LogLevel;
-  prettyPrint?: boolean;
-  format?: "json" | "pretty";
-}): Result<void> {
-  try {
-    LoggerManager.configure({
-      level: config.level || LogLevel.INFO,
-      prettyPrint: config.prettyPrint ?? config.format === "pretty",
-    });
-    return Result.success(undefined);
-  } catch (error) {
-    return Result.failure(
-      QiError.configurationError(`Logger configuration failed: ${error}`, "logging", "LoggerConfig")
+  // Console transport
+  if (config.enableConsole !== false && config.output !== "silent") {
+    transports.push(
+      new winston.transports.Console({
+        level: config.level,
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.errors({ stack: true }),
+          winston.format.colorize({ all: config.enableColors }),
+          winston.format.printf(({ timestamp, level, message, ...meta }) => {
+            const prefix =
+              config.prefix !== null && config.prefix !== undefined && config.prefix !== ""
+                ? `[${config.prefix}] `
+                : "";
+            const metaString = Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : "";
+            return `${timestamp} ${level}: ${prefix}${message}${metaString}`;
+          })
+        ),
+      })
     );
   }
+
+  // File transport if specified
+  if (config.outputFile !== null && config.outputFile !== undefined && config.outputFile !== "") {
+    transports.push(
+      new winston.transports.File({
+        filename: config.outputFile,
+        level: config.level,
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.errors({ stack: true }),
+          winston.format.json()
+        ),
+      })
+    );
+  }
+
+  // HTTP transport for centralized logging
+  if (config.logEndpoint || (config.logHost && config.logPort)) {
+    const httpTransport = new winston.transports.Http({
+      host: config.logHost || "localhost",
+      port: config.logPort || 80,
+      path: config.logPath || "/logs",
+      level: config.level,
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        winston.format.json()
+      ),
+    });
+    transports.push(httpTransport);
+  }
+
+  return winston.createLogger({
+    level: config.level,
+    transports,
+    exitOnError: false,
+    silent: config.output === "silent",
+  });
+};
+
+// ============================================================================
+// LOGGER INTERFACE
+// ============================================================================
+
+export interface Logger {
+  // Level-based logging methods
+  readonly trace: (message: string, context?: Record<string, unknown>) => void;
+  readonly debug: (message: string, context?: Record<string, unknown>) => void;
+  readonly info: (message: string, context?: Record<string, unknown>) => void;
+  readonly warn: (message: string, context?: Record<string, unknown>) => void;
+  readonly error: (message: string, context?: Record<string, unknown>) => void;
+  readonly fatal: (message: string, context?: Record<string, unknown>) => void;
+
+  // Generic logging method
+  readonly log: (level: LogLevel, message: string, context?: Record<string, unknown>) => void;
+
+  // Level checking
+  readonly isLevelEnabled: (level: LogLevel) => boolean;
+
+  // Configuration access
+  readonly getConfig: () => LoggerConfig;
+  readonly getLevel: () => LogLevel;
 }
 
-/**
- * Create logger with context
- */
-export function createLogger(
-  component: string,
-  context?: Record<string, unknown>
-): StructuredLogger {
-  const logger = LoggerManager.getLogger(component);
-  return context ? logger.withContext(context) : logger;
-}
+// ============================================================================
+// LOGGER IMPLEMENTATION
+// ============================================================================
 
-/**
- * Log operation with timing
- */
-export async function logOperation<T>(
-  logger: StructuredLogger,
-  operation: string,
-  fn: () => Promise<T>
-): Promise<T> {
-  const startTime = Date.now();
+class LoggerImpl implements Logger {
+  private readonly winstonLogger: winston.Logger;
 
-  logger.debug(`Starting operation: ${operation}`);
+  constructor(private readonly config: LoggerConfig) {
+    this.winstonLogger = createWinstonLogger(config);
+  }
 
-  try {
-    const result = await fn();
-    const duration = Date.now() - startTime;
+  trace(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.TRACE, message, context);
+  }
 
-    logger.info(`Operation completed: ${operation}`, {
-      operation,
-      duration,
-      success: true,
-    });
+  debug(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.DEBUG, message, context);
+  }
 
-    return result;
-  } catch (error) {
-    const duration = Date.now() - startTime;
+  info(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.INFO, message, context);
+  }
 
-    logger.error(`Operation failed: ${operation}`, error as QiError, {
-      operation,
-      duration,
-      success: false,
-    });
+  warn(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.WARN, message, context);
+  }
 
-    throw error;
+  error(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.ERROR, message, context);
+  }
+
+  fatal(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.FATAL, message, context);
+  }
+
+  log(level: LogLevel, message: string, context?: Record<string, unknown>): void {
+    if (!this.isLevelEnabled(level)) {
+      return;
+    }
+
+    if (this.config.output === "winston") {
+      // Use Winston for logging
+      const logData = context ? { message, ...context } : message;
+      this.winstonLogger.log(level, logData);
+    } else {
+      // Fallback to custom formatting for other outputs
+      const timestamp = new Date();
+      const formattedMessage = this.config.formatter
+        ? this.config.formatter(level, message, context, timestamp)
+        : this.formatMessage(level, message, context, timestamp);
+
+      this.writeOutput(formattedMessage);
+    }
+  }
+
+  isLevelEnabled(level: LogLevel): boolean {
+    const levels = ["verbose", "debug", "info", "warn", "error"];
+    const currentLevelIndex = levels.indexOf(this.config.level);
+    const messageLevelIndex = levels.indexOf(level);
+    return messageLevelIndex >= currentLevelIndex;
+  }
+
+  getConfig(): LoggerConfig {
+    return this.config;
+  }
+
+  getLevel(): LogLevel {
+    return this.config.level;
+  }
+
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    context?: Record<string, unknown>,
+    timestamp?: Date
+  ): string {
+    const parts: string[] = [];
+
+    // Timestamp
+    if (this.config.enableTimestamp && timestamp) {
+      const timeStr = this.formatTimestamp(timestamp);
+      parts.push(timeStr);
+    }
+
+    // Level
+    const levelStr = this.formatLogLevel(level);
+    parts.push(levelStr);
+
+    // Prefix
+    if (
+      this.config.prefix !== null &&
+      this.config.prefix !== undefined &&
+      this.config.prefix !== ""
+    ) {
+      parts.push(`[${this.config.prefix}]`);
+    }
+
+    // Message
+    parts.push(message);
+
+    // Context
+    if (context && Object.keys(context).length > 0) {
+      const contextStr = Object.entries(context)
+        .map(([key, value]) => `${key}=${this.formatValue(value)}`)
+        .join(" ");
+      parts.push(`{${contextStr}}`);
+    }
+
+    return parts.join(" ");
+  }
+
+  private formatTimestamp(timestamp: Date): string {
+    switch (this.config.timestampFormat) {
+      case "iso":
+        return timestamp.toISOString();
+      case "relative":
+        return `+${Date.now() - timestamp.getTime()}ms`;
+      case "none":
+        return "";
+      default:
+        return "";
+    }
+  }
+
+  private formatLogLevel(level: LogLevel): string {
+    const levelStr = logLevelToString(level);
+
+    if (!this.config.enableColors) {
+      return `[${levelStr}]`;
+    }
+
+    // ANSI color codes mapped to Winston levels
+    const colors: Record<LogLevel, string> = {
+      verbose: "\x1b[90m", // gray (TRACE)
+      debug: "\x1b[36m", // cyan (DEBUG)
+      info: "\x1b[32m", // green (INFO)
+      warn: "\x1b[33m", // yellow (WARN)
+      error: "\x1b[31m", // red (ERROR/FATAL)
+    };
+    const reset = "\x1b[0m";
+
+    const color = colors[level] || "";
+    return `${color}[${levelStr}]${reset}`;
+  }
+
+  private formatValue(value: unknown): string {
+    if (value === null) {
+      return "null";
+    }
+    if (value === undefined) {
+      return "undefined";
+    }
+    if (typeof value === "string") {
+      return `"${value}"`;
+    }
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value);
+    }
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  private writeOutput(message: string): void {
+    switch (this.config.output) {
+      case "console":
+        // Use console methods based on level for proper browser dev tools integration
+        if (typeof console !== "undefined") {
+          // eslint-disable-next-line no-console
+          console.log(message);
+        }
+        break;
+      case "silent":
+        // Do nothing
+        break;
+      case "winston":
+        // Winston handled in main log method
+        break;
+      default:
+        if (typeof this.config.output === "function") {
+          this.config.output(message);
+        }
+        break;
+    }
   }
 }
+
+// ============================================================================
+// FACTORY FUNCTIONS
+// ============================================================================
+
+/**
+ * Create a logger instance with the given configuration
+ * @pure - Factory function
+ * Performance: < 100μs (TypeScript interpreted tier)
+ */
+export const create = (config: LoggerConfig): Result<Logger> => {
+  try {
+    const logger = new LoggerImpl(config);
+    return success(logger);
+  } catch (error) {
+    return failure(
+      createQiError("LOGGER_CREATION_FAILED", `Failed to create logger: ${error}`, "SYSTEM", {
+        error: String(error),
+      })
+    );
+  }
+};
+
+/**
+ * Create logger with default configuration
+ * @pure
+ */
+export const createDefault = (): Result<Logger> => create(createDefaultLoggerConfig());
+
+/**
+ * Create silent logger (for testing)
+ * @pure
+ */
+export const createSilent = (): Result<Logger> => create(createSilentLoggerConfig());
+
+/**
+ * Create test logger with full tracing
+ * @pure
+ */
+export const createTest = (): Result<Logger> => create(createTestLoggerConfig());
+
+// ============================================================================
+// VALIDATION HELPERS
+// ============================================================================
+
+/**
+ * Zod schema for logger configuration validation
+ */
+const LoggerConfigSchema = z.object({
+  level: LogLevelSchema,
+  enableColors: z.boolean(),
+  enableTimestamp: z.boolean(),
+  timestampFormat: z.enum(["iso", "relative", "none"]),
+  output: z.union([z.literal("console"), z.literal("silent"), z.literal("winston"), z.function()]),
+  prefix: z.string().optional(),
+  formatter: z.function().optional(),
+  outputFile: z.string().optional(),
+  enableConsole: z.boolean().optional(),
+});
+
+/**
+ * Validate logger configuration using Zod
+ * @pure
+ */
+export const validateConfig = (config: LoggerConfig): Result<LoggerConfig> => {
+  const result = LoggerConfigSchema.safeParse(config);
+
+  if (result.success) {
+    return success(result.data as LoggerConfig);
+  }
+
+  return failure(
+    createQiError("INVALID_LOGGER_CONFIG", "Logger configuration validation failed", "VALIDATION", {
+      config,
+      zodError: result.error.message,
+      issues: result.error.issues,
+    })
+  );
+};
+
+// ============================================================================
+// CONVENIENCE EXPORTS
+// ============================================================================
+
+// eslint-disable-next-line no-redeclare
+export const Logger = {
+  // Factory functions
+  create,
+  createDefault,
+  createSilent,
+  createTest,
+
+  // Configuration helpers
+  createDefaultLoggerConfig,
+  createSilentLoggerConfig,
+  createTestLoggerConfig,
+  validateConfig,
+
+  // Utilities
+  parseLogLevel,
+  logLevelToString,
+} as const;

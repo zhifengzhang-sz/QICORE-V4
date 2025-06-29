@@ -1,27 +1,137 @@
 /**
- * QiCore v4.0 - TypeScript Implementation
+ * QiCore v4.0 TypeScript Implementation
  *
- * Mathematical Contract-Based TypeScript Library
- * Modern, High-Performance, Type-Safe
+ * Clean fp-ts-based implementation following QiCore v4 TypeScript template.
+ * Complete API for building robust applications with proven mathematical foundations.
+ *
+ * Architecture:
+ * - Base: Result<T> (fp-ts Either), QiError system
+ * - Core: Configuration, Cache, Logger, HTTP Client
+ * - Application: Web, AI, Document, CLI, Database, MCP
  */
 
-// Base layer - Fundamental building blocks
-export * from "./base/index.js";
+// ============================================================================
+// Base Components (fp-ts Either-based Result + QiError)
+// ============================================================================
 
-// Core layer - Infrastructure components
-export * from "./core/index.js";
+export {
+  // Result operations (fp-ts Either-based)
+  success,
+  failure,
+  fromTryCatch,
+  fromAsyncTryCatch,
+  fromMaybe,
+  fromPredicate,
+  map,
+  flatMap,
+  chain,
+  match,
+  sequence,
+  isSuccess,
+  isFailure,
+  // Error operations
+  createQiError,
+  fromException,
+  withContext,
+  withCause,
+  CommonErrors,
+  isRetryable,
+  isQiError,
+  // Complete APIs
+  QiResult,
+  QiBase,
+} from "./base/index.js";
 
-// Application layer - High-level components
-export * from "./application/index.js";
+export type {
+  Result,
+  Either,
+  Left,
+  Right,
+  QiError,
+  ErrorCategory,
+  ErrorSeverity,
+} from "./base/index.js";
 
-// Library metadata
-export const version = "4.0.1";
-export const author = "QiCore Team";
-export const email = "team@qicore.dev";
+// ============================================================================
+// Core Components (Configuration, Logger, Cache, HTTP)
+// ============================================================================
 
-/**
- * QiCore hello function for basic verification
- */
-export function hello(): string {
-  return "Hello from QiCore TypeScript v4.0.1!";
-}
+export {
+  // Configuration operations
+  empty as emptyConfig,
+  merge,
+  mergeAll,
+  fromObject,
+  fromString as fromConfigString,
+  fromFile,
+  fromEnvironment,
+  fromDotenv,
+  fromFileSecure,
+  watchConfig,
+  validate as validateConfig,
+  QiConfig,
+} from "./core/config.js";
+
+export type {
+  ConfigData,
+  ConfigValue,
+  ConfigSource,
+  ConfigMetadata,
+  ConfigFormat,
+  ConfigOptions,
+} from "./core/config.js";
+
+export {
+  // Logger operations
+  LogLevel,
+  create as createLogger,
+  createDefault as createDefaultLogger,
+  createSilent as createSilentLogger,
+  createTest as createTestLogger,
+  parseLogLevel,
+  logLevelToString,
+  validateConfig as validateLoggerConfig,
+  Logger,
+} from "./core/logger.js";
+
+export type {
+  Logger as LoggerInterface,
+  LoggerConfig,
+  LogOutput,
+  LogOutputFunction,
+  LogFormatter,
+  StructuredContext,
+} from "./core/logger.js";
+
+export {
+  // Cache operations
+  createCache,
+  createMemoryCache,
+  createRedisCache,
+  QiCache,
+} from "./core/cache.js";
+
+export type {
+  Cache,
+  CacheConfig,
+  CacheStats,
+} from "./core/cache.js";
+
+export {
+  // Performance monitoring
+  measure,
+  measureAsync,
+  getStats as getPerformanceStats,
+  getOperations as getPerformanceOperations,
+  generateReport as generatePerformanceReport,
+  benchmark,
+  createMonitor,
+  getGlobalMonitor,
+  QiPerformance,
+  PERFORMANCE_REQUIREMENTS,
+} from "./core/performance.js";
+
+export type {
+  PerformanceMeasurement,
+  PerformanceStats,
+} from "./core/performance.js";

@@ -1,312 +1,634 @@
 /**
- * QiCore v4.0 - Result<T> Monad Implementation
+ * QiCore v4.0 Base Result Implementation
  *
- * Mathematical Contract-Based TypeScript Library
- * Component 1: Result<T> - Monad for error handling (8 operations)
+ * Clean fp-ts Either<QiError, T> approach following QiCore v4 TypeScript template.
+ * Result is defined directly as fp-ts Either for maximum compatibility and performance.
+ *
+ * Mathematical Contracts:
+ * - Monad Laws: Left identity, right identity, associativity ✅ (fp-ts proven)
+ * - Functor Laws: Identity, composition ✅ (fp-ts proven)
+ * - Performance: < 100μs per operation (TypeScript interpreted tier)
+ *
+ * Based on: QiCore v4.0 TypeScript Template (qi.v4.ts.template.md)
+ * Implements: Result<T> = Either<QiError, T>
  */
 
-import type { QiError } from "./error.js";
+import { type Either, isLeft, isRight, left, right } from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
+import { type QiError, createQiError } from "./error.js";
+
+// ============================================================================
+// Core Type Definition
+// ============================================================================
 
 /**
- * Result<T> represents a computation that can either succeed with a value of type T
- * or fail with a QiError. This implements the Result monad pattern for functional
- * error handling without exceptions.
+ * Result<T> type - Direct fp-ts Either for maximum compatibility
+ *
+ * This is the foundational type for all operations in QiCore.
+ * Uses fp-ts Either<QiError, T> directly for proven mathematical properties.
  */
-export abstract class Result<T> {
-  /**
-   * Operation 1: Create successful result
-   */
-  static success<T>(value: T): Result<T> {
-    return new Success(value);
-  }
+export type Result<T> = Either<QiError, T>;
 
-  /**
-   * Operation 2: Create failed result
-   */
-  static failure<T>(error: QiError): Result<T> {
-    return new Failure(error);
-  }
+// Re-export fp-ts types for convenience
+export type { Either } from "fp-ts/Either";
+export type Left<E> = { _tag: "Left"; left: E };
+export type Right<A> = { _tag: "Right"; right: A };
 
-  /**
-   * Operation 3: Map function over success value (Functor law)
-   */
-  abstract map<U>(fn: (value: T) => U): Result<U>;
-
-  /**
-   * Operation 4: FlatMap (bind) - Monadic bind operation
-   */
-  abstract flatMap<U>(fn: (value: T) => Result<U>): Result<U>;
-
-  /**
-   * Operation 5: Map error value
-   */
-  abstract mapError(fn: (error: QiError) => QiError): Result<T>;
-
-  /**
-   * Operation 6: Recover from error with fallback
-   */
-  abstract recover(fn: (error: QiError) => T): Result<T>;
-
-  /**
-   * Operation 7: Unwrap with default value
-   */
-  abstract unwrapOr(defaultValue: T): T;
-
-  /**
-   * Operation 8: Check if result is successful
-   */
-  abstract isSuccess(): boolean;
-
-  /**
-   * Check if result is a failure
-   */
-  isFailure(): boolean {
-    return !this.isSuccess();
-  }
-
-  /**
-   * Unwrap value (throws if failure)
-   */
-  abstract unwrap(): T;
-
-  /**
-   * Get error (throws if success)
-   */
-  abstract error(): QiError;
-
-  /**
-   * Apply function if success, otherwise return this
-   */
-  andThen<U>(fn: (value: T) => Result<U>): Result<U> {
-    return this.flatMap(fn);
-  }
-
-  /**
-   * Chain results together
-   */
-  and<U>(other: Result<U>): Result<U> {
-    return this.flatMap(() => other);
-  }
-
-  /**
-   * Return this if success, otherwise return other
-   */
-  or(other: Result<T>): Result<T> {
-    return this.isSuccess() ? this : other;
-  }
-
-  /**
-   * Match pattern for handling both success and failure cases
-   */
-  match<U>(cases: {
-    success: (value: T) => U;
-    failure: (error: QiError) => U;
-  }): U {
-    if (this.isSuccess()) {
-      return cases.success(this.unwrap());
-    }
-    return cases.failure(this.error());
-  }
-}
+// ============================================================================
+// Factory Functions (Monad Return/Unit)
+// ============================================================================
 
 /**
- * Success case of Result<T>
+ * Create a successful result (Monad return/η)
+ *
+ * @example
+ * ```typescript
+ * const result = success(42);
+ * // result: Right(42)
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
  */
-class Success<T> extends Result<T> {
-  constructor(private readonly value: T) {
-    super();
-  }
-
-  map<U>(fn: (value: T) => U): Result<U> {
-    try {
-      return Result.success(fn(this.value));
-    } catch (error) {
-      // If mapping function throws, convert to failure
-      return Result.failure({
-        category: "RuntimeError",
-        message: `Mapping function failed: ${error}`,
-        context: { originalValue: this.value, error: String(error) },
-        timestamp: Date.now(),
-      } as QiError);
-    }
-  }
-
-  flatMap<U>(fn: (value: T) => Result<U>): Result<U> {
-    try {
-      return fn(this.value);
-    } catch (error) {
-      return Result.failure({
-        category: "RuntimeError",
-        message: `FlatMap function failed: ${error}`,
-        context: { originalValue: this.value, error: String(error) },
-        timestamp: Date.now(),
-      } as QiError);
-    }
-  }
-
-  mapError(_fn: (error: QiError) => QiError): Result<T> {
-    return this; // No error to map
-  }
-
-  recover(_fn: (error: QiError) => T): Result<T> {
-    return this; // Already successful
-  }
-
-  unwrapOr(_defaultValue: T): T {
-    return this.value;
-  }
-
-  isSuccess(): boolean {
-    return true;
-  }
-
-  unwrap(): T {
-    return this.value;
-  }
-
-  error(): never {
-    throw new Error("Called error() on Success result");
-  }
-}
+export const success = <T>(data: T): Result<T> => right(data);
 
 /**
- * Failure case of Result<T>
+ * Create a failed result
+ *
+ * @example
+ * ```typescript
+ * const result = failure(myError);
+ * // result: Left(myError)
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
  */
-class Failure<T> extends Result<T> {
-  constructor(private readonly errorValue: QiError) {
-    super();
-  }
-
-  map<U>(_fn: (value: T) => U): Result<U> {
-    return new Failure<U>(this.errorValue);
-  }
-
-  flatMap<U>(_fn: (value: T) => Result<U>): Result<U> {
-    return new Failure<U>(this.errorValue);
-  }
-
-  mapError(fn: (error: QiError) => QiError): Result<T> {
-    try {
-      return Result.failure(fn(this.errorValue));
-    } catch (error) {
-      // If error mapping function throws, create new error
-      return Result.failure({
-        category: "RuntimeError",
-        message: `Error mapping function failed: ${error}`,
-        context: { originalError: this.errorValue, error: String(error) },
-        timestamp: Date.now(),
-        cause: this.errorValue,
-      } as QiError);
-    }
-  }
-
-  recover(fn: (error: QiError) => T): Result<T> {
-    try {
-      return Result.success(fn(this.errorValue));
-    } catch (error) {
-      return Result.failure({
-        category: "RuntimeError",
-        message: `Recovery function failed: ${error}`,
-        context: { originalError: this.errorValue, error: String(error) },
-        timestamp: Date.now(),
-        cause: this.errorValue,
-      } as QiError);
-    }
-  }
-
-  unwrapOr(defaultValue: T): T {
-    return defaultValue;
-  }
-
-  isSuccess(): boolean {
-    return false;
-  }
-
-  unwrap(): never {
-    throw new Error(`Cannot unwrap failed Result: ${this.errorValue.message}`);
-  }
-
-  error(): QiError {
-    return this.errorValue;
-  }
-}
+export const failure = <T>(error: QiError): Result<T> => left(error);
 
 /**
- * Utility functions for working with Results
+ * Safely execute synchronous operation, converting exceptions to Result
+ *
+ * @example
+ * ```typescript
+ * const result = fromTryCatch(() => JSON.parse(input));
+ * ```
+ *
+ * Performance: < 100μs (includes exception handling overhead)
  */
-export namespace Result {
-  /**
-   * Sequence a list of Results into a Result of a list
-   */
-  export function sequence<T>(results: Result<T>[]): Result<T[]> {
-    const values: T[] = [];
-    for (const result of results) {
-      if (result.isFailure()) {
-        return result as Result<T[]>;
-      }
-      values.push(result.unwrap());
+export const fromTryCatch = <T>(operation: () => T): Result<T> => {
+  try {
+    const result = operation();
+    return right(result);
+  } catch (error) {
+    const qiError =
+      error instanceof Error
+        ? createQiError("OPERATION_FAILED", error.message, "UNKNOWN", {
+            name: error.name,
+            stack: error.stack,
+          })
+        : createQiError("OPERATION_FAILED", String(error), "UNKNOWN");
+    return left(qiError);
+  }
+};
+
+/**
+ * Safely execute async operation, converting exceptions to Result
+ *
+ * @example
+ * ```typescript
+ * const result = await fromAsyncTryCatch(async () => {
+ *   return await fetch('/api/data');
+ * });
+ * ```
+ *
+ * Performance: < 200μs (includes exception handling overhead)
+ */
+export const fromAsyncTryCatch = async <T>(operation: () => Promise<T>): Promise<Result<T>> => {
+  try {
+    const result = await operation();
+    return right(result);
+  } catch (error) {
+    const qiError =
+      error instanceof Error
+        ? createQiError("ASYNC_OPERATION_FAILED", error.message, "UNKNOWN", {
+            name: error.name,
+            stack: error.stack,
+          })
+        : createQiError("ASYNC_OPERATION_FAILED", String(error), "UNKNOWN");
+    return left(qiError);
+  }
+};
+
+/**
+ * Convert nullable values to Result with default error
+ *
+ * @example
+ * ```typescript
+ * const result = fromMaybe(defaultError, possiblyNull);
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const fromMaybe = <T>(defaultError: QiError, value: T | null | undefined): Result<T> =>
+  value != null ? right(value) : left(defaultError);
+
+/**
+ * Convert predicate result to Result
+ *
+ * @example
+ * ```typescript
+ * const result = fromPredicate(
+ *   (x) => x > 0,
+ *   positiveError,
+ *   42
+ * );
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const fromPredicate = <T>(
+  predicate: (value: T) => boolean,
+  onFalse: QiError,
+  value: T
+): Result<T> => (predicate(value) ? right(value) : left(onFalse));
+
+// ============================================================================
+// Functor Operations (map)
+// ============================================================================
+
+/**
+ * Transform success value while preserving failures (Functor map)
+ *
+ * @example
+ * ```typescript
+ * const result = pipe(
+ *   success(42),
+ *   map((x) => x * 2)
+ * );
+ * // result: Right(84)
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const map =
+  <T, U>(fn: (value: T) => U) =>
+  (result: Result<T>): Result<U> =>
+    pipe(result, (r) => (isRight(r) ? right(fn(r.right)) : r));
+
+/**
+ * Transform error while preserving success values
+ *
+ * @example
+ * ```typescript
+ * const result = pipe(
+ *   failure(originalError),
+ *   mapError((err) => enhanceError(err))
+ * );
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const mapError =
+  <T>(transform: (error: QiError) => QiError) =>
+  (result: Result<T>): Result<T> =>
+    pipe(result, (r) => (isLeft(r) ? left(transform(r.left)) : r));
+
+/**
+ * Map both success and error cases simultaneously (Bifunctor bimap)
+ *
+ * @example
+ * ```typescript
+ * const result = pipe(
+ *   someResult,
+ *   bimap(
+ *     (error) => enhanceError(error),
+ *     (value) => transformValue(value)
+ *   )
+ * );
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const bimap =
+  <T, U>(errorTransform: (error: QiError) => QiError, successTransform: (value: T) => U) =>
+  (result: Result<T>): Result<U> =>
+    pipe(result, (r) =>
+      isRight(r) ? right(successTransform(r.right)) : left(errorTransform(r.left))
+    );
+
+// ============================================================================
+// Monad Operations (flatMap/chain)
+// ============================================================================
+
+/**
+ * Chain operations that return Results (Monad bind)
+ *
+ * @example
+ * ```typescript
+ * const result = pipe(
+ *   success(42),
+ *   flatMap((x) => x > 0 ? success(x * 2) : failure(negativeError))
+ * );
+ * ```
+ *
+ * Performance: < 100μs (TypeScript interpreted tier)
+ */
+export const flatMap =
+  <T, U>(fn: (value: T) => Result<U>) =>
+  (result: Result<T>): Result<U> =>
+    pipe(result, (r) => (isRight(r) ? fn(r.right) : r));
+
+/**
+ * Alias for flatMap (more intuitive naming)
+ */
+export const chain = flatMap;
+
+/**
+ * Execute chained operation but return original value on success
+ *
+ * @example
+ * ```typescript
+ * const result = pipe(
+ *   success(42),
+ *   chainFirst((x) => logValue(x)) // Returns Result<void>
+ * );
+ * // result: Right(42) if logValue succeeds
+ * ```
+ *
+ * Performance: < 100μs (TypeScript interpreted tier)
+ */
+export const chainFirst =
+  <T, U>(operation: (value: T) => Result<U>) =>
+  (result: Result<T>): Result<T> =>
+    pipe(
+      result,
+      flatMap((value) =>
+        pipe(
+          operation(value),
+          map(() => value)
+        )
+      )
+    );
+
+// ============================================================================
+// Applicative Operations
+// ============================================================================
+
+/**
+ * Apply a function wrapped in Result to a value wrapped in Result
+ *
+ * @example
+ * ```typescript
+ * const add = (a: number) => (b: number) => a + b;
+ * const result = pipe(
+ *   success(10),
+ *   ap(success(add))
+ * );
+ * // Then apply to second value...
+ * ```
+ *
+ * Performance: < 100μs (TypeScript interpreted tier)
+ */
+export const ap =
+  <T, U>(result: Result<T>) =>
+  (wrappedFunction: Result<(value: T) => U>): Result<U> =>
+    pipe(
+      wrappedFunction,
+      flatMap((fn) => pipe(result, map(fn)))
+    );
+
+/**
+ * Lift a binary function to work on Results
+ *
+ * @example
+ * ```typescript
+ * const add = (a: number, b: number) => a + b;
+ * const result = liftA2(add)(success(10))(success(20));
+ * // result: Right(30)
+ * ```
+ *
+ * Performance: < 100μs (TypeScript interpreted tier)
+ */
+export const liftA2 =
+  <T, U, V>(binaryFunction: (a: T, b: U) => V) =>
+  (resultA: Result<T>) =>
+  (resultB: Result<U>): Result<V> => {
+    if (isRight(resultA) && isRight(resultB)) {
+      return right(binaryFunction(resultA.right, resultB.right));
     }
-    return Result.success(values);
-  }
-
-  /**
-   * Traverse a list with a function that returns Results
-   */
-  export function traverse<T, U>(items: T[], fn: (item: T) => Result<U>): Result<U[]> {
-    return sequence(items.map(fn));
-  }
-
-  /**
-   * Convert all Results to values, collecting any errors
-   */
-  export function partition<T>(results: Result<T>[]): {
-    successes: T[];
-    failures: QiError[];
-  } {
-    const successes: T[] = [];
-    const failures: QiError[] = [];
-
-    for (const result of results) {
-      if (result.isSuccess()) {
-        successes.push(result.unwrap());
-      } else {
-        failures.push(result.error());
-      }
+    // Return the first error encountered
+    if (isLeft(resultA)) {
+      return left(resultA.left);
     }
+    return left((resultB as Left<QiError>).left);
+  };
 
-    return { successes, failures };
+// ============================================================================
+// Alternative Operations
+// ============================================================================
+
+/**
+ * Choose first successful result, fallback to second on failure
+ *
+ * @example
+ * ```typescript
+ * const result = pipe(
+ *   failure(primaryError),
+ *   alt(success(fallbackValue))
+ * );
+ * // result: Right(fallbackValue)
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const alt =
+  <T>(alternative: Result<T>) =>
+  (result: Result<T>): Result<T> =>
+    isRight(result) ? result : alternative;
+
+/**
+ * Error recovery with alternative computation
+ *
+ * @example
+ * ```typescript
+ * const result = pipe(
+ *   failure(originalError),
+ *   orElse((error) => tryAlternative(error))
+ * );
+ * ```
+ *
+ * Performance: < 100μs (TypeScript interpreted tier)
+ */
+export const orElse =
+  <T>(alternativeFunction: (error: QiError) => Result<T>) =>
+  (result: Result<T>): Result<T> =>
+    isRight(result) ? result : alternativeFunction(result.left);
+
+// ============================================================================
+// Extraction Operations
+// ============================================================================
+
+/**
+ * Extract value or throw error (unsafe)
+ *
+ * @example
+ * ```typescript
+ * const value = unwrap(success(42)); // 42
+ * const error = unwrap(failure(err)); // throws
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
+ */
+export const unwrap = <T>(result: Result<T>): T => {
+  if (isRight(result)) {
+    return result.right;
   }
+  throw new Error(`Result unwrap failed: ${result.left.message}`);
+};
 
-  /**
-   * Wrap a function that might throw into a Result
-   */
-  export function tryCatch<T>(fn: () => T): Result<T> {
-    try {
-      return Result.success(fn());
-    } catch (error) {
-      return Result.failure({
-        category: "RuntimeError",
-        message: `Function threw: ${error}`,
-        context: { error: String(error) },
-        timestamp: Date.now(),
-      } as QiError);
+/**
+ * Extract value or return default
+ *
+ * @example
+ * ```typescript
+ * const value = unwrapOr("default")(success("hello")); // "hello"
+ * const defaulted = unwrapOr("default")(failure(err)); // "default"
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
+ */
+export const unwrapOr =
+  <T>(defaultValue: T) =>
+  (result: Result<T>): T =>
+    isRight(result) ? result.right : defaultValue;
+
+/**
+ * Extract value or compute default from error
+ *
+ * @example
+ * ```typescript
+ * const value = pipe(
+ *   someResult,
+ *   unwrapOrElse((error) => `Error: ${error.message}`)
+ * );
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
+ */
+export const unwrapOrElse =
+  <T>(computeDefault: (error: QiError) => T) =>
+  (result: Result<T>): T =>
+    isRight(result) ? result.right : computeDefault(result.left);
+
+// ============================================================================
+// Pattern Matching
+// ============================================================================
+
+/**
+ * Pattern match on success and error cases
+ *
+ * @example
+ * ```typescript
+ * const message = match(
+ *   (value) => `Success: ${value}`,
+ *   (error) => `Error: ${error.message}`
+ * )(someResult);
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const match =
+  <T, R>(onSuccess: (value: T) => R, onError: (error: QiError) => R) =>
+  (result: Result<T>): R =>
+    isRight(result) ? onSuccess(result.right) : onError(result.left);
+
+/**
+ * Fold/catamorphism with error case first (conventional order)
+ *
+ * @example
+ * ```typescript
+ * const message = fold(
+ *   (error) => `Error: ${error.message}`,
+ *   (value) => `Success: ${value}`
+ * )(someResult);
+ * ```
+ *
+ * Performance: < 50μs (TypeScript interpreted tier)
+ */
+export const fold =
+  <T, R>(onError: (error: QiError) => R, onSuccess: (value: T) => R) =>
+  (result: Result<T>): R =>
+    isRight(result) ? onSuccess(result.right) : onError(result.left);
+
+// ============================================================================
+// Collection Operations
+// ============================================================================
+
+/**
+ * Convert array of Results to Result of array
+ *
+ * @example
+ * ```typescript
+ * const results = [success(1), success(2), success(3)];
+ * const combined = sequence(results);
+ * // combined: Right([1, 2, 3])
+ * ```
+ *
+ * Performance: O(n) where n = length of array
+ */
+export const sequence = <T>(results: readonly Result<T>[]): Result<T[]> => {
+  const values: T[] = [];
+  for (const result of results) {
+    if (isRight(result)) {
+      values.push(result.right);
+    } else {
+      return result; // Fail fast
     }
   }
+  return right(values);
+};
 
-  /**
-   * Wrap an async function that might throw into a Result
-   */
-  export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<Result<T>> {
-    try {
-      const value = await fn();
-      return Result.success(value);
-    } catch (error) {
-      return Result.failure({
-        category: "RuntimeError",
-        message: `Async function threw: ${error}`,
-        context: { error: String(error) },
-        timestamp: Date.now(),
-      } as QiError);
-    }
-  }
-}
+/**
+ * Map and sequence in one operation
+ *
+ * @example
+ * ```typescript
+ * const numbers = [1, 2, 3];
+ * const results = traverse((x) =>
+ *   x > 0 ? success(x * 2) : failure(negativeError)
+ * )(numbers);
+ * // results: Right([2, 4, 6])
+ * ```
+ *
+ * Performance: O(n) where n = length of array
+ */
+export const traverse =
+  <T, U>(transform: (value: T) => Result<U>) =>
+  (values: readonly T[]): Result<U[]> =>
+    sequence(values.map(transform));
+
+// ============================================================================
+// Query Operations
+// ============================================================================
+
+/**
+ * Check if result is a success
+ *
+ * @example
+ * ```typescript
+ * if (isSuccess(result)) {
+ *   // TypeScript knows result is Right<T>
+ *   console.log(result.right);
+ * }
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
+ */
+export const isSuccess = <T>(result: Result<T>): result is Right<T> => isRight(result);
+
+/**
+ * Check if result is a failure
+ *
+ * @example
+ * ```typescript
+ * if (isFailure(result)) {
+ *   // TypeScript knows result is Left<QiError>
+ *   console.log(result.left.message);
+ * }
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
+ */
+export const isFailure = <T>(result: Result<T>): result is Left<QiError> => isLeft(result);
+
+/**
+ * Extract success value as Option
+ *
+ * @example
+ * ```typescript
+ * const value = getData(success(42)); // 42
+ * const nothing = getData(failure(err)); // null
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
+ */
+export const getData = <T>(result: Result<T>): T | null => (isRight(result) ? result.right : null);
+
+/**
+ * Extract error as Option
+ *
+ * @example
+ * ```typescript
+ * const noError = getError(success(42)); // null
+ * const error = getError(failure(err)); // err
+ * ```
+ *
+ * Performance: < 10μs (TypeScript interpreted tier)
+ */
+export const getError = <T>(result: Result<T>): QiError | null =>
+  isLeft(result) ? result.left : null;
+
+// ============================================================================
+// Complete API Export (for compatibility)
+// ============================================================================
+
+/**
+ * Complete Result API object
+ *
+ * Usage patterns:
+ * - Functional: import { success, map, flatMap } from './result.js';
+ * - Object-oriented: import { QiResult } from './result.js';
+ * - Mixed: import what you need for each context
+ */
+export const QiResult = {
+  success,
+  failure,
+  fromTryCatch,
+  fromAsyncTryCatch,
+  fromMaybe,
+  fromPredicate,
+  map,
+  mapError,
+  bimap,
+  flatMap,
+  chain,
+  chainFirst,
+  ap,
+  liftA2,
+  alt,
+  orElse,
+  unwrap,
+  unwrapOr,
+  unwrapOrElse,
+  match,
+  fold,
+  sequence,
+  traverse,
+  isSuccess,
+  isFailure,
+  getData,
+  getError,
+} as const;
+
+// ============================================================================
+// Alternative Exports for Different Usage Patterns
+// ============================================================================
+
+/**
+ * Alternative names for common operations
+ */
+export const ResultOps = {
+  // Monad operations
+  andThen: flatMap,
+  bind: flatMap,
+
+  // Extraction operations
+  getWithDefault: unwrapOr,
+  caseOf: match,
+
+  // Query operations
+  isOk: isSuccess,
+  isErr: isFailure,
+} as const;
+
+// Legacy compatibility - remove class implementation
+export const ResultImpl = QiResult;
