@@ -9,12 +9,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/qicore/**/*.ts', 'src/qiagent/**/*.ts'],
       exclude: [
         'node_modules/',
         'dist/',
         '**/*.d.ts',
         '**/*.config.*',
         '**/coverage/**',
+        'src/qicore/**/index.ts', // Exclude index.ts files (just exports)
       ],
     },
     typecheck: {
