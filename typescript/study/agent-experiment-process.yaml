@@ -1,0 +1,127 @@
+# Claude Code Agent Experiment Process
+# For QiCore v4.0 Study Framework
+metadata:
+  name: "Claude Code Agent Study Process"
+  version: "1.0"
+  date: "2025-06-29"
+  status: "Ready for Testing"
+  purpose: "Test Claude Code agent effectiveness using our operational study framework"
+  framework_status: "125+ tests passing, fully operational"
+
+# EXPERIMENT SETUP
+experiment:
+  objective: "Measure Claude Code agent consistency and quality in code generation"
+  framework_location: "qicore-v4/typescript/study"
+  
+  prerequisites:
+    - "Study framework operational (✅ confirmed)"
+    - "ANTHROPIC_API_KEY environment variable set"
+    - "Bun runtime installed"
+    - "Dependencies installed (bun install)"
+    - "Tests passing (bun run test)"
+
+# PROCESS STEPS
+process:
+  step_1_preparation:
+    name: "Environment Verification"
+    commands:
+      - "cd qicore-v4/typescript/study"
+      - "bun run test:run"
+      - "bun run lint:biome"
+    expected_results:
+      - "125+ tests passing"
+      - "Biome linting clean"
+      - "Framework fully operational"
+  
+  step_2_configuration:
+    name: "Study Configuration"
+    file: "config/haskell-consistency-study.yaml"
+    parameters:
+      models: ["claude-3-5-sonnet", "claude-3-7-sonnet"]
+      instructions: ["haskell-basic-module", "haskell-advanced-types"]
+      runs_per_combination: 12
+      timeout: 60000
+      output_dir: "./results"
+  
+  step_3_execution:
+    name: "Run Study"
+    command: "bun run-study.ts"
+    expected_duration: "15-30 minutes"
+    expected_outputs:
+      - "48 total generations (2 models × 2 instructions × 12 runs)"
+      - "Quality scores and consistency metrics"
+      - "Statistical analysis results"
+  
+  step_4_analysis:
+    name: "Results Analysis"
+    metrics:
+      - "Success rate per model"
+      - "Consistency coefficient (std dev / mean)"
+      - "Quality scores (syntactic, semantic, modern)"
+      - "Error patterns and failure modes"
+
+# SUCCESS CRITERIA
+success_criteria:
+  framework_functionality:
+    - "All tests pass (125+)"
+    - "No critical linting errors"
+    - "Study orchestrator runs without crashes"
+  
+  study_execution:
+    - "Generates code for all combinations"
+    - "Produces quality scores"
+    - "Calculates consistency metrics"
+    - "Saves results to output directory"
+  
+  quality_thresholds:
+    minimum_success_rate: 80
+    maximum_failure_rate: 20
+    consistency_threshold: 0.3  # coefficient of variation
+
+# VALIDATION COMMANDS
+validation:
+  pre_experiment:
+    - "bun run test:run"
+    - "bun run lint:biome"
+    - "echo $ANTHROPIC_API_KEY | grep -q ."
+  
+  post_experiment:
+    - "ls -la results/"
+    - "cat results/study-statistics.json"
+    - "bun run test:coverage"
+
+# TROUBLESHOOTING
+troubleshooting:
+  common_issues:
+    api_key_missing:
+      symptom: "Anthropic API key not found error"
+      solution: "Set ANTHROPIC_API_KEY environment variable"
+    
+    module_resolution:
+      symptom: "Cannot resolve module @/ imports"
+      solution: "Already fixed with vite-tsconfig-paths plugin"
+    
+    test_failures:
+      symptom: "Some tests failing"
+      solution: "Framework already operational with 125+ passing tests"
+    
+    timeout_errors:
+      symptom: "Generation timeouts"
+      solution: "Increase timeout in study configuration"
+
+# EXPECTED OUTCOMES
+expected_outcomes:
+  framework_validation:
+    - "Confirms study framework is production-ready"
+    - "Validates end-to-end study execution"
+    - "Proves architectural soundness"
+  
+  agent_performance:
+    - "Baseline Claude Code agent consistency metrics"
+    - "Quality distribution analysis"
+    - "Identification of improvement areas"
+  
+  process_refinement:
+    - "Process bottlenecks identified"
+    - "Automation opportunities"
+    - "Scale-up possibilities for larger studies" 

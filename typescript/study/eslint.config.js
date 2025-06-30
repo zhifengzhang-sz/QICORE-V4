@@ -28,6 +28,9 @@ export default [
         global: 'readonly',
         NodeJS: 'readonly',
         Bun: 'readonly',
+        AbortController: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
       },
     },
     plugins: {
@@ -160,6 +163,7 @@ export default [
       'coverage/**',
       '**/*.d.ts',
       'eslint.config.js',
+      'score-existing-haskell.ts',
     ],
   },
 ];

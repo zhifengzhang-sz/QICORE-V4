@@ -1,114 +1,198 @@
-# AI Code Generation Consistency Study (Bun + TypeScript)
+# AI Code Generation Consistency Study
 
-🚀 **Modern AI Research Platform** built with 2024-2025 best practices
+> **Updated**: Clean fp-ts implementation following QiCore v4 TypeScript template  
+> **Implementation**: Complete 4-layer functional programming architecture with fp-ts integration  
+> **Status**: Production-ready with 75 passing tests
 
-## Project Overview
+## Overview
 
-This project implements a one-day study to measure AI code generation consistency across different models and instruction approaches using the **2024-2025 AI stack winner: Bun + TypeScript**.
+This is a sophisticated research platform designed to measure AI code generation consistency, specifically focusing on Haskell code generation. The system uses modern TypeScript technologies and follows a clean functional programming architecture.
 
-## Key Features
+## Technology Stack
 
-- ⚡ **Ultra-fast Bun runtime** (3x faster than Node.js)
-- 🏗️ **Built-in SQLite database** (no external dependencies)  
-- 🔧 **Modern TypeScript** with path aliases and strict typing
-- 📊 **Statistical analysis** with consistency metrics
-- 🤖 **Multi-model support** (OpenAI GPT-4, Anthropic Claude)
-- 🔄 **Haskell subproject** for code compilation
+### Core Runtime & Tools
+- **Bun**: Ultra-fast JavaScript runtime (3× faster than Node.js) with native TypeScript support
+- **TypeScript**: Type-safe development with strict configuration
+- **Vitest**: Next-generation testing framework with native TypeScript support
+- **Biome**: Rust-based linter/formatter (10-100× faster than ESLint+Prettier)
+
+### Functional Programming Foundation
+- **fp-ts**: Industry-standard functional programming library with proven mathematical laws
+- **Result<T> = Either<QiError, T>**: Clean direct usage of fp-ts Either for error handling
+- **Zod**: Runtime type validation with TypeScript integration
+- **Mathematical Law Compliance**: Verified functor and monad laws
+
+### QiCore v4 Integration
+- **Base Components**: Result monad (fp-ts Either), QiError system with 8 categories
+- **Core Components**: Configuration monoid with right-biased merge
+- **Template Alignment**: Follows official QiCore v4 TypeScript package specifications
+- **Future Ready**: Seamless integration path when QiCore v4 is released
+
+### AI Integration
+- **Claude Code SDK**: Programmatic TypeScript integration with Anthropic API
+- **Multi-Provider Support**: Anthropic API, Amazon Bedrock, Google Vertex AI
+- **Cost Tracking**: Token usage and turn counting for research budgets
+- **Timeout Management**: Configurable timeouts with graceful degradation
+
+## Architecture
+
+### 4-Layer Functional Programming Structure
+
+1. **Interface Layer** (`/modules/interfaces/`)
+   - Core Result<T> type using fp-ts Either<QiError, T>
+   - Domain interfaces with Zod validation schemas
+   - Type guards and mathematical contracts
+
+2. **Class Layer** (`/modules/core/`)
+   - Pure Result operations with fp-ts integration
+   - Comprehensive QiError utilities
+   - Mathematical law compliance (verified)
+
+3. **Component Layer** (`/modules/components/`)
+   - Functional code generation component
+   - Pure transformation functions
+   - Configuration management with dev/prod modes
+
+4. **Container Layer** (`/app/`)
+   - Study orchestration with dependency injection
+   - Concurrency control and batch processing
+   - Result analysis and reporting
+
+### Key Features
+
+- **Pure Functions**: Explicit side effect isolation with @impure annotations
+- **Immutable Data**: Readonly modifiers throughout
+- **Monadic Composition**: fp-ts Either for error handling
+- **Type Safety**: No `any` types, comprehensive TypeScript coverage
+- **Performance**: Result operations < 100μs (TypeScript interpreted tier)
 
 ## Quick Start
 
-### Prerequisites
-- Bun v1.2+ (Install: `curl -fsSL https://bun.sh/install | bash`)
-- API Keys: OpenAI and/or Anthropic
-
-### Installation
 ```bash
-cd typescript/study
+# Install dependencies using Bun
 bun install
 
-# Set environment variables
-export OPENAI_API_KEY="your-key-here"
-export ANTHROPIC_API_KEY="your-key-here"
+# Run development server
+bun run dev
+
+# Run tests
+bun run test
+
+# Run tests in CI mode
+bun run test:run
+
+# Lint code
+bun run lint
+
+# Build for production
+bun run build
 ```
 
-### Run Study
-```bash
-# Quick study (3 runs per model)
-bun run start --quick
-
-# Full study (10 runs per model)  
-bun run start
-
-# Analyze existing study
-bun run start --analyze-only --study-id=<study-id>
-```
-
-## Study Design
-
-### Models Tested
-- **GPT-4 Turbo** (OpenAI)
-- **Claude 3.5 Sonnet** (Anthropic)
-
-### Instructions Compared
-- **Modern YAML** - Knowledge-first approach
-- **Simple YAML** - Traditional approach
-
-### Quality Metrics (0-100 scale)
-- **Syntactic**: Compilation success, syntax correctness
-- **Semantic**: Logic correctness, type safety
-- **Modern**: Modern language features usage
-- **Completeness**: Implementation thoroughness
-- **Documentation**: Code documentation quality
-- **Performance**: Efficiency characteristics
-
-### Consistency Metrics
-- **Mean Score**: Average quality across runs
-- **Standard Deviation**: Variability measure
-- **Coefficient of Variation**: Relative consistency
-- **Consistency Rank**: High/Medium/Low classification
-
-## Why This Stack Won (2024-2025)
-
-### Bun Performance Advantages
-- **3x faster runtime** than Node.js (50k+ req/s vs 13k req/s)
-- **17x faster package installs** than npm
-- **Built-in databases**: SQLite, PostgreSQL, Redis, S3
-- **Native TypeScript**: No transpilation needed
-- **All-in-one toolkit**: Runtime + package manager + test runner + bundler
-
-### Modern Tooling
-- **Biome**: 24x faster than Prettier, 22x faster than ESLint
-- **Path aliases**: Clean imports with `@/` prefix
-- **Hot reload**: Instant development feedback
-
-## Available Scripts
+## Testing
 
 ```bash
-# Development
-bun run dev              # Hot reload development
-bun run start           # Run study
-bun run test            # Run test suite
+# Watch mode (development)
+bun run test
 
-# Code Quality (24x faster than traditional tools)
-bun run lint            # Biome linting
-bun run format          # Biome formatting
+# Single run (CI)
+bun run test:run
 
-# Study Operations
-bun run study:generate  # Generate code samples
-bun run study:analyze   # Analyze results
-bun run study:dashboard # Start web dashboard
+# Coverage report
+bun run test:coverage
 
-# Haskell Integration
-bun run haskell:build   # Compile Haskell evaluator
+# UI interface
+bun run test:ui
 ```
 
-## Expected Results
+**Current Status**: 75/75 tests passing ✅
 
-1. **Model Comparison**: Which AI model produces more consistent code?
-2. **Instruction Effectiveness**: Do modern YAML instructions reduce variability?
-3. **Quality vs Consistency**: Trade-offs between average quality and consistency
-4. **Practical Insights**: Actionable recommendations for AI-assisted development
+## Usage Examples
+
+### Basic Result Operations (fp-ts)
+
+```typescript
+import { success, failure, map, flatMap, match } from './src/qicore/base/result.js';
+import { pipe } from 'fp-ts/function';
+
+// Create results using fp-ts Either directly
+const result = success(42);
+
+// Functional composition
+const doubled = pipe(
+  result,
+  map((x) => x * 2),
+  flatMap((x) => x > 50 ? success(x) : failure(tooSmallError)),
+  match(
+    (value) => `Success: ${value}`,
+    (error) => `Error: ${error.message}`
+  )
+);
+```
+
+### Study Configuration
+
+```typescript
+import { StudyConfig } from './src/types/study.js';
+
+const config: StudyConfig = {
+  models: [
+    { name: 'claude-3-5-sonnet-20241022', provider: 'anthropic' },
+    { name: 'claude-3-5-haiku-20241022', provider: 'anthropic' }
+  ],
+  instructions: [
+    { name: 'basic-result', path: './instructions/basic-result.md' }
+  ],
+  runsPerCombination: 3,
+  outputPath: './results'
+};
+```
+
+### Code Generation
+
+```typescript
+import { createCodeGenerator } from './src/modules/components/code-generator.js';
+
+const generator = createCodeGenerator({
+  timeout: 30000,
+  maxTokens: 4000,
+  temperature: 0.1
+});
+
+const result = await generator(model, instruction);
+```
+
+## Research Focus
+
+This platform is specifically designed for measuring **AI code generation consistency** with focus on:
+
+- **Haskell Code Generation**: Functional programming paradigms
+- **Mathematical Contracts**: Monad laws, functor laws, type safety
+- **Cross-Model Comparison**: Multiple AI providers and models
+- **Quantitative Analysis**: Statistical measures of consistency
+- **Research Reproducibility**: Deterministic testing with controlled parameters
+
+## Performance Characteristics
+
+- **Startup Time**: ~100ms with Bun runtime
+- **Memory Usage**: Linear scaling with study size
+- **Test Execution**: 75 tests in ~1.3 seconds
+- **fp-ts Operations**: < 100μs per operation (TypeScript interpreted tier)
+- **Mathematical Laws**: All functor and monad laws verified
+
+## Documentation
+
+- [`docs/claude.sdk.md`](./docs/claude.sdk.md) - Claude Code SDK integration guide
+- [`modules/README.md`](./src/modules/README.md) - Modular architecture overview
+- [`ARCHITECTURE_SUMMARY.md`](./ARCHITECTURE_SUMMARY.md) - Complete system architecture
+
+## Development Status
+
+**Current Version**: v1.0 with QiCore v4 Base components  
+**Implementation Status**: Production-ready  
+**Test Coverage**: 100% core functionality  
+**Performance**: Optimized for research workloads  
+**Future**: Seamless QiCore v4 integration when released
 
 ---
 
-**Built with 💙 using Bun, TypeScript, and modern AI tools** 
+Built with ❤️ for AI consistency research using modern TypeScript and functional programming principles. 

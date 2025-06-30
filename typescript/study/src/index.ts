@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import { getQuickStudyConfig, getStudyConfig } from './config/study-config';
-import { StudyDatabase } from './database/study-db';
-import { StudyRunner } from './generators/study-runner';
+import { getQuickStudyConfig, getStudyConfig } from './app/config/study-config';
+import { StudyDatabase } from './app/database/study-db';
+import { StudyRunner } from './app/generators/study-runner';
 
 const BANNER = `
 +----------------------------------------------------------+

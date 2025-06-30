@@ -1,12 +1,15 @@
 /**
  * Performance Edge Cases and Monitoring Tests
- * 
- * Tests performance monitoring edge cases, error handling, and 
+ *
+ * Tests performance monitoring edge cases, error handling, and
  * benchmarking utilities to achieve comprehensive coverage.
  */
 
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   PERFORMANCE_REQUIREMENTS,
+  type PerformanceMeasurement,
+  type PerformanceStats,
   QiPerformance,
   benchmark,
   createMonitor,
@@ -16,11 +19,8 @@ import {
   getStats,
   measure,
   measureAsync,
-  type PerformanceMeasurement,
-  type PerformanceStats,
 } from "../../../src/qicore/core/performance.js";
 import { createQiError, failure, success } from "../../../src/qicore/index.js";
-import { describe, expect, it, beforeEach } from "vitest";
 
 describe("Performance Monitoring Edge Cases", () => {
   beforeEach(() => {
@@ -31,30 +31,32 @@ describe("Performance Monitoring Edge Cases", () => {
   it("should handle empty performance data gracefully", () => {
     const monitor = createMonitor();
     const result = monitor.getStats("nonexistent-operation");
-    
+
     expect(result._tag).toBe("Left");
     if (result._tag === "Left") {
       expect(result.left.code).toBe("NO_PERFORMANCE_DATA");
-      expect(result.left.message).toContain("No performance data for operation: nonexistent-operation");
+      expect(result.left.message).toContain(
+        "No performance data for operation: nonexistent-operation"
+      );
     }
   });
 
   it("should limit samples to prevent memory leaks", () => {
     const monitor = createMonitor(5); // Small limit for testing
-    
+
     // Add more samples than the limit
     for (let i = 0; i < 10; i++) {
       monitor.measure(`test-operation-${i}`, () => Math.random());
     }
-    
+
     // Should have at most 10 operations (since each operation gets its own key)
     expect(monitor.getOperations()).toHaveLength(10);
-    
+
     // Test same operation with multiple samples
     for (let i = 0; i < 10; i++) {
       monitor.measure("same-operation", () => Math.random());
     }
-    
+
     const result = monitor.getStats("same-operation");
     expect(result._tag).toBe("Right");
     if (result._tag === "Right") {
@@ -71,9 +73,9 @@ describe("Performance Monitoring Edge Cases", () => {
       timestamp: Date.now(),
       metadata: { custom: "data" },
     };
-    
+
     monitor.recordMeasurement(measurement);
-    
+
     const result = monitor.getStats("manual-test");
     expect(result._tag).toBe("Right");
     if (result._tag === "Right") {
@@ -87,29 +89,29 @@ describe("Performance Monitoring Edge Cases", () => {
   it("should calculate correct percentiles with odd sample count", () => {
     const monitor = createMonitor();
     const durations = [10, 20, 30, 40, 50]; // 5 samples
-    
-    durations.forEach((duration, i) => {
+
+    durations.forEach((duration, _i) => {
       monitor.recordMeasurement({
         operation: "percentile-test",
         duration,
         timestamp: Date.now(),
       });
     });
-    
+
     const result = monitor.getStats("percentile-test");
     expect(result._tag).toBe("Right");
     if (result._tag === "Right") {
       expect(result.right.median).toBe(30); // Middle value
-      expect(result.right.p95).toBe(50);    // 95th percentile
-      expect(result.right.p99).toBe(50);    // 99th percentile
-      expect(result.right.mean).toBe(30);   // (10+20+30+40+50)/5
+      expect(result.right.p95).toBe(50); // 95th percentile
+      expect(result.right.p99).toBe(50); // 99th percentile
+      expect(result.right.mean).toBe(30); // (10+20+30+40+50)/5
     }
   });
 
   it("should calculate correct percentiles with even sample count", () => {
     const monitor = createMonitor();
     const durations = [10, 20, 30, 40]; // 4 samples
-    
+
     durations.forEach((duration) => {
       monitor.recordMeasurement({
         operation: "even-percentile-test",
@@ -117,38 +119,38 @@ describe("Performance Monitoring Edge Cases", () => {
         timestamp: Date.now(),
       });
     });
-    
+
     const result = monitor.getStats("even-percentile-test");
     expect(result._tag).toBe("Right");
     if (result._tag === "Right") {
       expect(result.right.median).toBe(30); // Math.floor(4/2) = 2, so index 2 = 30
-      expect(result.right.mean).toBe(25);   // (10+20+30+40)/4
+      expect(result.right.mean).toBe(25); // (10+20+30+40)/4
     }
   });
 
   it("should detect tier compliance correctly", () => {
     const monitor = createMonitor();
-    
+
     // Test compliant operation
     monitor.recordMeasurement({
       operation: "result_fast_operation",
       duration: 50, // Less than 100μs requirement
       timestamp: Date.now(),
     });
-    
+
     // Test non-compliant operation
     monitor.recordMeasurement({
       operation: "result_slow_operation",
       duration: 200, // More than 100μs requirement
       timestamp: Date.now(),
     });
-    
+
     const fastResult = monitor.getStats("result_fast_operation");
     const slowResult = monitor.getStats("result_slow_operation");
-    
+
     expect(fastResult._tag).toBe("Right");
     expect(slowResult._tag).toBe("Right");
-    
+
     if (fastResult._tag === "Right" && slowResult._tag === "Right") {
       expect(fastResult.right.tierCompliant).toBe(true);
       expect(slowResult.right.tierCompliant).toBe(false);
@@ -157,13 +159,13 @@ describe("Performance Monitoring Edge Cases", () => {
 
   it("should handle unknown operation types gracefully", () => {
     const monitor = createMonitor();
-    
+
     monitor.recordMeasurement({
       operation: "unknown_mysterious_operation",
       duration: 1000, // Any duration
       timestamp: Date.now(),
     });
-    
+
     const result = monitor.getStats("unknown_mysterious_operation");
     expect(result._tag).toBe("Right");
     if (result._tag === "Right") {
@@ -173,8 +175,8 @@ describe("Performance Monitoring Edge Cases", () => {
   });
 
   it("should handle async measurement errors", async () => {
-    const monitor = createMonitor();
-    
+    const _monitor = createMonitor();
+
     const result = await benchmark(
       "async_error_test",
       async () => {
@@ -182,7 +184,7 @@ describe("Performance Monitoring Edge Cases", () => {
       },
       10
     );
-    
+
     expect(result._tag).toBe("Left");
     if (result._tag === "Left") {
       expect(result.left.code).toBe("BENCHMARK_ERROR");
@@ -198,7 +200,7 @@ describe("Performance Monitoring Edge Cases", () => {
       },
       10
     );
-    
+
     expect(result._tag).toBe("Left");
     if (result._tag === "Left") {
       expect(result.left.code).toBe("BENCHMARK_ERROR");
@@ -208,19 +210,16 @@ describe("Performance Monitoring Edge Cases", () => {
 
   it("should measure async operations correctly", async () => {
     let executionCount = 0;
-    
-    const result = await measureAsync(
-      "async_test_operation",
-      async () => {
-        executionCount++;
-        await new Promise(resolve => setTimeout(resolve, 1)); // 1ms delay
-        return "async result";
-      }
-    );
-    
+
+    const result = await measureAsync("async_test_operation", async () => {
+      executionCount++;
+      await new Promise((resolve) => setTimeout(resolve, 1)); // 1ms delay
+      return "async result";
+    });
+
     expect(result).toBe("async result");
     expect(executionCount).toBe(1);
-    
+
     const statsResult = getStats("async_test_operation");
     expect(statsResult._tag).toBe("Right");
     if (statsResult._tag === "Right") {
@@ -242,10 +241,10 @@ describe("Performance Monitoring Edge Cases", () => {
       duration: 200, // Non-compliant
       timestamp: Date.now(),
     });
-    
+
     const reportResult = generateReport();
     expect(reportResult._tag).toBe("Right");
-    
+
     if (reportResult._tag === "Right") {
       const report = reportResult.right;
       expect(report).toContain("QiCore Performance Report");
@@ -259,10 +258,10 @@ describe("Performance Monitoring Edge Cases", () => {
   it("should generate empty report when no data", () => {
     const monitor = getGlobalMonitor();
     monitor.clear();
-    
+
     const reportResult = generateReport();
     expect(reportResult._tag).toBe("Left");
-    
+
     if (reportResult._tag === "Left") {
       expect(reportResult.left.code).toBe("NO_PERFORMANCE_DATA");
       expect(reportResult.left.message).toBe("No performance data available");
@@ -271,22 +270,18 @@ describe("Performance Monitoring Edge Cases", () => {
 
   it("should handle metadata in measurements", () => {
     const metadata = { userId: "test-123", version: "4.0", env: "test" };
-    
-    const result = measure(
-      "metadata_test",
-      () => "test result",
-      metadata
-    );
-    
+
+    const result = measure("metadata_test", () => "test result", metadata);
+
     expect(result).toBe("test result");
-    
+
     const operations = getOperations();
     expect(operations).toContain("metadata_test");
   });
 
   it("should handle very large sample sets efficiently", () => {
     const monitor = createMonitor(10000); // Large sample size
-    
+
     // Add many samples
     for (let i = 0; i < 5000; i++) {
       monitor.recordMeasurement({
@@ -295,14 +290,14 @@ describe("Performance Monitoring Edge Cases", () => {
         timestamp: Date.now(),
       });
     }
-    
+
     const start = performance.now();
     const result = monitor.getStats("large_sample_test");
     const end = performance.now();
-    
+
     // Stats calculation should be fast even with large samples
     expect(end - start).toBeLessThan(10); // Less than 10ms
-    
+
     expect(result._tag).toBe("Right");
     if (result._tag === "Right") {
       expect(result.right.sampleCount).toBe(5000);
@@ -322,7 +317,7 @@ describe("Performance Monitoring Edge Cases", () => {
     expect(typeof QiPerformance.generateReport).toBe("function");
     expect(typeof QiPerformance.benchmark).toBe("function");
     expect(typeof QiPerformance.REQUIREMENTS).toBe("object");
-    
+
     // Verify requirements are correct
     expect(QiPerformance.REQUIREMENTS.RESULT_OPERATIONS).toBe(100);
     expect(QiPerformance.REQUIREMENTS.CONFIG_MERGE).toBe(1000);
@@ -334,7 +329,7 @@ describe("Performance Monitoring Edge Cases", () => {
 
   it("should handle operation requirement detection edge cases", () => {
     const monitor = createMonitor();
-    
+
     // Test all requirement detection patterns
     const testCases = [
       { op: "custom_result_test", requirement: PERFORMANCE_REQUIREMENTS.RESULT_OPERATIONS },
@@ -350,19 +345,19 @@ describe("Performance Monitoring Edge Cases", () => {
       { op: "database_insert", requirement: PERFORMANCE_REQUIREMENTS.DB_OVERHEAD },
       { op: "unknown_operation", requirement: null }, // Should be compliant
     ];
-    
+
     testCases.forEach(({ op, requirement }) => {
       const duration = requirement ? requirement + 50 : 100; // Exceed requirement
-      
+
       monitor.recordMeasurement({
         operation: op,
         duration,
         timestamp: Date.now(),
       });
-      
+
       const result = monitor.getStats(op);
       expect(result._tag).toBe("Right");
-      
+
       if (result._tag === "Right") {
         if (requirement === null) {
           expect(result.right.tierCompliant).toBe(true);

@@ -1,38 +1,38 @@
 /**
  * QiCore Component Integration Tests
- * 
+ *
  * Tests how the 6 implemented components work together:
  * - Error + Result integration
- * - Config + Logger integration  
+ * - Config + Logger integration
  * - Cache + Performance integration
  * - Full workflow integration tests
  */
 
+import { describe, expect, it } from "vitest";
 import { createMemoryCache } from "../../../src/qicore/core/cache.js";
 import { fromObject, merge } from "../../../src/qicore/core/config.js";
 import { createDefault as createDefaultLogger } from "../../../src/qicore/core/logger.js";
 import { measure, measureAsync } from "../../../src/qicore/core/performance.js";
 import {
+  type Result,
   createQiError,
   failure,
   flatMap,
   map,
   success,
   withContext,
-  type Result,
 } from "../../../src/qicore/index.js";
-import { describe, expect, it } from "vitest";
 
 describe("QiCore Component Integration", () => {
   describe("Error + Result Integration", () => {
     it("should chain errors with context through Result operations", () => {
       const originalError = createQiError("VALIDATION_ERROR", "Invalid input", "VALIDATION");
       const contextualError = withContext(originalError, { field: "email", value: "invalid" });
-      
+
       const result = failure(contextualError);
       const mapped = map((x: string) => x.toUpperCase())(result);
-      const chained = flatMap((x: string) => success(x + "!"))(mapped);
-      
+      const chained = flatMap((x: string) => success(`${x}!`))(mapped);
+
       expect(chained._tag).toBe("Left");
       if (chained._tag === "Left") {
         expect(chained.left.code).toBe("VALIDATION_ERROR");
@@ -95,15 +95,15 @@ describe("QiCore Component Integration", () => {
 
       expect(configResult._tag).toBe("Right");
       if (configResult._tag === "Right") {
-        const config = configResult.right;
-        
+        const _config = configResult.right;
+
         // Extract logger config and create logger
         const loggerResult = createDefaultLogger();
         expect(loggerResult._tag).toBe("Right");
-        
+
         if (loggerResult._tag === "Right") {
           const logger = loggerResult.right;
-          
+
           // Test logger configuration
           expect(logger.isLevelEnabled("error")).toBe(true);
           expect(logger.isLevelEnabled("warn")).toBe(true);
@@ -129,7 +129,7 @@ describe("QiCore Component Integration", () => {
 
       if (baseConfigResult._tag === "Right" && overrideConfigResult._tag === "Right") {
         const mergedConfig = merge(baseConfigResult.right, overrideConfigResult.right);
-        
+
         // Verify merged configuration
         expect(mergedConfig.data.get("logger")).toEqual({ format: "json", timestamp: true });
         expect(mergedConfig.data.get("app")).toEqual({ version: "1.0.0" });
@@ -146,20 +146,14 @@ describe("QiCore Component Integration", () => {
         const cache = cacheResult.right;
 
         // Measure cache set operation
-        const setValue = await measureAsync(
-          "cache_set_integration",
-          async () => {
-            await cache.set("integration-key", "integration-value");
-          }
-        );
+        const _setValue = await measureAsync("cache_set_integration", async () => {
+          await cache.set("integration-key", "integration-value");
+        });
 
         // Measure cache get operation
-        const getValue = await measureAsync(
-          "cache_get_integration", 
-          async () => {
-            return await cache.get("integration-key");
-          }
-        );
+        const getValue = await measureAsync("cache_get_integration", async () => {
+          return await cache.get("integration-key");
+        });
 
         expect(getValue._tag).toBe("Right");
         if (getValue._tag === "Right") {
@@ -167,12 +161,9 @@ describe("QiCore Component Integration", () => {
         }
 
         // Measure cache has operation
-        const hasValue = await measureAsync(
-          "cache_has_integration",
-          async () => {
-            return await cache.has("integration-key");
-          }
-        );
+        const hasValue = await measureAsync("cache_has_integration", async () => {
+          return await cache.has("integration-key");
+        });
 
         expect(hasValue._tag).toBe("Right");
         if (hasValue._tag === "Right") {
@@ -189,12 +180,9 @@ describe("QiCore Component Integration", () => {
         const cache = cacheResult.right;
 
         // Test cache miss with performance monitoring
-        const missResult = await measureAsync(
-          "cache_miss_integration",
-          async () => {
-            return await cache.get("nonexistent-key");
-          }
-        );
+        const missResult = await measureAsync("cache_miss_integration", async () => {
+          return await cache.get("nonexistent-key");
+        });
 
         expect(missResult._tag).toBe("Right");
         if (missResult._tag === "Right") {
@@ -225,24 +213,26 @@ describe("QiCore Component Integration", () => {
         cacheResult._tag === "Right" &&
         loggerResult._tag === "Right"
       ) {
-        const config = configResult.right;
+        const _config = configResult.right;
         const cache = cacheResult.right;
         const logger = loggerResult.right;
 
         // 2. Simulate user service operations
-        const getUserById = async (userId: string): Promise<Result<{ id: string; name: string }>> => {
+        const getUserById = async (
+          userId: string
+        ): Promise<Result<{ id: string; name: string }>> => {
           return measureAsync("get_user_by_id", async () => {
             // Check cache first
             const cachedResult = await cache.get(`user:${userId}`);
-            
+
             if (cachedResult._tag === "Right" && cachedResult.right !== null) {
               logger.info("Cache hit for user", { userId });
               return success(cachedResult.right as { id: string; name: string });
             }
 
             // Simulate database lookup
-            await new Promise(resolve => setTimeout(resolve, 10)); // Simulate DB delay
-            
+            await new Promise((resolve) => setTimeout(resolve, 10)); // Simulate DB delay
+
             if (userId === "404") {
               const error = createQiError("USER_NOT_FOUND", `User ${userId} not found`, "BUSINESS");
               logger.warn("User not found", { userId });
@@ -250,11 +240,11 @@ describe("QiCore Component Integration", () => {
             }
 
             const user = { id: userId, name: `User ${userId}` };
-            
+
             // Cache the result
             await cache.set(`user:${userId}`, user);
             logger.info("User loaded and cached", { userId });
-            
+
             return success(user);
           });
         };
@@ -292,7 +282,7 @@ describe("QiCore Component Integration", () => {
       });
 
       const prodConfigResult = fromObject({
-        environment: "production", 
+        environment: "production",
         logger: { level: "warn" },
         cache: { enabled: true, maxSize: 1000 },
       });
@@ -349,7 +339,7 @@ describe("QiCore Component Integration", () => {
             // Step 2: Check cache
             const cacheKey = `processed:${input}`;
             const cachedResult = await cache.get(cacheKey);
-            
+
             if (cachedResult._tag === "Right" && cachedResult.right !== null) {
               logger.info("Cache hit for processed data", { input });
               return success(cachedResult.right as string);
@@ -366,7 +356,7 @@ describe("QiCore Component Integration", () => {
             const processed = input.toUpperCase();
             await cache.set(cacheKey, processed);
             logger.info("Data processed and cached", { input, processed });
-            
+
             return success(processed);
           });
         };
@@ -438,7 +428,7 @@ describe("QiCore Component Integration", () => {
             if (val1._tag === "Right" && val2._tag === "Right" && val3._tag === "Right") {
               return success(`${val1.right}-${val2.right}-${val3.right}`);
             }
-            
+
             return failure(createQiError("CACHE_ERROR", "Failed to retrieve values", "SYSTEM"));
           });
 

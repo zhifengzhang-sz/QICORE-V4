@@ -157,6 +157,7 @@ class QiErrorImpl implements QiError {
    * Performance: O(chain_length) < 10μs typical
    */
   getRootCause(): QiError {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let current: QiError = this;
     while (current.cause !== null) {
       current = current.cause;
@@ -171,6 +172,7 @@ class QiErrorImpl implements QiError {
    */
   getErrorChain(): QiError[] {
     const chain: QiError[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let current: QiError | null = this;
 
     while (current !== null) {
@@ -568,7 +570,6 @@ const isValidSeverity = (value: unknown): value is ErrorSeverity =>
 /**
  * Complete QiError API following QiCore v4 mathematical specification
  */
-// eslint-disable-next-line no-redeclare
 export const QiError = {
   // Factory functions
   create,

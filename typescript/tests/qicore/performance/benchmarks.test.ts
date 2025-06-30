@@ -8,13 +8,11 @@
  * - Cache operations: < 50μs
  */
 
+import { describe, expect, it } from "vitest";
 import { createMemoryCache } from "../../../src/qicore/core/cache.js";
 import { empty as emptyConfig, fromObject, merge } from "../../../src/qicore/core/config.js";
 import { createDefault as createDefaultLogger } from "../../../src/qicore/core/logger.js";
-import {
-  PERFORMANCE_REQUIREMENTS,
-  benchmark,
-} from "../../../src/qicore/core/performance.js";
+import { PERFORMANCE_REQUIREMENTS, benchmark } from "../../../src/qicore/core/performance.js";
 import {
   createQiError,
   failure,
@@ -23,7 +21,6 @@ import {
   measure,
   success,
 } from "../../../src/qicore/index.js";
-import { describe, expect, it } from "vitest";
 
 describe("Performance Benchmarks - TypeScript Tier Compliance", () => {
   it("Result operations should be < 100μs", async () => {

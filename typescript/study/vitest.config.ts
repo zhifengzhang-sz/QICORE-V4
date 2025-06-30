@@ -1,7 +1,8 @@
-import path from 'node:path';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  plugins: [tsconfigPaths()],
   test: {
     // Enable globals for easier testing (like Jest)
     globals: true,
@@ -40,7 +41,7 @@ export default defineConfig({
     },
 
     // Reporter configuration for better output
-    reporter: ['verbose', 'json', 'html'],
+    reporters: ['verbose', 'json', 'html'],
     outputFile: {
       json: './test-results.json',
       html: './test-results.html',
@@ -71,16 +72,6 @@ export default defineConfig({
     },
   },
 
-  // Path resolution matching our tsconfig
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@/types': path.resolve(__dirname, './src/types'),
-      '@/config': path.resolve(__dirname, './src/config'),
-      '@/database': path.resolve(__dirname, './src/database'),
-      '@/generators': path.resolve(__dirname, './src/generators'),
-      '@/evaluation': path.resolve(__dirname, './src/evaluation'),
-      '@/analysis': path.resolve(__dirname, './src/analysis'),
-    },
-  },
+  // Let tsconfigPaths plugin handle all path resolution
+  // No manual aliases needed - plugin reads from tsconfig.json
 });

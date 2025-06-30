@@ -20,7 +20,6 @@ export const LogLevel = {
   FATAL: "error" as const, // Winston doesn't have fatal, maps to error
 } as const;
 
-// eslint-disable-next-line no-redeclare
 export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 /**
@@ -406,7 +405,6 @@ class LoggerImpl implements Logger {
       case "console":
         // Use console methods based on level for proper browser dev tools integration
         if (typeof console !== "undefined") {
-          // eslint-disable-next-line no-console
           console.log(message);
         }
         break;
@@ -508,7 +506,6 @@ export const validateConfig = (config: LoggerConfig): Result<LoggerConfig> => {
 // CONVENIENCE EXPORTS
 // ============================================================================
 
-// eslint-disable-next-line no-redeclare
 export const Logger = {
   // Factory functions
   create,

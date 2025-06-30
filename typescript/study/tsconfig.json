@@ -18,9 +18,18 @@
     "types": ["bun-types"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/types/*": ["./src/types/*"],
-      "@/utils/*": ["./src/utils/*"]
+      "@/*": ["./src/app/*"],
+      "@/generators/*": ["./src/app/generators/*"],
+      "@/evaluation/*": ["./src/app/evaluation/*"],
+      "@/types/*": ["./src/app/types/*"],
+      "@/database/*": ["./src/app/database/*"],
+      "@/analysis/*": ["./src/app/analysis/*"],
+      "@/config/*": ["./src/app/config/*"],
+      "@/runners/*": ["./src/app/runners/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/modules/*": ["./src/modules/*"],
+      "@/qicore/*": ["../src/qicore/*"],
+      "@/qiagent/*": ["../src/qiagent/*"]
     }
   },
   "include": [
@@ -28,7 +37,8 @@
     "tests/**/*",
     "vitest.config.ts",
     "run-study.ts",
-    "run-haskell-study.ts"
+    "run-haskell-study.ts",
+    "../src/**/*"
   ],
   "exclude": [
     "node_modules",
