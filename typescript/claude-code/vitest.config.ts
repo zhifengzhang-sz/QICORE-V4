@@ -26,6 +26,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@qi/core': resolve(__dirname, '../src/qicore'),
+      '@qi/agent': resolve(__dirname, '../src/qiagent'),
     },
   },
 });

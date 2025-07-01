@@ -39,7 +39,7 @@
     "run-study.ts",
     "run-haskell-study.ts",
     "../src/**/*"
-  ],
+, "../mathforge"  ],
   "exclude": [
     "node_modules",
     "dist",

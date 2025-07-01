@@ -3,10 +3,23 @@ import { z } from 'zod';
 
 // Use Zod for validation and type safety
 const GenerationOptionsSchema = z.object({
-  model: z.string().default("qwen2.5-coder:7b"),
+  model: z.string().default("qwen3:0.6b"),
   temperature: z.number().min(0).max(2).default(0.7),
   maxTokens: z.number().positive().default(4000),
   timeout: z.number().positive().default(30000),
+  keepAlive: z.union([z.string(), z.number()]).optional(),
+});
+
+const EmbeddingOptionsSchema = z.object({
+  model: z.string().default("nomic-embed-text"),
+  truncate: z.boolean().default(true),
+  keepAlive: z.union([z.string(), z.number()]).optional(),
+});
+
+const ModelOperationSchema = z.object({
+  model: z.string(),
+  insecure: z.boolean().default(false),
+  stream: z.boolean().default(true),
 });
 
 const HealthStatusSchema = z.object({
@@ -16,8 +29,28 @@ const HealthStatusSchema = z.object({
   timestamp: z.date(),
 });
 
+// Enhanced types
 type GenerationOptions = z.infer<typeof GenerationOptionsSchema>;
+type EmbeddingOptions = z.infer<typeof EmbeddingOptionsSchema>;
+type ModelOperation = z.infer<typeof ModelOperationSchema>;
 type HealthStatus = z.infer<typeof HealthStatusSchema>;
+
+// Message types for chat
+interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+  images?: string[];
+}
+
+// Tool types for function calling
+interface Tool {
+  type: 'function';
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, any>;
+  };
+}
 
 // Simple Result pattern using discriminated union
 type Result<T, E = Error> = 
@@ -30,10 +63,10 @@ const Result = {
   
   // Utility methods
   map: <T, U, E>(result: Result<T, E>, fn: (data: T) => U): Result<U, E> =>
-    result.success ? Result.success(fn(result.data)) : { success: false, error: result.error },
+    result.success ? Result.success(fn(result.data)) : result,
     
   flatMap: <T, U, E>(result: Result<T, E>, fn: (data: T) => Result<U, E>): Result<U, E> =>
-    result.success ? fn(result.data) : { success: false, error: result.error },
+    result.success ? fn(result.data) : result,
     
   isSuccess: <T, E>(result: Result<T, E>): result is { success: true; data: T } =>
     result.success,
@@ -120,7 +153,7 @@ export class OllamaOnlyAgent {
   
   private config = {
     baseUrl: "http://localhost:11434",
-    defaultModel: "qwen2.5-coder:7b",
+    defaultModel: "qwen3:0.6b",
     timeout: 30000,
   };
 
@@ -160,6 +193,7 @@ export class OllamaOnlyAgent {
         model: validatedOptions.model,
         prompt: prompt,
         stream: false,
+        keep_alive: validatedOptions.keepAlive,
         options: {
           temperature: validatedOptions.temperature,
           num_predict: validatedOptions.maxTokens,
@@ -196,7 +230,7 @@ export class OllamaOnlyAgent {
    * Chat completion for conversational interactions
    */
   async chatCompletion(
-    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+    messages: ChatMessage[],
     options?: Partial<GenerationOptions>
   ): Promise<Result<string>> {
     this.performance.start('chatCompletion');
@@ -216,6 +250,7 @@ export class OllamaOnlyAgent {
         model: validatedOptions.model,
         messages: messages,
         stream: false,
+        keep_alive: validatedOptions.keepAlive,
         options: {
           temperature: validatedOptions.temperature,
           num_predict: validatedOptions.maxTokens,
@@ -249,27 +284,33 @@ export class OllamaOnlyAgent {
   }
 
   /**
-   * Stream generation for long responses
+   * Chat with tools/function calling support
    */
-  async *streamGeneration(
-    prompt: string, 
+  async chatWithTools(
+    messages: ChatMessage[],
+    tools: Tool[],
     options?: Partial<GenerationOptions>
-  ): AsyncGenerator<string, void, unknown> {
+  ): Promise<Result<{ content: string; toolCalls?: any[] }>> {
+    this.performance.start('chatWithTools');
+    
     try {
       const validatedOptions = GenerationOptionsSchema.parse({
         model: this.config.defaultModel,
         ...options,
       });
 
-      this.logger.info("🌊 Starting streaming generation", {
-        promptLength: prompt.length,
+      this.logger.info("🔧 Starting chat with tools", {
+        messageCount: messages.length,
+        toolCount: tools.length,
         model: validatedOptions.model,
       });
 
-      const stream = await this.ollama.generate({
+      const response = await this.ollama.chat({
         model: validatedOptions.model,
-        prompt: prompt,
-        stream: true,
+        messages: messages,
+        tools: tools,
+        stream: false,
+        keep_alive: validatedOptions.keepAlive,
         options: {
           temperature: validatedOptions.temperature,
           num_predict: validatedOptions.maxTokens,
@@ -277,17 +318,252 @@ export class OllamaOnlyAgent {
         },
       });
 
-      for await (const chunk of stream) {
-        if (chunk.response) {
-          yield chunk.response;
-        }
-      }
+      const duration = this.performance.end('chatWithTools');
+      
+      this.logger.info("✅ Chat with tools successful", {
+        duration,
+        model: validatedOptions.model,
+        responseLength: response.message.content.length,
+        toolCalls: response.message.tool_calls?.length || 0,
+      });
 
-      this.logger.info("✅ Streaming generation completed");
+      return Result.success({
+        content: response.message.content.trim(),
+        toolCalls: response.message.tool_calls,
+      });
       
     } catch (error) {
-      this.logger.error("❌ Streaming generation failed", { error: String(error) });
-      throw error;
+      const duration = this.performance.end('chatWithTools');
+      this.logger.error("❌ Chat with tools failed", {
+        duration,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Chat with tools error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * Generate embeddings for text
+   */
+  async generateEmbeddings(
+    input: string | string[],
+    options?: Partial<EmbeddingOptions>
+  ): Promise<Result<number[][]>> {
+    this.performance.start('generateEmbeddings');
+    
+    try {
+      const validatedOptions = EmbeddingOptionsSchema.parse(options || {});
+
+      this.logger.info("🔢 Starting embedding generation", {
+        inputType: Array.isArray(input) ? 'array' : 'string',
+        inputLength: Array.isArray(input) ? input.length : 1,
+        model: validatedOptions.model,
+      });
+
+      const response = await this.ollama.embed({
+        model: validatedOptions.model,
+        input: input,
+        truncate: validatedOptions.truncate,
+        keep_alive: validatedOptions.keepAlive,
+      });
+
+      const duration = this.performance.end('generateEmbeddings');
+      
+      this.logger.info("✅ Embedding generation successful", {
+        duration,
+        model: validatedOptions.model,
+        embeddingCount: response.embeddings.length,
+        embeddingDimension: response.embeddings[0]?.length || 0,
+      });
+
+      return Result.success(response.embeddings);
+      
+    } catch (error) {
+      const duration = this.performance.end('generateEmbeddings');
+      this.logger.error("❌ Embedding generation failed", {
+        duration,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Embedding generation error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * List all available models
+   */
+  async listModels(): Promise<Result<any[]>> {
+    this.performance.start('listModels');
+    
+    try {
+      this.logger.info("📋 Listing available models");
+
+      const response = await this.ollama.list();
+
+      const duration = this.performance.end('listModels');
+      
+      this.logger.info("✅ Model listing successful", {
+        duration,
+        modelCount: response.models.length,
+      });
+
+      return Result.success(response.models);
+      
+    } catch (error) {
+      const duration = this.performance.end('listModels');
+      this.logger.error("❌ Model listing failed", {
+        duration,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Model listing error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * Show detailed information about a model
+   */
+  async showModel(modelName: string): Promise<Result<any>> {
+    this.performance.start('showModel');
+    
+    try {
+      this.logger.info("🔍 Showing model details", { model: modelName });
+
+      const response = await this.ollama.show({ model: modelName });
+
+      const duration = this.performance.end('showModel');
+      
+      this.logger.info("✅ Model details retrieved", {
+        duration,
+        model: modelName,
+        format: response.details?.format,
+        family: response.details?.family,
+        parameterSize: response.details?.parameter_size,
+      });
+
+      return Result.success(response);
+      
+    } catch (error) {
+      const duration = this.performance.end('showModel');
+      this.logger.error("❌ Model details failed", {
+        duration,
+        model: modelName,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Model details error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * List currently running models
+   */
+  async listRunningModels(): Promise<Result<any[]>> {
+    this.performance.start('listRunningModels');
+    
+    try {
+      this.logger.info("🏃 Listing running models");
+
+      const response = await this.ollama.ps();
+
+      const duration = this.performance.end('listRunningModels');
+      
+      this.logger.info("✅ Running models listed", {
+        duration,
+        runningCount: response.models.length,
+      });
+
+      return Result.success(response.models);
+      
+    } catch (error) {
+      const duration = this.performance.end('listRunningModels');
+      this.logger.error("❌ Running models listing failed", {
+        duration,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Running models error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * Delete a model
+   */
+  async deleteModel(modelName: string): Promise<Result<void>> {
+    this.performance.start('deleteModel');
+    
+    try {
+      this.logger.info("🗑️ Deleting model", { model: modelName });
+
+      await this.ollama.delete({ model: modelName });
+
+      const duration = this.performance.end('deleteModel');
+      
+      this.logger.info("✅ Model deleted successfully", {
+        duration,
+        model: modelName,
+      });
+
+      return Result.success(undefined);
+      
+    } catch (error) {
+      const duration = this.performance.end('deleteModel');
+      this.logger.error("❌ Model deletion failed", {
+        duration,
+        model: modelName,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Model deletion error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * Copy a model
+   */
+  async copyModel(source: string, destination: string): Promise<Result<void>> {
+    this.performance.start('copyModel');
+    
+    try {
+      this.logger.info("📋 Copying model", { source, destination });
+
+      await this.ollama.copy({ source, destination });
+
+      const duration = this.performance.end('copyModel');
+      
+      this.logger.info("✅ Model copied successfully", {
+        duration,
+        source,
+        destination,
+      });
+
+      return Result.success(undefined);
+      
+    } catch (error) {
+      const duration = this.performance.end('copyModel');
+      this.logger.error("❌ Model copying failed", {
+        duration,
+        source,
+        destination,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Model copying error: ${String(error)}`)
+      );
     }
   }
 
@@ -386,12 +662,107 @@ export class OllamaOnlyAgent {
   }
 
   /**
+   * Stream generation for long responses
+   */
+  async *streamGeneration(
+    prompt: string, 
+    options?: Partial<GenerationOptions>
+  ): AsyncGenerator<string, void, unknown> {
+    try {
+      const validatedOptions = GenerationOptionsSchema.parse({
+        model: this.config.defaultModel,
+        ...options,
+      });
+
+      this.logger.info("🌊 Starting streaming generation", {
+        promptLength: prompt.length,
+        model: validatedOptions.model,
+      });
+
+      const stream = await this.ollama.generate({
+        model: validatedOptions.model,
+        prompt: prompt,
+        stream: true,
+        keep_alive: validatedOptions.keepAlive,
+        options: {
+          temperature: validatedOptions.temperature,
+          num_predict: validatedOptions.maxTokens,
+          num_ctx: 8192,
+        },
+      });
+
+      for await (const chunk of stream) {
+        if (chunk.response) {
+          yield chunk.response;
+        }
+      }
+
+      this.logger.info("✅ Streaming generation completed");
+      
+    } catch (error) {
+      this.logger.error("❌ Streaming generation failed", { error: String(error) });
+      throw error;
+    }
+  }
+
+  /**
+   * Stream chat completion
+   */
+  async *streamChat(
+    messages: ChatMessage[],
+    options?: Partial<GenerationOptions>
+  ): AsyncGenerator<string, void, unknown> {
+    try {
+      const validatedOptions = GenerationOptionsSchema.parse({
+        model: this.config.defaultModel,
+        ...options,
+      });
+
+      this.logger.info("💬🌊 Starting streaming chat", {
+        messageCount: messages.length,
+        model: validatedOptions.model,
+      });
+
+      const stream = await this.ollama.chat({
+        model: validatedOptions.model,
+        messages: messages,
+        stream: true,
+        keep_alive: validatedOptions.keepAlive,
+        options: {
+          temperature: validatedOptions.temperature,
+          num_predict: validatedOptions.maxTokens,
+          num_ctx: 8192,
+        },
+      });
+
+      for await (const chunk of stream) {
+        if (chunk.message?.content) {
+          yield chunk.message.content;
+        }
+      }
+
+      this.logger.info("✅ Streaming chat completed");
+      
+    } catch (error) {
+      this.logger.error("❌ Streaming chat failed", { error: String(error) });
+      throw error;
+    }
+  }
+
+  /**
    * Get performance statistics
    */
   getPerformanceStats(): Record<string, { count: number; average: number; last: number } | null> {
     return {
       generateCode: this.performance.getStats('generateCode'),
       chatCompletion: this.performance.getStats('chatCompletion'),
+      chatWithTools: this.performance.getStats('chatWithTools'),
+      generateEmbeddings: this.performance.getStats('generateEmbeddings'),
+      listModels: this.performance.getStats('listModels'),
+      showModel: this.performance.getStats('showModel'),
+      listRunningModels: this.performance.getStats('listRunningModels'),
+      deleteModel: this.performance.getStats('deleteModel'),
+      copyModel: this.performance.getStats('copyModel'),
       healthCheck: this.performance.getStats('healthCheck'),
       pullModel: this.performance.getStats('pullModel'),
     };
@@ -399,11 +770,11 @@ export class OllamaOnlyAgent {
 }
 
 /**
- * Demo the Ollama-only agent
+ * Demo the enhanced Ollama-only agent
  */
 export async function demoOllamaOnlyAgent() {
-  console.log("🚀 Ollama-Only Agent Demo");
-  console.log("=========================\n");
+  console.log("🚀 Enhanced Ollama-Only Agent Demo");
+  console.log("===================================\n");
 
   const agent = new OllamaOnlyAgent();
 
@@ -423,22 +794,60 @@ export async function demoOllamaOnlyAgent() {
     console.log(`   ❌ Health check failed: ${healthResult.error.message}\n`);
   }
 
-  // Test code generation
-  const prompt = `Create a TypeScript Result<T> type with the following features:
-- Success and failure states using discriminated union
-- map and flatMap methods for chaining operations
-- Type-safe error handling
-- Comprehensive JSDoc documentation
-- Usage examples in comments
+  // List all models
+  console.log("📋 Step 2: List All Models");
+  const modelsResult = await agent.listModels();
+  if (Result.isSuccess(modelsResult)) {
+    console.log(`   ✅ Found ${modelsResult.data.length} models`);
+    modelsResult.data.slice(0, 3).forEach(model => {
+      console.log(`   • ${model.name} (${model.size} bytes, modified: ${model.modified_at})`);
+    });
+  } else {
+    console.log(`   ❌ Failed to list models: ${modelsResult.error.message}`);
+  }
 
-Make it production-ready and follow TypeScript best practices.`;
+  // Show model details
+  console.log("\n🔍 Step 3: Show Model Details");
+  const showResult = await agent.showModel("qwen3:0.6b");
+  if (Result.isSuccess(showResult)) {
+    const model = showResult.data;
+    console.log(`   ✅ Model: ${model.details?.format} format`);
+    console.log(`   Family: ${model.details?.family}`);
+    console.log(`   Parameters: ${model.details?.parameter_size}`);
+    console.log(`   Quantization: ${model.details?.quantization_level}`);
+  } else {
+    console.log(`   ❌ Failed to show model: ${showResult.error.message}`);
+  }
+
+  // Generate embeddings
+  console.log("\n🔢 Step 4: Generate Embeddings");
+  const embeddingResult = await agent.generateEmbeddings([
+    "The quick brown fox jumps over the lazy dog",
+    "Machine learning is transforming software development"
+  ], { model: "nomic-embed-text" });
   
-  console.log(`📝 Step 2: Code Generation Test`);
+  if (Result.isSuccess(embeddingResult)) {
+    console.log(`   ✅ Generated ${embeddingResult.data.length} embeddings`);
+    console.log(`   Dimension: ${embeddingResult.data[0]?.length || 0}`);
+    console.log(`   First embedding preview: [${embeddingResult.data[0]?.slice(0, 5).map(n => n.toFixed(3)).join(', ')}...]`);
+  } else {
+    console.log(`   ❌ Failed to generate embeddings: ${embeddingResult.error.message}`);
+  }
+
+  // Test code generation
+  const prompt = `Create a TypeScript function that:
+- Takes an array of numbers as input
+- Returns the median value
+- Handles edge cases (empty array, single element)
+- Includes comprehensive JSDoc documentation
+- Uses modern TypeScript features`;
+  
+  console.log(`\n📝 Step 5: Code Generation Test`);
   console.log(`   Request: "${prompt.substring(0, 80)}..."`);
   
   const codeResult = await agent.generateCode(prompt, {
     temperature: 0.1,
-    maxTokens: 3000,
+    maxTokens: 2000,
   });
   
   if (Result.isSuccess(codeResult)) {
@@ -448,25 +857,57 @@ Make it production-ready and follow TypeScript best practices.`;
     console.log(`   ❌ Failed: ${codeResult.error.message}`);
   }
 
-  // Test chat completion
-  console.log("\n💬 Step 3: Chat Completion Test");
-  const chatResult = await agent.chatCompletion([
-    { role: 'system', content: 'You are a helpful TypeScript expert.' },
-    { role: 'user', content: 'Explain the benefits of using Result<T> pattern over throwing exceptions.' }
-  ], {
+  // Test chat with tools
+  console.log("\n🔧 Step 6: Chat with Tools Test");
+  const tools: Tool[] = [
+    {
+      type: 'function',
+      function: {
+        name: 'calculate',
+        description: 'Perform basic mathematical calculations',
+        parameters: {
+          type: 'object',
+          properties: {
+            operation: { type: 'string', enum: ['add', 'subtract', 'multiply', 'divide'] },
+            a: { type: 'number' },
+            b: { type: 'number' }
+          },
+          required: ['operation', 'a', 'b']
+        }
+      }
+    }
+  ];
+
+  const toolsResult = await agent.chatWithTools([
+    { role: 'system', content: 'You are a helpful assistant that can perform calculations.' },
+    { role: 'user', content: 'What is 15 multiplied by 23?' }
+  ], tools, {
     temperature: 0.3,
     maxTokens: 1000,
   });
   
-  if (Result.isSuccess(chatResult)) {
-    console.log(`   ✅ Chat response: ${chatResult.data.length} characters`);
-    console.log(`   📄 Preview: ${chatResult.data.substring(0, 150)}...`);
+  if (Result.isSuccess(toolsResult)) {
+    console.log(`   ✅ Chat response: ${toolsResult.data.content.length} characters`);
+    console.log(`   🔧 Tool calls: ${toolsResult.data.toolCalls?.length || 0}`);
+    console.log(`   📄 Preview: ${toolsResult.data.content.substring(0, 150)}...`);
   } else {
-    console.log(`   ❌ Chat failed: ${chatResult.error.message}`);
+    console.log(`   ❌ Chat with tools failed: ${toolsResult.error.message}`);
+  }
+
+  // List running models
+  console.log("\n🏃 Step 7: List Running Models");
+  const runningResult = await agent.listRunningModels();
+  if (Result.isSuccess(runningResult)) {
+    console.log(`   ✅ Running models: ${runningResult.data.length}`);
+    runningResult.data.forEach(model => {
+      console.log(`   • ${model.name} (${model.size_vram} VRAM)`);
+    });
+  } else {
+    console.log(`   ❌ Failed to list running models: ${runningResult.error.message}`);
   }
 
   // Performance stats
-  console.log("\n📈 Step 4: Performance Statistics");
+  console.log("\n📈 Step 8: Performance Statistics");
   const stats = agent.getPerformanceStats();
   Object.entries(stats).forEach(([operation, stat]) => {
     if (stat) {
@@ -474,24 +915,27 @@ Make it production-ready and follow TypeScript best practices.`;
     }
   });
 
-  console.log("\n🎯 Summary:");
-  console.log("   ✅ Ollama SDK integration working perfectly");
+  console.log("\n🎯 Enhanced Agent Summary:");
+  console.log("   ✅ Complete Ollama SDK integration");
+  console.log("   ✅ All core API methods implemented");
+  console.log("   ✅ Streaming support for generation and chat");
+  console.log("   ✅ Embedding generation capability");
+  console.log("   ✅ Tool/function calling support");
+  console.log("   ✅ Model management (list, show, pull, delete, copy)");
+  console.log("   ✅ Running model monitoring");
+  console.log("   ✅ Comprehensive error handling with Result<T>");
+  console.log("   ✅ Performance tracking and metrics");
+  console.log("   ✅ Structured logging with metadata");
   console.log("   ✅ Zod validation for type safety");
-  console.log("   ✅ Result<T> pattern with utilities");
-  console.log("   ✅ Structured logging with timestamps");
-  console.log("   ✅ Performance tracking built-in");
-  console.log("   ✅ Streaming support available");
-  console.log("   ✅ Chat completion support");
-  console.log("   ✅ Model management (pull/list)");
-  console.log("   ✅ Comprehensive error handling");
 
-  console.log("\n🚀 Ready for MathForge Integration!");
-  console.log("   This agent uses only high-quality external packages:");
-  console.log("   • Ollama SDK - Official JavaScript client for Ollama");
-  console.log("   • Zod - Runtime validation and type safety");
-  console.log("   • Built-in Result<T> pattern for functional error handling");
-  console.log("   • No problematic dependencies");
-  console.log("   • Pure TypeScript with excellent Bun compatibility");
+  console.log("\n🚀 Ready for Advanced MathForge Research!");
+  console.log("   This enhanced agent provides a complete foundation for:");
+  console.log("   • Multi-modal mathematical reasoning");
+  console.log("   • Tool-assisted problem solving");
+  console.log("   • Embedding-based similarity search");
+  console.log("   • Streaming interactive experiences");
+  console.log("   • Production-ready error handling");
+  console.log("   • Performance monitoring and optimization");
 }
 
 // Run demo if this file is executed directly

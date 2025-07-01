@@ -1,0 +1,139 @@
+# QiCore v4.0 Base Component Formal Specification
+# Universal specification that generates formal verification code for all target languages
+
+metadata:
+  component: "BaseComponent"
+  mathematical_foundation: "Either Monad"
+  package_strategy: "fp-ts (TypeScript), returns (Python), Either (Haskell)"
+  laws_verified: ["monad.left_identity", "monad.right_identity", "monad.associativity"]
+
+operations:
+  success:
+    signature: "success<T>(data: T) → Result<T>"
+    semantics: "either_right_constructor"
+    description: "Wraps successful data in Result monad's success case"
+    mathematical_laws:
+      - "monad.left_identity"
+      - "monad.right_identity"
+    properties:
+      always_success:
+        formula: "∀ data. isSuccess(success(data)) = true"
+        description: "success constructor always produces success Result"
+      preserves_data:
+        formula: "∀ data. getData(success(data)) = data"
+        description: "success preserves the wrapped data exactly"
+      flatmap_identity:
+        formula: "∀ data, f. success(data).flatMap(f) = f(data)"
+        description: "Left identity law for monad"
+    examples:
+      - input: "42"
+        output: "Right(42)"
+        language_mapping:
+          typescript: "success(42) // Either.right(42)"
+          python: "success(42) # Right(42)"
+          haskell: "success 42 -- Right 42"
+      - input: "'hello'"
+        output: "Right('hello')"
+        language_mapping:
+          typescript: "success('hello') // Either.right('hello')"
+          python: "success('hello') # Right('hello')"
+          haskell: "success \"hello\" -- Right \"hello\""
+
+  failure:
+    signature: "failure<T>(error: QiError) → Result<T>"
+    semantics: "either_left_constructor"
+    description: "Wraps error in Result monad's failure case"
+    mathematical_laws:
+      - "monad.left_identity"
+      - "monad.right_identity"
+    properties:
+      always_failure:
+        formula: "∀ error. isFailure(failure(error)) = true"
+        description: "failure constructor always produces failure Result"
+      preserves_error:
+        formula: "∀ error. getError(failure(error)) = error"
+        description: "failure preserves the wrapped error exactly"
+      flatmap_failure:
+        formula: "∀ error, f. failure(error).flatMap(f) = failure(error)"
+        description: "flatMap on failure always returns the original failure"
+    examples:
+      - input: "qiError('NETWORK_ERROR', 'Connection failed')"
+        output: "Left(QiError{code: 'NETWORK_ERROR', message: 'Connection failed'})"
+        language_mapping:
+          typescript: "failure(qiError) // Either.left(qiError)"
+          python: "failure(qi_error) # Left(qi_error)"
+          haskell: "failure qiError -- Left qiError"
+
+  map:
+    signature: "map<T,U>(f: (T) → U, result: Result<T>) → Result<U>"
+    semantics: "functor_map"
+    description: "Transforms success data while preserving failure"
+    mathematical_laws:
+      - "functor.identity"
+      - "functor.composition"
+    properties:
+      preserves_success:
+        formula: "∀ data, f. isSuccess(result) → isSuccess(map(f, result))"
+        description: "map preserves success status"
+      preserves_failure:
+        formula: "∀ error, f. isFailure(result) → isFailure(map(f, result))"
+        description: "map preserves failure status"
+      transforms_data:
+        formula: "∀ data, f. isSuccess(result) → getData(map(f, result)) = f(getData(result))"
+        description: "map applies function to success data"
+
+  flatMap:
+    signature: "flatMap<T,U>(f: (T) → Result<U>, result: Result<T>) → Result<U>"
+    semantics: "monad_bind"
+    description: "Monadic bind operation for sequencing computations"
+    mathematical_laws:
+      - "monad.left_identity"
+      - "monad.right_identity"
+      - "monad.associativity"
+    properties:
+      left_identity:
+        formula: "∀ data, f. flatMap(f, success(data)) = f(data)"
+        description: "Left identity law: return a >>= f = f a"
+      right_identity:
+        formula: "∀ result. flatMap(success, result) = result"
+        description: "Right identity law: m >>= return = m"
+      associativity:
+        formula: "∀ result, f, g. flatMap(g, flatMap(f, result)) = flatMap(x → flatMap(g, f(x)), result)"
+        description: "Associativity law: (m >>= f) >>= g = m >>= (\\x -> f x >>= g)"
+
+type_definitions:
+  Result:
+    description: "Either monad representing success or failure"
+    type_parameters: ["T"]
+    constructors:
+      - "success<T>(data: T) → Result<T>"
+      - "failure<T>(error: QiError) → Result<T>"
+    
+  QiError:
+    description: "Structured error type with code, message, and category"
+    fields:
+      - "code: string"
+      - "message: string"
+      - "category: ErrorCategory"
+
+generation_targets:
+  typescript:
+    formal_verification_tools:
+      - "zod" # Schema validation
+      - "fast-check" # Property-based testing
+    package_dependencies:
+      - "fp-ts" # Either monad implementation
+    
+  python:
+    formal_verification_tools:
+      - "pydantic" # Schema validation
+      - "hypothesis" # Property-based testing
+    package_dependencies:
+      - "returns" # Either monad implementation
+    
+  haskell:
+    formal_verification_tools:
+      - "quickcheck" # Property-based testing
+      - "liquidhaskell" # Refinement types
+    package_dependencies:
+      - "base" # Built-in Either type 

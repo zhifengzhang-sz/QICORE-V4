@@ -1,8 +1,8 @@
 /**
- * Claude Code Request Manager
+ * Claude Code Request Manager with QiCore Integration
  *
- * A TypeScript library for managing Claude Code CLI and SDK interactions
- * with comprehensive instruction building, execution, and validation.
+ * A comprehensive TypeScript library for managing Claude Code CLI and SDK interactions
+ * with QiCore base components and QiAgent integration for production-grade AI workflows.
  */
 
 // Core managers
@@ -19,13 +19,35 @@ export {
 } from './instructions/builder';
 
 // Validation and testing
-export { ResultValidator } from './tests/validator';
+export { ResultValidator } from './types/tests/validator';
 
 // Types and schemas
 export * from './types';
 
 // Test utilities
 export { testHaskellGeneration, testMultipleScenarios } from './test-haskell-generation';
+
+// QiCore Integration - Selective exports to avoid conflicts
+export type { Result } from '@qi/core/base/result';
+export { success, failure, isSuccess, isFailure } from '@qi/core/base/result';
+export type { QiError } from '@qi/core/base/error';
+export { createQiError } from '@qi/core/base/error';
+export type { Logger } from '@qi/core/core/logger';
+export { createDefault as createLogger } from '@qi/core/core/logger';
+
+// QiAgent Integration - Main namespace
+export { QiAgent } from '@qi/agent/index';
+
+// Enhanced Managers with QiCore Integration
+export { QiCoreRequestManager, createQiCoreClaudeManager } from './managers/qicore-request-manager';
+
+// QiCore-specific Instruction Builders
+export {
+  createQiCoreImplementationInstruction,
+  createQiCoreIntegrationInstruction,
+  createQiAgentInstruction,
+  createQiSystemInstruction
+} from './instructions/qicore-instructions';
 
 /**
  * Quick start example:

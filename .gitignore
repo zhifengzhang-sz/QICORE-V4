@@ -46,7 +46,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+python/lib/
 lib64/
 parts/
 sdist/
@@ -90,9 +90,9 @@ python/*.egg-info/
 typescript/node_modules/
 typescript/dist/
 typescript/.tsbuildinfo
-typescript/bun.lock
 typescript/coverage/
 typescript/*.log
+# Note: typescript/bun.lock should be committed for reproducible builds
 
 # Package managers
 .uv-cache/

@@ -7,6 +7,47 @@
 > Date: June 30, 2025  
 > Status: Architecture Specification  
 
+## Contract → Architecture Traceability
+
+### Direct Mapping: NL Contracts to Mathematical Structures
+
+| NL Contract Specification | Mathematical Architecture | Rationale |
+|---------------------------|---------------------------|-----------|
+| **Base Component: `success(data) → Result containing data`** | Either Monad (Right constructor) | Success case maps to Right value in Either<Error, T> |
+| **Base Component: `failure(error) → Result containing error`** | Either Monad (Left constructor) | Failure case maps to Left value in Either<Error, T> |
+| **Base Component: `fromTryCatch(operation) → Result`** | Either Monad bind operation | Exception handling via monadic composition |
+| **Core Component: `merge(configs) → Result<ConfigData>`** | Configuration Monoid | Associative merge operation with identity element |
+| **Core Component: `get(config, key) → Result<value>`** | Functor map operation | Safe key access via Result<T> functor |
+| **Core Component: `log(level, message, context?) → void`** | Effect Interface | Side-effect isolation with structured context |
+| **Core Component: `set(cache, key, value, ttl) → Result<void>`** | State Monad | Cache state transformation with Result wrapper |
+
+### Architectural Requirements Derived from Contracts
+
+| Contract Requirement | Mathematical Constraint | Implementation Implication |
+|---------------------|------------------------|---------------------------|
+| **Base: "Zero Dependencies"** | Self-contained algebraic structures | Either/Error must not require external packages |
+| **Base: "Immutable after creation"** | Persistent data structures | Copy-on-write or functional update patterns |
+| **Base: "Thread-Safe"** | Pure functional operations | No mutable shared state |
+| **Core: "Independent Services"** | Composable but decoupled monads | Config/Logger/Cache have separate mathematical foundations |
+| **Core: "Consistent Error Handling"** | Unified Result<T> wrapper | All operations lift to same monad |
+
+### Contract Interface → Mathematical Operation Mapping
+
+From **Base Component Contract**:
+```
+success(data) → Result containing data          ⟹  Right: T → Either<E, T>
+failure(error) → Result containing error        ⟹  Left: E → Either<E, T>  
+map(result, f) → Result with transformed data   ⟹  fmap: (T → U) → Either<E, T> → Either<E, U>
+flatMap(result, f) → Result with chained op     ⟹  bind: Either<E, T> → (T → Either<E, U>) → Either<E, U>
+```
+
+From **Core Component Contract**:
+```
+merge(configs) → Result<ConfigData>             ⟹  mappend: Config → Config → Config (monoid)
+fromFile(path) → async Result<ConfigData>      ⟹  IO Either: FilePath → IO (Either Error Config)
+log(level, message, context?) → void           ⟹  Effect: LogLevel → Message → Context → IO ()
+```
+
 ## Process Overview
 
 ```mermaid
@@ -43,135 +84,151 @@ flowchart TD
 
 ## 1. Mathematical Architecture Diagrams
 
-### Base Component Mathematical Structure
+### Unified Component Mathematical Architecture
 
 ```mermaid
 graph TD
     subgraph MathFoundations["Mathematical Foundations"]
-        Either["Either Monad<br/>Left QiError | Right T"]
-        ErrorStruct["Error Structure<br/>Structured Error Type"]
-        MonadLaws["Monad Laws<br/>Left Identity, Right Identity, Associativity"]
+        Either["Either Monad<br/>Error Handling Laws"]
+        Monoid["Configuration Monoid<br/>Associative + Identity"]
+        Effect["Effect Interface<br/>I/O + Logging Laws"]
+        State["State Monad<br/>Cache Management"]
+        Function["Function Composition<br/>Performance Measurement"]
+        Functor["Functor Laws<br/>Data Transformations"]
     end
     
-    subgraph ImplMapping["Implementation Mapping"]
-        FpTs["fp-ts Either<br/>Package Usage"]
-        CustomError["Custom QiError<br/>Custom Implementation"]
-        PropertyTests["Property Tests<br/>Law Verification"]
+    subgraph Components["QiCore Components"]
+        Result["Result&lt;T&gt;<br/>Either QiError T"]
+        QiError["QiError<br/>Structured Error Type"]
+        Config["Configuration<br/>Merge Operations"]
+        Logger["Logger<br/>Structured Logging"]
+        Cache["Cache<br/>State + TTL + LRU"]
+        Performance["Performance<br/>Timing Functions"]
     end
     
-    Either --> FpTs
-    ErrorStruct --> CustomError
-    MonadLaws --> PropertyTests
+    subgraph PackageStrategy["Package Strategy"]
+        FpTs["fp-ts Either<br/>Battle-tested Monad"]
+        CustomMonoid["Custom Monoid<br/>No Package Available"]
+        Winston["Winston<br/>Production Logging"]
+        CustomCache["Custom + ioredis<br/>Hybrid Approach"]
+        CustomPerf["Custom Functions<br/>Lightweight Timing"]
+        CustomError["Custom QiError<br/>Domain-specific Context"]
+    end
+    
+    subgraph Laws["Mathematical Laws"]
+        MonadLaws["Left Identity<br/>Right Identity<br/>Associativity"]
+        MonoidLaws["Associativity<br/>Identity Element"]
+        EffectLaws["Isolation<br/>Composition<br/>Error Handling"]
+        FunctorLaws["Identity<br/>Composition"]
+    end
+    
+    Either --> Result
+    Either --> QiError
+    Monoid --> Config
+    Effect --> Logger
+    State --> Cache
+    Function --> Performance
+    
+    Result --> FpTs
+    QiError --> CustomError
+    Config --> CustomMonoid
+    Logger --> Winston
+    Cache --> CustomCache
+    Performance --> CustomPerf
+    
+    Either -.-> MonadLaws
+    Monoid -.-> MonoidLaws
+    Effect -.-> EffectLaws
+    Functor -.-> FunctorLaws
     
     classDef math fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef impl fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    
-    class Either,ErrorStruct,MonadLaws math
-    class FpTs,CustomError,PropertyTests impl
-```
-
-### Core Component Mathematical Structure
-
-```mermaid
-graph TD
-    subgraph MathStructures["Mathematical Structures"]
-        Monoid["Configuration Monoid<br/>Associative + Identity"]
-        Effect["Effect Interface<br/>Simple Effects Not Free Monads"]
-        State["State Monad<br/>Cache State Transformations"]
-    end
-    
-    subgraph PackageDecisions["Package Decisions"]
-        MonoidImpl["Custom Monoid<br/>No Package Available"]
-        EffectImpl["Winston Package<br/>Production Proven"]
-        StateImpl["Custom + ioredis<br/>Hybrid Approach"]
-    end
-    
-    subgraph ImplBridge["Implementation Bridge"]
-        MonoidBridge["Merge Functions<br/>Right-biased Semantics"]
-        EffectBridge["Effect Wrapper<br/>Result Integration"]
-        StateBridge["State Interface<br/>LRU + TTL Policies"]
-    end
-    
-    Monoid --> MonoidImpl
-    Effect --> EffectImpl
-    State --> StateImpl
-    
-    MonoidImpl --> MonoidBridge
-    EffectImpl --> EffectBridge
-    StateImpl --> StateBridge
-    
-    classDef math fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef component fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     classDef package fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef bridge fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef laws fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     
-    class Monoid,Effect,State math
-    class MonoidImpl,EffectImpl,StateImpl package
-    class MonoidBridge,EffectBridge,StateBridge bridge
+    class Either,Monoid,Effect,State,Function,Functor math
+    class Result,QiError,Config,Logger,Cache,Performance component
+    class FpTs,CustomMonoid,Winston,CustomCache,CustomPerf,CustomError package
+    class MonadLaws,MonoidLaws,EffectLaws,FunctorLaws laws
 ```
 
-## 2. Package Decision Trees
+### Component Mathematical Specifications
 
-### Decision Tree: Error Handling
+| Component | Mathematical Foundation | Key Laws | Custom vs Package | Rationale |
+|-----------|------------------------|-----------|-------------------|-----------|
+| **Result&lt;T&gt;** | Either Monad | Left/Right Identity, Associativity | fp-ts Either | Battle-tested monad implementation |
+| **QiError** | Product Type + Context | Structure Preservation | Custom Implementation | Domain-specific error context needed |
+| **Configuration** | Monoid | Associativity, Identity Element | Custom Implementation | No packages provide proper monoid laws |
+| **Logger** | Effect Interface | Isolation, Composition | Winston + Custom Wrapper | Production-proven with Result integration |
+| **Cache** | State Monad + Policies | State Transformation Laws | Custom + ioredis | LRU + TTL policies require custom logic |
+| **Performance** | Function Composition | Identity, Associativity | Custom Implementation | Lightweight timing without dependencies |
+
+## 2. Unified Component Implementation Decision Tree
+
+### Package vs Custom Decision Framework
 
 ```mermaid
 flowchart TD
-    Start["Error Handling Needed"]
+    Start["Component Implementation Needed"]
     
-    Start --> Q1{"Monad Laws Required?"}
-    Q1 -->|Yes| Q2{"Package Available?"}
-    Q1 -->|No| Simple["Simple Error Classes"]
+    Start --> Q1{"Mathematical Foundation<br/>Has Existing Packages?"}
+    Q1 -->|No| Custom["Custom Implementation<br/>Required"]
+    Q1 -->|Yes| Q2{"Packages Implement<br/>Required Mathematical Laws?"}
     
-    Q2 -->|Yes| Q3{"TypeScript Optimized?"}
-    Q2 -->|No| Custom["Custom Monad Implementation"]
+    Q2 -->|No| Custom
+    Q2 -->|Yes| Q3{"Production Battle-tested<br/>in Target Language?"}
     
-    Q3 -->|Yes| Q4{"Production Proven?"}
-    Q3 -->|No| Evaluate["Evaluate Other Packages"]
+    Q3 -->|No| Q4{"Mathematical Correctness<br/>vs Production Risk?"}
+    Q3 -->|Yes| Q5{"Integration Compatibility<br/>with Other Components?"}
     
-    Q4 -->|Yes| Package["Use fp-ts Either"]
-    Q4 -->|No| Custom
+    Q4 -->|Correctness Priority| Package["Use Package<br/>+ Extensive Testing"]
+    Q4 -->|Production Priority| Custom
     
-    Package --> Context["Add Custom Error Context"]
-    Custom --> Verify["Verify Monad Laws"]
+    Q5 -->|Compatible| Q6{"Performance Meets<br/>Language Tier Requirements?"}
+    Q5 -->|Incompatible| Hybrid["Hybrid Implementation<br/>Package + Custom Wrapper"]
     
-    classDef decision fill:#fff3e0,stroke:#ff8f00,stroke-width:2px
-    classDef result fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    classDef custom fill:#ffebee,stroke:#f44336,stroke-width:2px
+    Q6 -->|Yes| Package
+    Q6 -->|No| Q7{"Performance Critical<br/>vs Development Speed?"}
     
-    class Start,Q1,Q2,Q3,Q4 decision
-    class Package,Context result
-    class Custom,Verify custom
-```
-
-### Decision Tree: Configuration Management
-
-```mermaid
-flowchart TD
-    Start["Configuration Management Needed"]
+    Q7 -->|Critical| Custom
+    Q7 -->|Speed Priority| Package
     
-    Start --> Q1{"Monoid Laws Required?"}
-    Q1 -->|Yes| Q2{"Package with Monoid Laws?"}
-    Q1 -->|No| Standard["Standard Config Library"]
-    
-    Q2 -->|Yes| Package["Use Package"]
-    Q2 -->|No| Q3{"Right-biased Merge Needed?"}
-    
-    Q3 -->|Yes| Custom["Custom Monoid Implementation"]
-    Q3 -->|No| Q4{"JSON/YAML Parsing Only?"}
-    
-    Q4 -->|Yes| Parser["Use Standard Parsers"]
-    Q4 -->|No| Custom
-    
-    Custom --> Verify["Verify Monoid Laws<br/>Associativity + Identity"]
-    Package --> Wrap["Wrap in Result Interface"]
+    Custom --> Verify["Verify Mathematical Laws<br/>with Property Tests"]
+    Package --> Wrap["Wrap in Result Interface<br/>for Consistency"]
+    Hybrid --> Integrate["Custom Integration Layer<br/>Mathematical Law Preservation"]
     
     classDef decision fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
     classDef result fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
     classDef custom fill:#fff3e0,stroke:#ff8f00,stroke-width:2px
+    classDef hybrid fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     
-    class Start,Q1,Q2,Q3,Q4 decision
-    class Package,Wrap,Parser result
+    class Start,Q1,Q2,Q3,Q4,Q5,Q6,Q7 decision
+    class Package,Wrap result
     class Custom,Verify custom
+    class Hybrid,Integrate hybrid
 ```
+
+### Universal Decision Criteria
+
+| Criterion | Package Favors | Custom Favors | Hybrid Solution |
+|-----------|----------------|---------------|-----------------|
+| **Mathematical Laws** | Package implements correctly | No suitable packages | Package partial + custom laws |
+| **Production Readiness** | Battle-tested in production | Untested/experimental packages | Proven package + custom integration |
+| **Performance Requirements** | Meets language tier targets | Package too slow/heavy | Package core + custom optimization |
+| **Integration Complexity** | Clean API compatibility | Poor integration with Result<T> | Package + custom wrapper |
+| **Maintenance Overhead** | Community maintained | Full control needed | Selective custom components |
+| **Development Speed** | Immediate availability | Long development cycle | Fastest viable hybrid |
+
+### Application to All Components
+
+Applied to all QiCore components:
+
+- **Result<T>**: Either monad → fp-ts (package) due to battle-tested laws
+- **QiError**: Structured errors → Custom due to domain-specific context needs  
+- **Configuration**: Monoid → Custom due to no packages with proper monoid laws
+- **Logger**: Effect interface → Hybrid (Winston + custom Result wrapper)
+- **Cache**: State monad → Hybrid (ioredis + custom LRU/TTL logic)
+- **Performance**: Function composition → Custom due to lightweight requirements
 
 ## 3. Component Dependency Graphs
 
@@ -257,7 +314,7 @@ graph TD
 
 ## 5. Implementation Stage Integration
 
-### Stage 3: Language-Agnostic Templates
+### Stage 3: Templates
 
 **Input from Architecture**:
 - Component dependency graphs → Template structure
@@ -293,7 +350,47 @@ graph TD
 - Mathematical law verification
 - Cross-language behavioral consistency
 
-## 6. Architecture Validation
+## 6. Architecture → Implementation Traceability
+
+### Forward Linkage: Architecture to Implementation
+
+This mathematical architecture is implemented in language-specific guides:
+
+- **TypeScript Implementation**: [typescript/docs/qi/core/impl/impl.md](../../../typescript/docs/qi/core/impl/impl.md)
+  - **Maps**: Mathematical structures → TypeScript patterns + packages
+  - **Implements**: Either Monad → fp-ts, Configuration Monoid → Custom implementation
+  - **Verifies**: Monad laws → Property tests, Performance → TypeScript tier compliance
+
+- **Python Implementation**: [python/docs/qi/core/impl/impl.md](../../../python/docs/qi/core/impl/impl.md) *(planned)*
+  - **Maps**: Mathematical structures → Python patterns + packages  
+  - **Implements**: Either Monad → returns library, Configuration Monoid → Custom dataclasses
+  - **Verifies**: Monad laws → hypothesis tests, Performance → Python tier compliance
+
+- **Haskell Implementation**: [haskell/docs/qi/core/impl/impl.md](../../../haskell/docs/qi/core/impl/impl.md) *(planned)*
+  - **Maps**: Mathematical structures → Native Haskell types
+  - **Implements**: Either Monad → Native Either, Configuration Monoid → Native monoid instance
+  - **Verifies**: Monad laws → Compiler verification, Performance → Haskell tier compliance
+
+### Architecture Decision Impact on Implementation
+
+| Architectural Decision | Implementation Impact | Verification Requirement |
+|------------------------|----------------------|-------------------------|
+| **Either Monad for Result<T>** | Language-specific monad implementation | Property tests for monad laws |
+| **Configuration Monoid** | Custom implementation across all languages | Property tests for monoid laws |
+| **Effect Interface for Logger** | Wrapper pattern preserving mathematical properties | Integration tests + law verification |
+| **State Monad for Cache** | Cache abstraction with Result<T> integration | State transformation law tests |
+| **Package-First Strategy** | Language-specific package research and selection | Performance + correctness benchmarks |
+
+### Implementation Quality Gates
+
+From this architecture, each language implementation must satisfy:
+
+1. **Contract Compliance**: All NL contract operations implemented
+2. **Mathematical Correctness**: All architectural laws verified
+3. **Performance Targets**: Language tier requirements met
+4. **Integration Consistency**: Cross-language behavioral equivalence
+
+## 7. Architecture Validation
 
 ### Mathematical Correctness Validation
 

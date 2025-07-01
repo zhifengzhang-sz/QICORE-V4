@@ -37,7 +37,11 @@
     // Path mapping
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@qi/core": ["../src/qicore"],
+      "@qi/core/*": ["../src/qicore/*"],
+      "@qi/agent": ["../src/qiagent"],
+      "@qi/agent/*": ["../src/qiagent/*"]
     },
     
     // Types for testing

@@ -1,0 +1,26 @@
+{
+  "name": "qicore-v4-experiment-ex13",
+  "version": "4.0.0",
+  "type": "module",
+  "description": "QiCore v4.0 TypeScript Implementation - Claude Code Agent Experiment",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.9",
+    "winston": "^3.14.2",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "@biomejs/biome": "^1.9.3",
+    "typescript": "^5.5.2",
+    "vitest": "^2.0.1",
+    "@vitest/coverage-v8": "^2.0.1"
+  }
+} 

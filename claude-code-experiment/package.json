@@ -1,0 +1,27 @@
+{
+  "name": "qicore-v4-experiment",
+  "version": "1.0.0",
+  "description": "QiCore v4.0 Claude Code Implementation Experiment",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:performance": "vitest --run tests/**/*.performance.test.ts",
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "dev": "vitest --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.2",
+    "@vitest/coverage-v8": "^1.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "@biomejs/biome": "^2.0.6",
+    "eslint": "^9.30.0",
+    "fp-ts": "^2.16.9",
+    "ioredis": "^5.6.1",
+    "winston": "^3.14.2"
+  }
+}
