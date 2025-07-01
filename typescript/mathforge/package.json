@@ -1,0 +1,70 @@
+{
+	"name": "mathforge",
+	"version": "1.0.0",
+	"description": "Universal Mathematical Code Generator with Formal Verification",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "bun run build:compile",
+		"build:compile": "bun tsc",
+		"build:watch": "bun tsc --watch",
+		"dev": "bun run --watch index.ts",
+		"test": "bun test",
+		"test:watch": "bun test --watch",
+		"test:coverage": "bun test --coverage",
+		"test:ui": "bun test --ui",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"lint:staged": "biome check --error-on-warnings --no-errors-on-unmatched --staged .",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"typecheck": "bun tsc --noEmit",
+		"clean": "rm -rf dist/ .turbo/",
+		"demo": "bun run demo-agent.ts",
+		"demo:basic": "bun run demo-basic.ts",
+		"demo:lmstudio": "bun run agent/demo-lmstudio.ts",
+		"demo:real": "bun run agent/real-implementation-demo.ts",
+		"demo:phase1": "bun run agent/phase1-simplified.ts",
+		"demo:enterprise": "bun run agent/working-enterprise-demo.ts",
+		"demo:qicore": "bun run agent/qicore-integration-demo.ts",
+		"agent": "bun run agent/index.ts",
+		"prepare": "bun run build",
+		"precommit": "bun run lint:staged && bun run typecheck",
+		"ci": "bun run typecheck && bun run lint && bun run test",
+		"ci:coverage": "bun run typecheck && bun run lint && bun run test:coverage"
+	},
+	"keywords": [
+		"mathematics",
+		"code-generation",
+		"formal-verification",
+		"category-theory",
+		"functional-programming",
+		"typescript",
+		"python",
+		"haskell"
+	],
+	"author": "MathForge Contributors",
+	"license": "MIT",
+	"engines": {
+		"bun": ">=1.2.0"
+	},
+	"dependencies": {
+		"@lmstudio/sdk": "^1.2.1",
+		"@types/node": "^22.10.2",
+		"fast-check": "^3.22.0",
+		"fp-ts": "^2.16.9",
+		"ollama": "^0.5.16",
+		"qiagent": "file:../lib/src/qiagent",
+		"qicore": "file:../lib/src/qicore",
+		"qiprompt": "file:../lib/src/qiprompt",
+		"typescript": "^5.8.3",
+		"vitest": "^3.2.4",
+		"yaml": "^2.6.1",
+		"zod": "^3.25.67"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.0.6",
+		"@types/bun": "^1.1.15"
+	}
+}
