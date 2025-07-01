@@ -1,0 +1,78 @@
+{
+  "name": "qicore",
+  "version": "4.0.0",
+  "description": "QiCore v4.0 TypeScript Implementation - Production Grade",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "main": "qicore/index.js",
+  "types": "qicore/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./qicore/index.js",
+      "types": "./qicore/index.d.ts"
+    },
+    "./base": {
+      "import": "./qicore/base/index.js",
+      "types": "./qicore/base/index.d.ts"
+    },
+    "./core": {
+      "import": "./qicore/core/index.js",
+      "types": "./qicore/core/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src",
+    "benchmark": "node --loader ts-node/esm scripts/benchmark.ts"
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.2",
+    "zod": "^3.22.4",
+    "winston": "^3.11.0",
+    "js-yaml": "^4.1.0",
+    "dotenv": "^16.3.1",
+    "@iarna/toml": "^2.2.5",
+    "chokidar": "^3.5.3",
+    "node-cache": "^5.1.2",
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "fast-check": "^3.15.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  },
+  "keywords": [
+    "qicore",
+    "functional-programming",
+    "typescript",
+    "either",
+    "result",
+    "error-handling",
+    "configuration",
+    "logging",
+    "caching",
+    "performance"
+  ],
+  "author": "QiCore Development Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qicore/qicore-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/qicore/qicore-typescript/issues"
+  },
+  "homepage": "https://github.com/qicore/qicore-typescript#readme"
+}
