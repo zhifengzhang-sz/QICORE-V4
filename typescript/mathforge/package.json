@@ -51,6 +51,7 @@
 	},
 	"dependencies": {
 		"@lmstudio/sdk": "^1.2.1",
+		"@modelcontextprotocol/sdk": "^1.13.2",
 		"@types/node": "^22.10.2",
 		"fast-check": "^3.22.0",
 		"fp-ts": "^2.16.9",

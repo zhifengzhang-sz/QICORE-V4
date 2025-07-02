@@ -1,0 +1,53 @@
+[
+	{
+		"component": "QiError",
+		"timestamp": "2025-07-02T01:35:23.181Z",
+		"algebraicStructures": ["Semi-group", "Functor"],
+		"completenessScore": 77,
+		"inevitablePatterns": ["composition", "identity"],
+		"gaps": ["Missing semi-group implementation", "Incomplete error handling"],
+		"claudeAnalysis": "Detailed analysis of QiError showing Semi-group properties...",
+		"ollamaVerification": "Mathematical verification confirms QiError satisfies Semi-group laws...",
+		"lawVerification": {
+			"structure": "Semi-group",
+			"laws": ["associativity", "identity"],
+			"satisfied": true,
+			"violations": [],
+			"verificationText": "Verification of Semi-group laws for QiError..."
+		}
+	},
+	{
+		"component": "Result<T>",
+		"timestamp": "2025-07-02T01:35:24.235Z",
+		"algebraicStructures": ["Monad", "Functor"],
+		"completenessScore": 94,
+		"inevitablePatterns": ["composition", "identity"],
+		"gaps": ["Missing monad implementation", "Incomplete error handling"],
+		"claudeAnalysis": "Detailed analysis of Result<T> showing Monad properties...",
+		"ollamaVerification": "Mathematical verification confirms Result<T> satisfies Monad laws...",
+		"lawVerification": {
+			"structure": "Monad",
+			"laws": ["associativity", "identity"],
+			"satisfied": false,
+			"violations": [],
+			"verificationText": "Verification of Monad laws for Result<T>..."
+		}
+	},
+	{
+		"component": "Configuration",
+		"timestamp": "2025-07-02T01:35:25.288Z",
+		"algebraicStructures": ["Monoid", "Functor"],
+		"completenessScore": 73,
+		"inevitablePatterns": ["composition", "identity"],
+		"gaps": ["Missing monoid implementation", "Incomplete error handling"],
+		"claudeAnalysis": "Detailed analysis of Configuration showing Monoid properties...",
+		"ollamaVerification": "Mathematical verification confirms Configuration satisfies Monoid laws...",
+		"lawVerification": {
+			"structure": "Monoid",
+			"laws": ["associativity", "identity"],
+			"satisfied": true,
+			"violations": ["Identity law not satisfied"],
+			"verificationText": "Verification of Monoid laws for Configuration..."
+		}
+	}
+]

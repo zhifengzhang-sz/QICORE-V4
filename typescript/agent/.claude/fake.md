@@ -1,0 +1,1 @@
+check and identify fake and stub coding, they are not allowed in this project.

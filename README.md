@@ -202,7 +202,7 @@ sequenceDiagram
 ## Project Structure
 
 ```
-├── docs/                        # Technical documentation
+├── docs/                        # Technical documentation & guides
 │   ├── sources/                 # Source files that drive the design process
 │   │   ├── agent/              # AI workflow orchestration
 │   │   │   ├── build/         # YAML workflow definitions
@@ -214,14 +214,44 @@ sequenceDiagram
 │   │   │   └── impl.prompt.md    # Stage 3: Design → Code
 │   │   ├── math/              # Mathematical study guides
 │   │   └── nl/                # Natural language contracts (input)
-│   └── build/                   # Generated outputs from design process
-│       ├── design/            # Stage 2 output: Design patterns
-│       ├── impl/              # Stage 3 output: Implementation templates
-│       ├── objective/         # Stage 1 output: Mathematical specs
-│       │   └── formal/       # Formal mathematical specifications
-│       └── verification/      # Verification results
+│   ├── build/                   # Generated outputs from design process
+│   │   ├── design/            # Stage 2 output: Design patterns
+│   │   ├── impl/              # Stage 3 output: Implementation templates
+│   │   ├── objective/         # Stage 1 output: Mathematical specs
+│   │   │   └── formal/       # Formal mathematical specifications
+│   │   └── verification/      # Verification results
+│   ├── guides/                  # User guides and documentation
+│   │   ├── architecture.md    # Complete technical architecture
+│   │   ├── getting-started.md # Development setup guide
+│   │   └── claude-code-sdk-guide.md # Claude Code integration guide
+│   ├── examples/               # Example documentation
+│   │   └── README.md          # Demo and example explanations
+│   └── api/                    # API reference documentation
+├── typescript/                 # TypeScript implementation & demos
+│   └── agent/                 # QiCore agent framework
+│       ├── lib/               # Core library packages
+│       │   └── src/
+│       │       ├── qiagent/   # AI agent orchestration (@qi/agent)
+│       │       ├── qimcp/     # Model Context Protocol (@qi/mcp)
+│       │       ├── qiprompt/  # LLM interaction patterns (@qi/prompt)
+│       │       └── qicore/    # Core functional patterns (@qi/core)
+│       └── app/               # Application examples and demos
+│           └── src/
+│               └── examples/  # Comprehensive demo collection
+│                   ├── claude-code-quickstart.ts     # 5-minute intro
+│                   ├── claude-code-agent-demo.ts     # Full features
+│                   ├── claude-code-tools-demo.ts     # Development tools
+│                   ├── claude-code-production-demo.ts # Production patterns
+│                   ├── ai-orchestra-demo.ts          # Multi-agent workflows
+│                   ├── comprehensive-ollama-demo.ts  # Local model integration
+│                   └── ...                           # Additional examples
+├── python/                     # Python implementation
+│   └── src/qicore/            # Python QiCore library
+├── haskell/                    # Haskell reference implementation
+│   └── QiCore/                # Haskell QiCore modules
 ├── papers/                     # Academic papers
 ├── essays/                     # Philosophical essays
+├── PROJECT_OVERVIEW.md         # Comprehensive project status
 ├── README.md                   # This file
 ├── check-list.md              # Framework verification checklist
 ├── LICENSE                     # MIT License
@@ -266,10 +296,40 @@ graph LR
 
 ### Prerequisites
 - Understanding of basic software patterns (error handling, configuration, etc.)
+- Node.js 18+ or Bun runtime for TypeScript examples
 - AI assistant or automation tool that can process the workflow files
 - No category theory knowledge required!
 
-### Quick Start
+### Quick Start Options
+
+#### 🤖 **Try Claude Code SDK Integration (5 minutes)**
+```bash
+# Install dependencies
+cd typescript/agent
+bun install
+
+# Set your Claude API key
+export ANTHROPIC_API_KEY="your-api-key-here"
+
+# Run the quickstart demo
+bun app/src/examples/claude-code-quickstart.ts
+
+# Explore comprehensive demos
+bun app/src/examples/claude-code-agent-demo.ts
+bun app/src/examples/claude-code-tools-demo.ts
+bun app/src/examples/claude-code-production-demo.ts
+```
+
+#### 🎭 **Explore Multi-Agent Workflows**
+```bash
+# Run AI Orchestra workflows
+bun app/src/examples/ai-orchestra-demo.ts
+
+# Try local model integration
+bun app/src/examples/comprehensive-ollama-demo.ts
+```
+
+#### 📚 **Study the Theoretical Framework**
 
 1. **Verify Setup** - Use our comprehensive checklist:
    ```bash
@@ -306,6 +366,13 @@ graph LR
    # Input: docs/build/design/qi.v4.design.analysis.md
    # Output: docs/build/impl/qi.v4.[LANG].template.md + docs/build/impl/qi.v4.[LANG].impl.md
    ```
+
+### 📖 **Documentation Guide**
+
+- **[Claude Code SDK Guide](docs/guides/claude-code-sdk-guide.md)** - Complete integration tutorial
+- **[Architecture Guide](docs/guides/architecture.md)** - Technical deep dive
+- **[Examples Collection](docs/examples/README.md)** - All demos explained
+- **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - Current project status and capabilities
 
 ### Automated Workflows (Optional)
 The YAML files in `docs/sources/agent/build/` can automate the process:

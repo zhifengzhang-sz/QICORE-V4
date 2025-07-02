@@ -86,6 +86,11 @@ dev-dependencies = [
     "pre-commit>=4.0.0",
 ]
 
+[tool.uv.workspace]
+members = [
+    "mathforge-agent",
+]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true

@@ -30,11 +30,7 @@ import {
 	type ResultType as Result,
 	success,
 } from "@qi/core/base";
-import type {
-	CoreMessage,
-	LanguageModel,
-	LanguageModelV1CallOptions,
-} from "ai";
+import type { CoreMessage, LanguageModel, LanguageModelV1CallOptions } from "ai";
 
 // ============================================================================
 // Core Types and Mathematical Structures

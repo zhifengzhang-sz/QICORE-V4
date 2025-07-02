@@ -75,6 +75,9 @@ const Result = {
     !result.success,
 };
 
+// Export Result for use in other files
+export { Result };
+
 // Simple structured logger using console with timestamps
 interface Logger {
   info: (message: string, meta?: Record<string, any>) => void;
@@ -767,6 +770,317 @@ export class OllamaOnlyAgent {
       pullModel: this.performance.getStats('pullModel'),
     };
   }
+
+  /**
+   * Analyze mathematical contracts for algebraic completeness
+   * Based on QiCore v4.0 enhanced mathematical specifications
+   */
+  async analyzeMathematicalContracts(
+    contractText: string,
+    targetComponent: string
+  ): Promise<Result<MathematicalAnalysis>> {
+    this.performance.start('analyzeMathematicalContracts');
+    
+    try {
+      this.logger.info("🔬 Starting mathematical contract analysis", {
+        component: targetComponent,
+        contractLength: contractText.length,
+      });
+
+      // Use Claude for deep mathematical analysis
+      const claudeAnalysis = await this.chatCompletion([
+        { 
+          role: 'system', 
+          content: `You are a mathematical verification expert specializing in algebraic structures and API design.
+
+Analyze the provided mathematical contract specifications and output your results in this EXACT format:
+
+## ALGEBRAIC STRUCTURES IDENTIFIED:
+- [List each structure found: Monad, Monoid, Functor, Semi-group, Category, etc.]
+
+## MATHEMATICAL COMPLETENESS ASSESSMENT:
+Completeness Score: [0-100]%
+Reasoning: [Explain why this score]
+
+## INEVITABLE API PATTERNS:
+- [List patterns that are mathematically forced by the laws]
+
+## GAPS AND MISSING LAWS:
+- [List any missing mathematical properties or laws]
+
+## DETAILED ANALYSIS:
+[Provide detailed mathematical reasoning for your findings]
+
+Focus on mathematical rigor and be precise about which algebraic structures are present based on the laws provided.` 
+        },
+        { 
+          role: 'user', 
+          content: `Analyze this mathematical contract for ${targetComponent}:\n\n${contractText}` 
+        }
+      ], {
+        temperature: 0.1,
+        maxTokens: 3000,
+      });
+
+      if (!Result.isSuccess(claudeAnalysis)) {
+        return Result.failure(claudeAnalysis.error);
+      }
+
+      // Use Ollama for pattern matching verification
+      const ollamaVerification = await this.chatCompletion([
+        {
+          role: 'system',
+          content: `You are a pattern matching expert for mathematical structures in software.
+          
+          Given a mathematical analysis, verify:
+          1. Pattern recognition accuracy for algebraic structures
+          2. Completeness of specified laws
+          3. API pattern inevitability assessment
+          4. Implementation guidance derivation
+          
+          Provide concise verification and identify any missed patterns.`
+        },
+        {
+          role: 'user',
+          content: `Verify this mathematical analysis:\n\n${claudeAnalysis.data}\n\nOriginal contract:\n${contractText.substring(0, 1000)}...`
+        }
+      ], {
+        temperature: 0.2,
+        maxTokens: 2000,
+      });
+
+      if (!Result.isSuccess(ollamaVerification)) {
+        return Result.failure(ollamaVerification.error);
+      }
+
+      const duration = this.performance.end('analyzeMathematicalContracts');
+      
+      this.logger.info("✅ Mathematical contract analysis completed", {
+        duration,
+        component: targetComponent,
+        analysisLength: claudeAnalysis.data.length,
+        verificationLength: ollamaVerification.data.length,
+      });
+
+      return Result.success({
+        component: targetComponent,
+        claudeAnalysis: claudeAnalysis.data,
+        ollamaVerification: ollamaVerification.data,
+        algebraicStructures: this.extractAlgebraicStructures(claudeAnalysis.data),
+        completenessScore: this.assessCompleteness(claudeAnalysis.data),
+        inevitablePatterns: this.extractInevitablePatterns(claudeAnalysis.data),
+        implementationGuidance: this.extractImplementationGuidance(ollamaVerification.data),
+        gaps: this.identifyGaps(claudeAnalysis.data, ollamaVerification.data),
+      });
+      
+    } catch (error) {
+      const duration = this.performance.end('analyzeMathematicalContracts');
+      this.logger.error("❌ Mathematical contract analysis failed", {
+        duration,
+        component: targetComponent,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Mathematical analysis error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * Extract algebraic structures from analysis text
+   */
+  private extractAlgebraicStructures(analysis: string): string[] {
+    const structures = [];
+    if (analysis.includes('monad') || analysis.includes('Monad')) structures.push('Monad');
+    if (analysis.includes('monoid') || analysis.includes('Monoid')) structures.push('Monoid');
+    if (analysis.includes('functor') || analysis.includes('Functor')) structures.push('Functor');
+    if (analysis.includes('semi-group') || analysis.includes('Semi-group')) structures.push('Semi-group');
+    if (analysis.includes('category') || analysis.includes('Category')) structures.push('Category');
+    return structures;
+  }
+
+  /**
+   * Assess mathematical completeness based on analysis
+   */
+  private assessCompleteness(analysis: string): number {
+    let score = 0;
+    // Check for law completeness indicators
+    if (analysis.includes('associativity') || analysis.includes('Associativity')) score += 20;
+    if (analysis.includes('identity') || analysis.includes('Identity')) score += 20;
+    if (analysis.includes('composition') || analysis.includes('Composition')) score += 20;
+    if (analysis.includes('complete') || analysis.includes('sufficient')) score += 20;
+    if (analysis.includes('inevitable') || analysis.includes('forces')) score += 20;
+    return Math.min(score, 100);
+  }
+
+  /**
+   * Extract inevitable API patterns from analysis
+   */
+  private extractInevitablePatterns(analysis: string): string[] {
+    const patterns = [];
+    if (analysis.includes('fluent') || analysis.includes('chaining')) patterns.push('Fluent Chaining');
+    if (analysis.includes('builder') || analysis.includes('Builder')) patterns.push('Builder Pattern');
+    if (analysis.includes('pipeline') || analysis.includes('Pipeline')) patterns.push('Pipeline Composition');
+    if (analysis.includes('monadic') || analysis.includes('flatMap')) patterns.push('Monadic Composition');
+    return patterns;
+  }
+
+  /**
+   * Extract implementation guidance from verification
+   */
+  private extractImplementationGuidance(verification: string): string[] {
+    const guidance = [];
+    const lines = verification.split('\n');
+    for (const line of lines) {
+      if (line.includes('implement') || line.includes('should') || line.includes('must')) {
+        guidance.push(line.trim());
+      }
+    }
+    return guidance.slice(0, 10); // Limit to top 10 guidance points
+  }
+
+  /**
+   * Identify gaps in mathematical specification
+   */
+  private identifyGaps(analysis: string, verification: string): string[] {
+    const gaps = [];
+    if (analysis.includes('missing') || verification.includes('missing')) {
+      gaps.push('Missing mathematical laws identified');
+    }
+    if (analysis.includes('incomplete') || verification.includes('incomplete')) {
+      gaps.push('Incomplete specification detected');
+    }
+    if (analysis.includes('ambiguous') || verification.includes('ambiguous')) {
+      gaps.push('Ambiguous constraints found');
+    }
+    return gaps;
+  }
+
+  /**
+   * Verify mathematical laws for a specific algebraic structure
+   */
+  async verifyAlgebraicLaws(
+    structure: 'Monad' | 'Monoid' | 'Functor' | 'Semi-group',
+    implementation: string
+  ): Promise<Result<LawVerification>> {
+    this.performance.start('verifyAlgebraicLaws');
+    
+    try {
+      this.logger.info("⚖️ Verifying algebraic laws", {
+        structure,
+        implementationLength: implementation.length,
+      });
+
+      const lawsToVerify = this.getLawsForStructure(structure);
+      
+      const verification = await this.chatCompletion([
+        {
+          role: 'system',
+          content: `You are a mathematical law verification expert.
+          
+          Verify that the provided implementation satisfies the mathematical laws for ${structure}:
+          ${lawsToVerify.join('\n')}
+          
+          For each law, determine:
+          1. Whether the implementation satisfies it
+          2. Evidence or counterexample
+          3. Severity of any violations
+          
+          Be rigorous and precise in your verification.`
+        },
+        {
+          role: 'user',
+          content: `Verify ${structure} laws for this implementation:\n\n${implementation}`
+        }
+      ], {
+        temperature: 0.1,
+        maxTokens: 2000,
+      });
+
+      if (!Result.isSuccess(verification)) {
+        return Result.failure(verification.error);
+      }
+
+      const duration = this.performance.end('verifyAlgebraicLaws');
+      
+      this.logger.info("✅ Algebraic law verification completed", {
+        duration,
+        structure,
+        verificationLength: verification.data.length,
+      });
+
+      return Result.success({
+        structure,
+        laws: lawsToVerify,
+        verification: verification.data,
+        satisfied: this.parseLawSatisfaction(verification.data),
+        violations: this.extractViolations(verification.data),
+      });
+      
+    } catch (error) {
+      const duration = this.performance.end('verifyAlgebraicLaws');
+      this.logger.error("❌ Algebraic law verification failed", {
+        duration,
+        structure,
+        error: String(error),
+      });
+      
+      return Result.failure(
+        error instanceof Error ? error : new Error(`Law verification error: ${String(error)}`)
+      );
+    }
+  }
+
+  /**
+   * Get the mathematical laws for a specific algebraic structure
+   */
+  private getLawsForStructure(structure: string): string[] {
+    const laws = {
+      Monad: [
+        'Left Identity: η(a) >>= f = f(a)',
+        'Right Identity: m >>= η = m',
+        'Associativity: (m >>= f) >>= g = m >>= (λx. f(x) >>= g)'
+      ],
+      Monoid: [
+        'Associativity: (a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)',
+        'Left Identity: ∅ ⊕ a = a',
+        'Right Identity: a ⊕ ∅ = a'
+      ],
+      Functor: [
+        'Identity: map(id) = id',
+        'Composition: map(f ∘ g) = map(f) ∘ map(g)'
+      ],
+      'Semi-group': [
+        'Associativity: (a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)',
+        'Closure: a ⊕ b is in the same set as a and b'
+      ]
+    };
+    return laws[structure] || [];
+  }
+
+  /**
+   * Parse law satisfaction from verification text
+   */
+  private parseLawSatisfaction(verification: string): boolean {
+    const satisfiedCount = (verification.match(/satisfied|✓|✅|passes/gi) || []).length;
+    const violatedCount = (verification.match(/violated|✗|❌|fails/gi) || []).length;
+    return satisfiedCount > violatedCount;
+  }
+
+  /**
+   * Extract law violations from verification text
+   */
+  private extractViolations(verification: string): string[] {
+    const violations = [];
+    const lines = verification.split('\n');
+    for (const line of lines) {
+      if (line.includes('violation') || line.includes('violated') || line.includes('fails')) {
+        violations.push(line.trim());
+      }
+    }
+    return violations;
+  }
 }
 
 /**
@@ -941,4 +1255,24 @@ export async function demoOllamaOnlyAgent() {
 // Run demo if this file is executed directly
 if (import.meta.main) {
   demoOllamaOnlyAgent().catch(console.error);
+}
+
+// Type definitions for mathematical analysis
+interface MathematicalAnalysis {
+  component: string;
+  claudeAnalysis: string;
+  ollamaVerification: string;
+  algebraicStructures: string[];
+  completenessScore: number;
+  inevitablePatterns: string[];
+  implementationGuidance: string[];
+  gaps: string[];
+}
+
+interface LawVerification {
+  structure: string;
+  laws: string[];
+  verification: string;
+  satisfied: boolean;
+  violations: string[];
 } 

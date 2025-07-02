@@ -15,7 +15,7 @@
 
 import { type Either, isLeft, isRight, left, right } from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
-import { type QiError, createQiError } from "./error.js";
+import { createQiError, type QiError } from "./error.js";
 
 // ============================================================================
 // Core Type Definition
@@ -75,19 +75,19 @@ export const failure = <T>(error: QiError): Result<T> => left(error);
  * Performance: < 100μs (includes exception handling overhead)
  */
 export const fromTryCatch = <T>(operation: () => T): Result<T> => {
-  try {
-    const result = operation();
-    return right(result);
-  } catch (error) {
-    const qiError =
-      error instanceof Error
-        ? createQiError("OPERATION_FAILED", error.message, "UNKNOWN", {
-            name: error.name,
-            stack: error.stack,
-          })
-        : createQiError("OPERATION_FAILED", String(error), "UNKNOWN");
-    return left(qiError);
-  }
+	try {
+		const result = operation();
+		return right(result);
+	} catch (error) {
+		const qiError =
+			error instanceof Error
+				? createQiError("OPERATION_FAILED", error.message, "UNKNOWN", {
+						name: error.name,
+						stack: error.stack,
+					})
+				: createQiError("OPERATION_FAILED", String(error), "UNKNOWN");
+		return left(qiError);
+	}
 };
 
 /**
@@ -103,19 +103,19 @@ export const fromTryCatch = <T>(operation: () => T): Result<T> => {
  * Performance: < 200μs (includes exception handling overhead)
  */
 export const fromAsyncTryCatch = async <T>(operation: () => Promise<T>): Promise<Result<T>> => {
-  try {
-    const result = await operation();
-    return right(result);
-  } catch (error) {
-    const qiError =
-      error instanceof Error
-        ? createQiError("ASYNC_OPERATION_FAILED", error.message, "UNKNOWN", {
-            name: error.name,
-            stack: error.stack,
-          })
-        : createQiError("ASYNC_OPERATION_FAILED", String(error), "UNKNOWN");
-    return left(qiError);
-  }
+	try {
+		const result = await operation();
+		return right(result);
+	} catch (error) {
+		const qiError =
+			error instanceof Error
+				? createQiError("ASYNC_OPERATION_FAILED", error.message, "UNKNOWN", {
+						name: error.name,
+						stack: error.stack,
+					})
+				: createQiError("ASYNC_OPERATION_FAILED", String(error), "UNKNOWN");
+		return left(qiError);
+	}
 };
 
 /**
@@ -129,7 +129,7 @@ export const fromAsyncTryCatch = async <T>(operation: () => Promise<T>): Promise
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const fromMaybe = <T>(defaultError: QiError, value: T | null | undefined): Result<T> =>
-  value != null ? right(value) : left(defaultError);
+	value != null ? right(value) : left(defaultError);
 
 /**
  * Convert predicate result to Result
@@ -146,9 +146,9 @@ export const fromMaybe = <T>(defaultError: QiError, value: T | null | undefined)
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const fromPredicate = <T>(
-  predicate: (value: T) => boolean,
-  onFalse: QiError,
-  value: T
+	predicate: (value: T) => boolean,
+	onFalse: QiError,
+	value: T
 ): Result<T> => (predicate(value) ? right(value) : left(onFalse));
 
 // ============================================================================
@@ -170,9 +170,9 @@ export const fromPredicate = <T>(
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const map =
-  <T, U>(fn: (value: T) => U) =>
-  (result: Result<T>): Result<U> =>
-    pipe(result, (r) => (isRight(r) ? right(fn(r.right)) : r));
+	<T, U>(fn: (value: T) => U) =>
+	(result: Result<T>): Result<U> =>
+		pipe(result, (r) => (isRight(r) ? right(fn(r.right)) : r));
 
 /**
  * Transform error while preserving success values
@@ -188,9 +188,9 @@ export const map =
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const mapError =
-  <T>(transform: (error: QiError) => QiError) =>
-  (result: Result<T>): Result<T> =>
-    pipe(result, (r) => (isLeft(r) ? left(transform(r.left)) : r));
+	<T>(transform: (error: QiError) => QiError) =>
+	(result: Result<T>): Result<T> =>
+		pipe(result, (r) => (isLeft(r) ? left(transform(r.left)) : r));
 
 /**
  * Map both success and error cases simultaneously (Bifunctor bimap)
@@ -209,11 +209,11 @@ export const mapError =
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const bimap =
-  <T, U>(errorTransform: (error: QiError) => QiError, successTransform: (value: T) => U) =>
-  (result: Result<T>): Result<U> =>
-    pipe(result, (r) =>
-      isRight(r) ? right(successTransform(r.right)) : left(errorTransform(r.left))
-    );
+	<T, U>(errorTransform: (error: QiError) => QiError, successTransform: (value: T) => U) =>
+	(result: Result<T>): Result<U> =>
+		pipe(result, (r) =>
+			isRight(r) ? right(successTransform(r.right)) : left(errorTransform(r.left))
+		);
 
 // ============================================================================
 // Monad Operations (flatMap/chain)
@@ -233,9 +233,9 @@ export const bimap =
  * Performance: < 100μs (TypeScript interpreted tier)
  */
 export const flatMap =
-  <T, U>(fn: (value: T) => Result<U>) =>
-  (result: Result<T>): Result<U> =>
-    pipe(result, (r) => (isRight(r) ? fn(r.right) : r));
+	<T, U>(fn: (value: T) => Result<U>) =>
+	(result: Result<T>): Result<U> =>
+		pipe(result, (r) => (isRight(r) ? fn(r.right) : r));
 
 /**
  * Alias for flatMap (more intuitive naming)
@@ -257,17 +257,17 @@ export const chain = flatMap;
  * Performance: < 100μs (TypeScript interpreted tier)
  */
 export const chainFirst =
-  <T, U>(operation: (value: T) => Result<U>) =>
-  (result: Result<T>): Result<T> =>
-    pipe(
-      result,
-      flatMap((value) =>
-        pipe(
-          operation(value),
-          map(() => value)
-        )
-      )
-    );
+	<T, U>(operation: (value: T) => Result<U>) =>
+	(result: Result<T>): Result<T> =>
+		pipe(
+			result,
+			flatMap((value) =>
+				pipe(
+					operation(value),
+					map(() => value)
+				)
+			)
+		);
 
 // ============================================================================
 // Applicative Operations
@@ -289,12 +289,12 @@ export const chainFirst =
  * Performance: < 100μs (TypeScript interpreted tier)
  */
 export const ap =
-  <T, U>(result: Result<T>) =>
-  (wrappedFunction: Result<(value: T) => U>): Result<U> =>
-    pipe(
-      wrappedFunction,
-      flatMap((fn) => pipe(result, map(fn)))
-    );
+	<T, U>(result: Result<T>) =>
+	(wrappedFunction: Result<(value: T) => U>): Result<U> =>
+		pipe(
+			wrappedFunction,
+			flatMap((fn) => pipe(result, map(fn)))
+		);
 
 /**
  * Lift a binary function to work on Results
@@ -309,18 +309,18 @@ export const ap =
  * Performance: < 100μs (TypeScript interpreted tier)
  */
 export const liftA2 =
-  <T, U, V>(binaryFunction: (a: T, b: U) => V) =>
-  (resultA: Result<T>) =>
-  (resultB: Result<U>): Result<V> => {
-    if (isRight(resultA) && isRight(resultB)) {
-      return right(binaryFunction(resultA.right, resultB.right));
-    }
-    // Return the first error encountered
-    if (isLeft(resultA)) {
-      return left(resultA.left);
-    }
-    return left((resultB as Left<QiError>).left);
-  };
+	<T, U, V>(binaryFunction: (a: T, b: U) => V) =>
+	(resultA: Result<T>) =>
+	(resultB: Result<U>): Result<V> => {
+		if (isRight(resultA) && isRight(resultB)) {
+			return right(binaryFunction(resultA.right, resultB.right));
+		}
+		// Return the first error encountered
+		if (isLeft(resultA)) {
+			return left(resultA.left);
+		}
+		return left((resultB as Left<QiError>).left);
+	};
 
 // ============================================================================
 // Alternative Operations
@@ -341,9 +341,9 @@ export const liftA2 =
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const alt =
-  <T>(alternative: Result<T>) =>
-  (result: Result<T>): Result<T> =>
-    isRight(result) ? result : alternative;
+	<T>(alternative: Result<T>) =>
+	(result: Result<T>): Result<T> =>
+		isRight(result) ? result : alternative;
 
 /**
  * Error recovery with alternative computation
@@ -359,9 +359,9 @@ export const alt =
  * Performance: < 100μs (TypeScript interpreted tier)
  */
 export const orElse =
-  <T>(alternativeFunction: (error: QiError) => Result<T>) =>
-  (result: Result<T>): Result<T> =>
-    isRight(result) ? result : alternativeFunction(result.left);
+	<T>(alternativeFunction: (error: QiError) => Result<T>) =>
+	(result: Result<T>): Result<T> =>
+		isRight(result) ? result : alternativeFunction(result.left);
 
 // ============================================================================
 // Extraction Operations
@@ -379,10 +379,10 @@ export const orElse =
  * Performance: < 10μs (TypeScript interpreted tier)
  */
 export const unwrap = <T>(result: Result<T>): T => {
-  if (isRight(result)) {
-    return result.right;
-  }
-  throw new Error(`Result unwrap failed: ${result.left.message}`);
+	if (isRight(result)) {
+		return result.right;
+	}
+	throw new Error(`Result unwrap failed: ${result.left.message}`);
 };
 
 /**
@@ -397,9 +397,9 @@ export const unwrap = <T>(result: Result<T>): T => {
  * Performance: < 10μs (TypeScript interpreted tier)
  */
 export const unwrapOr =
-  <T>(defaultValue: T) =>
-  (result: Result<T>): T =>
-    isRight(result) ? result.right : defaultValue;
+	<T>(defaultValue: T) =>
+	(result: Result<T>): T =>
+		isRight(result) ? result.right : defaultValue;
 
 /**
  * Extract value or compute default from error
@@ -415,9 +415,9 @@ export const unwrapOr =
  * Performance: < 10μs (TypeScript interpreted tier)
  */
 export const unwrapOrElse =
-  <T>(computeDefault: (error: QiError) => T) =>
-  (result: Result<T>): T =>
-    isRight(result) ? result.right : computeDefault(result.left);
+	<T>(computeDefault: (error: QiError) => T) =>
+	(result: Result<T>): T =>
+		isRight(result) ? result.right : computeDefault(result.left);
 
 // ============================================================================
 // Pattern Matching
@@ -437,9 +437,9 @@ export const unwrapOrElse =
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const match =
-  <T, R>(onSuccess: (value: T) => R, onError: (error: QiError) => R) =>
-  (result: Result<T>): R =>
-    isRight(result) ? onSuccess(result.right) : onError(result.left);
+	<T, R>(onSuccess: (value: T) => R, onError: (error: QiError) => R) =>
+	(result: Result<T>): R =>
+		isRight(result) ? onSuccess(result.right) : onError(result.left);
 
 /**
  * Fold/catamorphism with error case first (conventional order)
@@ -455,9 +455,9 @@ export const match =
  * Performance: < 50μs (TypeScript interpreted tier)
  */
 export const fold =
-  <T, R>(onError: (error: QiError) => R, onSuccess: (value: T) => R) =>
-  (result: Result<T>): R =>
-    isRight(result) ? onSuccess(result.right) : onError(result.left);
+	<T, R>(onError: (error: QiError) => R, onSuccess: (value: T) => R) =>
+	(result: Result<T>): R =>
+		isRight(result) ? onSuccess(result.right) : onError(result.left);
 
 // ============================================================================
 // Collection Operations
@@ -476,15 +476,15 @@ export const fold =
  * Performance: O(n) where n = length of array
  */
 export const sequence = <T>(results: readonly Result<T>[]): Result<T[]> => {
-  const values: T[] = [];
-  for (const result of results) {
-    if (isRight(result)) {
-      values.push(result.right);
-    } else {
-      return result; // Fail fast
-    }
-  }
-  return right(values);
+	const values: T[] = [];
+	for (const result of results) {
+		if (isRight(result)) {
+			values.push(result.right);
+		} else {
+			return result; // Fail fast
+		}
+	}
+	return right(values);
 };
 
 /**
@@ -502,9 +502,9 @@ export const sequence = <T>(results: readonly Result<T>[]): Result<T[]> => {
  * Performance: O(n) where n = length of array
  */
 export const traverse =
-  <T, U>(transform: (value: T) => Result<U>) =>
-  (values: readonly T[]): Result<U[]> =>
-    sequence(values.map(transform));
+	<T, U>(transform: (value: T) => Result<U>) =>
+	(values: readonly T[]): Result<U[]> =>
+		sequence(values.map(transform));
 
 // ============================================================================
 // Query Operations
@@ -565,7 +565,7 @@ export const getData = <T>(result: Result<T>): T | null => (isRight(result) ? re
  * Performance: < 10μs (TypeScript interpreted tier)
  */
 export const getError = <T>(result: Result<T>): QiError | null =>
-  isLeft(result) ? result.left : null;
+	isLeft(result) ? result.left : null;
 
 // ============================================================================
 // Complete API Export (for compatibility)
@@ -580,33 +580,33 @@ export const getError = <T>(result: Result<T>): QiError | null =>
  * - Mixed: import what you need for each context
  */
 export const QiResult = {
-  success,
-  failure,
-  fromTryCatch,
-  fromAsyncTryCatch,
-  fromMaybe,
-  fromPredicate,
-  map,
-  mapError,
-  bimap,
-  flatMap,
-  chain,
-  chainFirst,
-  ap,
-  liftA2,
-  alt,
-  orElse,
-  unwrap,
-  unwrapOr,
-  unwrapOrElse,
-  match,
-  fold,
-  sequence,
-  traverse,
-  isSuccess,
-  isFailure,
-  getData,
-  getError,
+	success,
+	failure,
+	fromTryCatch,
+	fromAsyncTryCatch,
+	fromMaybe,
+	fromPredicate,
+	map,
+	mapError,
+	bimap,
+	flatMap,
+	chain,
+	chainFirst,
+	ap,
+	liftA2,
+	alt,
+	orElse,
+	unwrap,
+	unwrapOr,
+	unwrapOrElse,
+	match,
+	fold,
+	sequence,
+	traverse,
+	isSuccess,
+	isFailure,
+	getData,
+	getError,
 } as const;
 
 // ============================================================================
@@ -617,17 +617,17 @@ export const QiResult = {
  * Alternative names for common operations
  */
 export const ResultOps = {
-  // Monad operations
-  andThen: flatMap,
-  bind: flatMap,
+	// Monad operations
+	andThen: flatMap,
+	bind: flatMap,
 
-  // Extraction operations
-  getWithDefault: unwrapOr,
-  caseOf: match,
+	// Extraction operations
+	getWithDefault: unwrapOr,
+	caseOf: match,
 
-  // Query operations
-  isOk: isSuccess,
-  isErr: isFailure,
+	// Query operations
+	isOk: isSuccess,
+	isErr: isFailure,
 } as const;
 
 // Legacy compatibility - remove class implementation
@@ -642,83 +642,83 @@ export const ResultImpl = QiResult;
  * for compatibility with test expectations
  */
 export class ResultClass<T> {
-  private constructor(private readonly _either: Either<QiError, T>) {}
+	private constructor(private readonly _either: Either<QiError, T>) {}
 
-  /**
-   * Create successful result - static method
-   */
-  static success<T>(value: T): ResultClass<T> {
-    return new ResultClass(success(value));
-  }
+	/**
+	 * Create successful result - static method
+	 */
+	static success<T>(value: T): ResultClass<T> {
+		return new ResultClass(success(value));
+	}
 
-  /**
-   * Create failed result - static method
-   */
-  static failure<T>(error: QiError): ResultClass<T> {
-    return new ResultClass(failure(error));
-  }
+	/**
+	 * Create failed result - static method
+	 */
+	static failure<T>(error: QiError): ResultClass<T> {
+		return new ResultClass(failure(error));
+	}
 
-  /**
-   * Check if result is successful - instance method
-   */
-  isSuccess(): boolean {
-    return isSuccess(this._either);
-  }
+	/**
+	 * Check if result is successful - instance method
+	 */
+	isSuccess(): boolean {
+		return isSuccess(this._either);
+	}
 
-  /**
-   * Check if result is failed - instance method
-   */
-  isFailure(): boolean {
-    return isFailure(this._either);
-  }
+	/**
+	 * Check if result is failed - instance method
+	 */
+	isFailure(): boolean {
+		return isFailure(this._either);
+	}
 
-  /**
-   * Unwrap the value - instance method
-   */
-  unwrap(): T {
-    return unwrap(this._either);
-  }
+	/**
+	 * Unwrap the value - instance method
+	 */
+	unwrap(): T {
+		return unwrap(this._either);
+	}
 
-  /**
-   * Map over the value - instance method
-   */
-  map<U>(fn: (value: T) => U): ResultClass<U> {
-    return new ResultClass(map(fn)(this._either));
-  }
+	/**
+	 * Map over the value - instance method
+	 */
+	map<U>(fn: (value: T) => U): ResultClass<U> {
+		return new ResultClass(map(fn)(this._either));
+	}
 
-  /**
-   * FlatMap/chain operation - instance method
-   */
-  flatMap<U>(fn: (value: T) => ResultClass<U>): ResultClass<U> {
-    return new ResultClass(flatMap((value: T) => fn(value)._either)(this._either));
-  }
+	/**
+	 * FlatMap/chain operation - instance method
+	 */
+	flatMap<U>(fn: (value: T) => ResultClass<U>): ResultClass<U> {
+		return new ResultClass(flatMap((value: T) => fn(value)._either)(this._either));
+	}
 
-  /**
-   * Get the underlying Either
-   */
-  get either(): Either<QiError, T> {
-    return this._either;
-  }
+	/**
+	 * Get the underlying Either
+	 */
+	get either(): Either<QiError, T> {
+		return this._either;
+	}
 
-  /**
-   * Get error - instance method
-   */
-  error(): QiError {
-    if (isFailure(this._either)) {
-      return this._either.left;
-    }
-    throw new Error("Cannot get error from successful result");
-  }
+	/**
+	 * Get error - instance method
+	 */
+	error(): QiError {
+		if (isFailure(this._either)) {
+			return this._either.left;
+		}
+		throw new Error("Cannot get error from successful result");
+	}
 
-  /**
-   * Recover from error - instance method
-   */
-  recover(fn: () => T): ResultClass<T> {
-    if (isFailure(this._either)) {
-      return ResultClass.success(fn());
-    }
-    return this;
-  }
+	/**
+	 * Recover from error - instance method
+	 */
+	recover(fn: () => T): ResultClass<T> {
+		if (isFailure(this._either)) {
+			return ResultClass.success(fn());
+		}
+		return this;
+	}
 }
 
 // ResultClass available as named export

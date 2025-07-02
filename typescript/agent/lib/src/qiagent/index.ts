@@ -217,7 +217,9 @@ export async function executeQiWorkflow(
 				context: QiWorkflowContext;
 				timestamp: number;
 			}) => {
-				console.log(`Workflow completed in agent: ${finalState.agent} at ${new Date(finalState.timestamp).toISOString()}`);
+				console.log(
+					`Workflow completed in agent: ${finalState.agent} at ${new Date(finalState.timestamp).toISOString()}`
+				);
 			},
 		});
 

@@ -203,12 +203,17 @@ export class MCPClient {
 			const validationResult = validateConfig(config);
 			if (isFailure(validationResult)) {
 				const error = getError(validationResult);
-				return failure(error || createQiError("VALIDATION_FAILED", "Configuration validation failed", "VALIDATION"));
+				return failure(
+					error ||
+						createQiError("VALIDATION_FAILED", "Configuration validation failed", "VALIDATION")
+				);
 			}
 
 			const validatedConfig = match(
 				(cfg: Required<MCPServerConfig>) => cfg,
-				() => { throw new Error("Configuration validation failed"); }
+				() => {
+					throw new Error("Configuration validation failed");
+				}
 			)(validationResult);
 
 			this.logger.info(`🔌 Connecting to MCP server: ${validatedConfig.name}`);
@@ -343,7 +348,11 @@ export class MCPClient {
 			this.logger.info(`Tool ${toolName} called successfully on ${serverName} (${duration}ms)`);
 
 			const toolResult: MCPToolResult = {
-				content: (result.content || []) as Array<{ readonly [key: string]: unknown; readonly type: string; readonly text?: string; }>,
+				content: (result.content || []) as Array<{
+					readonly [key: string]: unknown;
+					readonly type: string;
+					readonly text?: string;
+				}>,
 				metadata: {
 					serverName,
 					toolName,

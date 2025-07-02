@@ -1,0 +1,41 @@
+{
+	"name": "@qicore/agent-app",
+	"version": "1.0.0",
+	"description": "QiCore Agent Application - Mathematical analysis with MCP integration",
+	"type": "module",
+	"main": "./src/index.ts",
+	"scripts": {
+		"build": "echo 'No build needed for development'",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:ui": "vitest --ui",
+		"test:verbose": "vitest run --reporter=verbose",
+		"test:dot": "vitest run --reporter=dot",
+		"test:bun": "bun test ../tests/app",
+		"test:coverage": "vitest run --coverage",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist .turbo coverage",
+		"check": "bun run typecheck && bun run test",
+		"dev": "bun run src/index.ts",
+		"start": "bun run src/index.ts",
+		"mcp:verify": "bun run src/mcp-verification-agent.ts"
+	},
+	"dependencies": {
+		"@qicore/agent-lib": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "^5.7.2",
+		"vitest": "^3.2.4"
+	},
+	"keywords": [
+		"ai",
+		"mcp",
+		"mathematical-analysis",
+		"agent",
+		"typescript",
+		"bun"
+	],
+	"author": "QiCore Contributors",
+	"license": "MIT"
+}

@@ -1,0 +1,35 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"composite": false,
+		"strict": true,
+		"downlevelIteration": true,
+		"skipLibCheck": true,
+		"jsx": "react-jsx",
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": true,
+		"types": ["bun-types", "vitest/globals"],
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@qi/core/base": ["../../lib/src/qicore/base/index.ts"],
+			"@qi/core/base/*": ["../../lib/src/qicore/base/*"],
+			"@qi/core": ["../../lib/src/qicore/index.ts"],
+			"@qi/core/*": ["../../lib/src/qicore/*"],
+			"@qi/mcp/*": ["../lib/src/qimcp/*"],
+			"@qi/mcp": ["../lib/src/qimcp/client.ts"],
+			"@qi/agent/*": ["../lib/src/qiagent/*"],
+			"@qi/agent": ["../lib/src/qiagent/index.ts"],
+			"@qi/prompt/*": ["../lib/src/qiprompt/*"],
+			"@qi/prompt": ["../lib/src/qiprompt/index.ts"]
+		}
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
+}

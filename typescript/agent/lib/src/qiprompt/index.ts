@@ -382,6 +382,24 @@ export const generateTextFunctional = async (
 	return qiPrompt.generateText(prompt, { model, ...options });
 };
 
+// ============================================================================
+// Mathematical Template Re-exports
+// ============================================================================
+
+// Re-export mathematical template functionality
+export {
+	type MathematicalAnalysisContext,
+	type PromptTemplate,
+	MathematicalPromptManager,
+	createMathematicalPromptManager,
+} from "./templates/mathematical.js";
+
+// Import for use in API object
+import {
+	MathematicalPromptManager,
+	createMathematicalPromptManager,
+} from "./templates/mathematical.js";
+
 /**
  * Complete QiPrompt API with functional composition patterns
  * Following qi/core v4.0 mathematical specification
@@ -391,6 +409,7 @@ export const QiPromptAPI = {
 	createQiPrompt,
 	createQiPromptSafe,
 	createMathematical: createMathematicalQiPrompt,
+	createMathematicalPromptManager,
 
 	// Functional utilities
 	generateTextFunctional,
@@ -398,6 +417,9 @@ export const QiPromptAPI = {
 
 	// Class for when needed
 	QiPrompt,
+
+	// Mathematical prompt management
+	MathematicalPromptManager,
 
 	// Schema utilities
 	CommonSchemas,

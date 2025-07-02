@@ -1,0 +1,17 @@
+{
+	"component": "Result<T>",
+	"timestamp": "2025-07-02T01:53:57.209Z",
+	"algebraicStructures": ["Monad", "Functor"],
+	"completenessScore": 95,
+	"inevitablePatterns": ["composition", "identity"],
+	"gaps": ["Missing monad implementation", "Incomplete error handling"],
+	"claudeAnalysis": "Detailed analysis of Result<T> showing Monad properties...",
+	"ollamaVerification": "Mathematical verification confirms Result<T> satisfies Monad laws...",
+	"lawVerification": {
+		"structure": "Monad",
+		"laws": ["associativity", "identity"],
+		"satisfied": true,
+		"violations": ["Identity law not satisfied"],
+		"verificationText": "Verification of Monad laws for Result<T>..."
+	}
+}

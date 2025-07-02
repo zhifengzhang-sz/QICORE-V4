@@ -9,76 +9,48 @@
 // Result Type and Operations (fp-ts Either-based)
 // ============================================================================
 
-export type { Result as ResultType, Either, Left, Right } from "./result.js";
-
+export type { Either, Left, Result as ResultType, Right } from "./result.js";
 // Core factory functions
-export {
-  success,
-  failure,
-  fromTryCatch,
-  fromAsyncTryCatch,
-  fromMaybe,
-  fromPredicate,
-} from "./result.js";
-
 // Functor operations
-export {
-  map,
-  mapError,
-  bimap,
-} from "./result.js";
-
 // Monad operations
-export {
-  flatMap,
-  chain,
-  chainFirst,
-} from "./result.js";
-
 // Applicative operations
-export {
-  ap,
-  liftA2,
-} from "./result.js";
-
 // Alternative operations
-export {
-  alt,
-  orElse,
-} from "./result.js";
-
 // Extraction operations
-export {
-  unwrap,
-  unwrapOr,
-  unwrapOrElse,
-} from "./result.js";
-
 // Pattern matching
-export {
-  match,
-  fold,
-} from "./result.js";
-
 // Collection operations
-export {
-  sequence,
-  traverse,
-} from "./result.js";
-
 // Query operations
-export {
-  isSuccess,
-  isFailure,
-  getData,
-  getError,
-} from "./result.js";
-
 // Complete API and alternative names
 export {
-  QiResult,
-  ResultOps,
-  ResultImpl,
+	alt,
+	ap,
+	bimap,
+	chain,
+	chainFirst,
+	failure,
+	flatMap,
+	fold,
+	fromAsyncTryCatch,
+	fromMaybe,
+	fromPredicate,
+	fromTryCatch,
+	getData,
+	getError,
+	isFailure,
+	isSuccess,
+	liftA2,
+	map,
+	mapError,
+	match,
+	orElse,
+	QiResult,
+	ResultImpl,
+	ResultOps,
+	sequence,
+	success,
+	traverse,
+	unwrap,
+	unwrapOr,
+	unwrapOrElse,
 } from "./result.js";
 
 // ============================================================================
@@ -86,59 +58,58 @@ export {
 // ============================================================================
 
 export type {
-  QiError,
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorData,
-  RetryStrategy,
+	ErrorCategory,
+	ErrorData,
+	ErrorSeverity,
+	QiError,
+	RetryStrategy,
 } from "./error.js";
 
 export {
-  createQiError,
-  fromException,
-  fromString,
-  withContext,
-  withCause,
-  withSeverity,
-  chain as chainError,
-  aggregate,
-  getRetryStrategy,
-  isRetryable,
-  isQiError,
-  CommonErrors,
+	aggregate,
+	CommonErrors,
+	chain as chainError,
+	createQiError,
+	fromException,
+	fromString,
+	getRetryStrategy,
+	isQiError,
+	isRetryable,
+	withCause,
+	withContext,
+	withSeverity,
 } from "./error.js";
 
 // ============================================================================
 // Complete Base API Object
 // ============================================================================
 
+import {
+	CommonErrors as errorCommonErrors,
+	createQiError as errorCreate,
+	fromException as errorFromException,
+	fromString as errorFromString,
+	isQiError as errorIsQiError,
+	isRetryable as errorIsRetryable,
+	withCause as errorWithCause,
+	withContext as errorWithContext,
+} from "./error.js";
 // Import functions for API object construction
 import {
-  chain as resultChain,
-  failure as resultFailure,
-  flatMap as resultFlatMap,
-  fromAsyncTryCatch as resultFromAsyncTryCatch,
-  fromMaybe as resultFromMaybe,
-  fromPredicate as resultFromPredicate,
-  fromTryCatch as resultFromTryCatch,
-  isFailure as resultIsFailure,
-  isSuccess as resultIsSuccess,
-  map as resultMap,
-  match as resultMatch,
-  sequence as resultSequence,
-  success as resultSuccess,
+	chain as resultChain,
+	failure as resultFailure,
+	flatMap as resultFlatMap,
+	fromAsyncTryCatch as resultFromAsyncTryCatch,
+	fromMaybe as resultFromMaybe,
+	fromPredicate as resultFromPredicate,
+	fromTryCatch as resultFromTryCatch,
+	isFailure as resultIsFailure,
+	isSuccess as resultIsSuccess,
+	map as resultMap,
+	match as resultMatch,
+	sequence as resultSequence,
+	success as resultSuccess,
 } from "./result.js";
-
-import {
-  CommonErrors as errorCommonErrors,
-  createQiError as errorCreate,
-  fromException as errorFromException,
-  fromString as errorFromString,
-  isQiError as errorIsQiError,
-  isRetryable as errorIsRetryable,
-  withCause as errorWithCause,
-  withContext as errorWithContext,
-} from "./error.js";
 
 /**
  * Complete QiCore Base API
@@ -147,37 +118,37 @@ import {
  * for different usage patterns.
  */
 export const QiBase = {
-  Result: {
-    // Core construction
-    success: resultSuccess,
-    failure: resultFailure,
-    fromTryCatch: resultFromTryCatch,
-    fromAsyncTryCatch: resultFromAsyncTryCatch,
-    fromMaybe: resultFromMaybe,
-    fromPredicate: resultFromPredicate,
+	Result: {
+		// Core construction
+		success: resultSuccess,
+		failure: resultFailure,
+		fromTryCatch: resultFromTryCatch,
+		fromAsyncTryCatch: resultFromAsyncTryCatch,
+		fromMaybe: resultFromMaybe,
+		fromPredicate: resultFromPredicate,
 
-    // Core operations
-    map: resultMap,
-    flatMap: resultFlatMap,
-    chain: resultChain,
-    match: resultMatch,
-    sequence: resultSequence,
+		// Core operations
+		map: resultMap,
+		flatMap: resultFlatMap,
+		chain: resultChain,
+		match: resultMatch,
+		sequence: resultSequence,
 
-    // Query operations
-    isSuccess: resultIsSuccess,
-    isFailure: resultIsFailure,
-  },
-  Error: {
-    // Construction
-    create: errorCreate,
-    fromException: errorFromException,
-    fromString: errorFromString,
+		// Query operations
+		isSuccess: resultIsSuccess,
+		isFailure: resultIsFailure,
+	},
+	Error: {
+		// Construction
+		create: errorCreate,
+		fromException: errorFromException,
+		fromString: errorFromString,
 
-    // Utilities
-    withContext: errorWithContext,
-    withCause: errorWithCause,
-    CommonErrors: errorCommonErrors,
-    isRetryable: errorIsRetryable,
-    isQiError: errorIsQiError,
-  },
+		// Utilities
+		withContext: errorWithContext,
+		withCause: errorWithCause,
+		CommonErrors: errorCommonErrors,
+		isRetryable: errorIsRetryable,
+		isQiError: errorIsQiError,
+	},
 } as const;

@@ -1,150 +1,259 @@
-# QiCore v4.0 Technical Documentation
+# 🎭 QiCore Agent Documentation
 
-This directory contains the complete technical documentation for the QiCore v4.0 framework, organized by **sources** (that drive the process) and **build outputs** (generated results).
+**4-Layer AI Agent Architecture: QiPrompt + QiAgent + AI Orchestra + Vercel AI SDK**
 
-## Directory Structure
+## 🔥 **What This Project Provides**
 
-```
-docs/
-├── sources/        # Source files that drive the design process
-│   ├── agent/     # AI workflow orchestration and automation
-│   ├── guides/    # Core methodology and transformation guides
-│   ├── math/      # Mathematical foundations and study materials
-│   └── nl/        # Natural language contracts (human input)
-└── build/          # Generated outputs from the design process
-    ├── design/    # Stage 2 output: Design patterns and analysis
-    ├── impl/      # Stage 3 output: Implementation templates
-    ├── objective/ # Stage 1 output: Mathematical specifications
-    └── verification/  # Verification results and reports
-```
+This project gives you **production-ready workflow agents** using a sophisticated 4-layer architecture:
 
-## Core Documentation Files
+- **🎯 QiAgent**: Lightweight wrapper around AI Orchestra for simplified workflow creation
+- **🎯 QiPrompt**: Lightweight wrapper around Vercel AI SDK for consistent LLM interactions
+- **🎭 AI Orchestra**: Multi-agent workflow orchestration with handoffs and state management
+- **🌊 Vercel AI SDK**: Modern LLM interface with streaming, tools, and multi-provider support
+- **🧠 QiCore Integration**: Mathematical analysis tools and MCP (Model Context Protocol) capabilities
 
-### 🚀 Quick Start
-1. **Start Here**: `sources/guides/guide.md` - Complete step-by-step transformation process
-2. **Mathematical Foundation**: `sources/guides/common.md` - Pattern library and mathematical definitions
-3. **Natural Language Specs**: `sources/nl/` - Input contracts that drive the entire process
-4. **Verification**: `../check-list.md` - Ensure all files are properly configured
-
-## Sources Directory (`sources/`)
-
-**Files that drive the QiCore v4.0 design process**
-
-### 📚 Transformation Guides (`sources/guides/`)
-
-The heart of the QiCore v4.0 methodology:
-
-- **`common.md`** - Mathematical patterns library (monads, functors, etc.)
-- **`formal.prompt.md`** - Stage 1: Natural Language → Mathematical formalization
-- **`design.prompt.md`** - Stage 2: Mathematics → Design patterns  
-- **`impl.prompt.md`** - Stage 3: Design patterns → Code implementation
-- **`guide.md`** - Complete workflow orchestration
-
-### 🎯 Natural Language Contracts (`sources/nl/`)
-
-Human-written input specifications:
-
-- `qi.v4.class.contracts.md` - 8 behavioral contracts
-- `qi.v4.component.contracts.md` - 5 component organization contracts
-
-**These are the only files humans need to write!**
-
-### 🤖 Agent Workflows (`sources/agent/`)
-
-Automated workflow orchestration:
-
-- **`build/`** - YAML workflow definitions for automation tools
-  - `inst.formal.yaml` - Automate Stage 1 transformation
-  - `inst.design.yaml` - Automate Stage 2 transformation
-  - `inst.impl.[lang].yaml` - Automate Stage 3 for each language
-- **`verification/`** - Automated verification processes
-
-### 📐 Mathematical Foundations (`sources/math/`)
-
-Study guides and mathematical background:
-
-- **`qi.v4.mathematical.study.guide.md`** - Learn the mathematical concepts
-- **`qi.v4.mathematical.models.md`** - Detailed mathematical models
-
-## Build Directory (`build/`)
-
-**Generated outputs from the design process**
-
-### 🎯 Stage 1 Output (`build/objective/formal/`)
-
-Mathematical specifications generated from natural language:
-
-- `qi.v4.formal.spec.md` - Generated mathematical formalization
-
-### 🏗️ Stage 2 Output (`build/design/`)
-
-Design patterns derived from mathematics:
-
-- `qi.v4.design.analysis.md` - Design patterns and implementation strategies
-
-### 💻 Stage 3 Output (`build/impl/`)
-
-Code templates and implementation guides:
-
-- **Templates**: `qi.v4.[lang].template.md` - Actual code implementations
-- **Guides**: `qi.v4.[lang].impl.md` - How to use and integrate the code
-- **Languages**: TypeScript, Python, Rust, Haskell, Go
-
-### ✅ Verification Results (`build/verification/`)
-
-Quality assurance and verification:
-
-- **`documentation.chain.verification.md`** - Verify documentation completeness
-- **`implementation.verification.md`** - Verify implementation correctness
-
-## The QiCore v4.0 Process Flow
+## 🏗️ **4-Layer Architecture**
 
 ```
-Stage 0: Human writes natural language contracts
-   ↓ (sources/nl/ → sources/guides/formal.prompt.md + common.md)
-Stage 1: AI generates mathematical formalization  
-   ↓ (build/objective/formal/ → sources/guides/design.prompt.md + common.md)
-Stage 2: AI generates design patterns
-   ↓ (build/design/ → sources/guides/impl.prompt.md + common.md)
-Stage 3: AI generates implementations
-   ↓ (build/impl/)
-Result: Production-ready code in multiple languages
+Your App → QiAgent → AI Orchestra → QiPrompt → Vercel AI SDK → LLM
 ```
 
-## Usage Patterns
+**Perfect separation of concerns with lightweight wrappers at each level**
 
-### For New Users
-1. Read `sources/guides/guide.md` for complete workflow
-2. Examine `sources/nl/` contracts to understand inputs
-3. Follow the 3-stage transformation process
-4. Use generated code from `build/impl/`
+### **🎯 QiAgent Layer**
+- **Purpose**: Simplified workflow creation and agent orchestration
+- **Features**: Declarative agent definitions, workflow patterns, built-in error handling
+- **API**: `createAgent()`, `registerWorkflow()`, `executeWorkflow()`
 
-### For Advanced Users
-- Customize patterns in `sources/guides/common.md`
-- Extend workflow automation in `sources/agent/build/`
-- Add new languages following `build/impl/` patterns
-- Contribute verification processes in `build/verification/`
+### **🎭 AI Orchestra Layer**  
+- **Purpose**: Multi-agent coordination with handoffs and state management
+- **Features**: Agent handoffs, context preservation, streaming workflow execution
+- **API**: `createWorkflowOrchestra()`, `processStream()`, handoff tools
 
-### For Researchers
-- Study mathematical foundations in `sources/math/`
-- Analyze transformation precision in workflow files
-- Examine pattern coverage in `sources/guides/common.md`
-- Review verification methodologies
+### **🎯 QiPrompt Layer**
+- **Purpose**: Consistent, reliable LLM interactions with retry logic
+- **Features**: Text generation, structured output, streaming, multi-provider support
+- **API**: `generateText()`, `generateStructured()`, `streamText()`
 
-## Key Principles
+### **🌊 Vercel AI SDK Layer**
+- **Purpose**: Direct LLM provider integration with streaming and tools
+- **Features**: Model providers, streaming, tool calling, type safety
+- **API**: `streamText()`, `generateObject()`, provider clients
 
-1. **Mathematical Precision**: Every transformation preserves semantic meaning
-2. **Cross-Language Consistency**: Same patterns work across all target languages
-3. **Verifiable Process**: Each step can be validated mathematically
-4. **Human-AI Collaboration**: Humans specify intent, AI handles implementation
+## 📚 **Documentation Structure**
 
-## Getting Help
+### **📖 Guides**
+- **[🏗️ Architecture Overview](./guides/architecture.md)** - Complete 4-layer technical deep dive
+- **[🚀 Getting Started](./guides/getting-started.md)** - Build your first workflow agent
+- **[🛠️ Creating Workflows](./guides/creating-workflows.md)** - Design custom multi-agent workflows
+- **[🔧 Integration Guide](./guides/integration.md)** - Add to existing projects
 
-- **Process Questions**: See `sources/guides/guide.md`
-- **Pattern Questions**: See `sources/guides/common.md`
-- **Implementation Questions**: See `build/impl/qi.v4.[lang].impl.md`
-- **Mathematical Questions**: See `sources/math/qi.v4.mathematical.study.guide.md`
+### **💡 Examples**
+- **[🎯 QiPrompt + QiAgent Demo](./examples/qiprompt-qiagent-demo.md)** - 4-layer architecture in action
+- **[🧮 Mathematical Analysis](./examples/mathematical-workflow.md)** - Research → Verification → Reporting
+- **[👁️ Code Review](./examples/code-review-workflow.md)** - Analysis → Security → Final Review
+- **[🎯 Custom Workflows](./examples/custom-patterns.md)** - Various workflow patterns
 
----
+### **📋 API Reference**
+- **[🎯 QiAgent API](./api/qiagent.md)** - Workflow creation and agent management
+- **[🎯 QiPrompt API](./api/qiprompt.md)** - LLM interaction patterns
+- **[🎭 AI Orchestra API](./api/orchestra.md)** - Low-level workflow orchestration
+- **[🛠️ Tool Integration](./api/tools.md)** - MCP tools and custom functions
+- **[📊 Types & Interfaces](./api/types.md)** - TypeScript definitions
 
-This documentation represents the complete QiCore v4.0 technical framework for revolutionizing AI-assisted software development through mathematical precision and categorical foundations. 
+## 🌟 **Key Features**
+
+### **🎯 Simplified Workflow Creation**
+Build sophisticated multi-agent workflows with minimal code:
+
+```typescript
+import { createAgent, AgentRoles, WorkflowPatterns } from '@qi/mcp'
+
+// Create agent with QiPrompt integration
+const agent = createAgent()
+
+// Use pre-built workflow patterns
+const workflow = WorkflowPatterns.contentCreation('article-workflow')
+agent.registerWorkflow(workflow)
+
+// Execute with simple API
+const result = await agent.executeWorkflow(
+  'article-workflow',
+  'Write about quantum computing'
+)
+```
+
+### **🎯 Consistent LLM Interactions**
+Reliable, type-safe LLM interactions with built-in retry logic:
+
+```typescript
+import { QiPrompt, CommonSchemas } from '@qi/mcp'
+
+const qiPrompt = new QiPrompt()
+
+// Simple text generation
+const text = await qiPrompt.generateText("Explain monads")
+
+// Structured generation with validation
+const analysis = await qiPrompt.generateStructured(
+  "Analyze this code", 
+  { schema: CommonSchemas.analysis }
+)
+
+// Real-time streaming
+await qiPrompt.streamText("Write a story", {
+  onChunk: (chunk) => console.log(chunk)
+})
+```
+
+### **🌊 Real-Time Streaming**
+Built on Vercel AI SDK's streaming foundation with workflow progress:
+
+```typescript
+// Frontend gets live updates as workflow progresses
+const { messages, data } = useChat()
+// data.currentStep: 'verification', progress: 75%
+// data.currentAgent: 'verifier'
+```
+
+### **🔧 Zero Vendor Lock-in**
+Works with any Vercel AI SDK provider:
+
+```typescript
+import { QiPrompt } from '@qi/mcp'
+
+// Easy provider switching
+const qiPrompt = new QiPrompt({
+  defaultModel: ollama('llama3.2')    // or
+  defaultModel: openai('gpt-4')       // or  
+  defaultModel: anthropic('claude-3-sonnet')
+})
+```
+
+### **⚡ 4-Layer Benefits**
+Each layer has a single, clear responsibility:
+
+```
+✅ Your App: Business logic and UI
+✅ QiAgent: Workflow patterns and orchestration  
+✅ AI Orchestra: Agent handoffs and state management
+✅ QiPrompt: LLM interaction patterns and reliability
+✅ Vercel AI SDK: Provider integration and streaming
+✅ LLM: Actual language model execution
+```
+
+## 🚀 **Quick Start**
+
+```bash
+# Install dependencies
+bun add ai zod
+
+# Run architecture demo
+bun app/src/examples/qiprompt-qiagent-demo.ts
+```
+
+```typescript
+// Create a simple workflow
+import { createAgent, AgentRoles, QiPrompt } from '@qi/mcp'
+
+// Set up QiPrompt with your model
+const qiPrompt = new QiPrompt({
+  defaultModel: yourModel // ollama('llama3.2'), openai('gpt-4'), etc.
+})
+
+// Create QiAgent with QiPrompt integration  
+const agent = createAgent(qiPrompt)
+
+// Create a simple research → write workflow
+agent.registerWorkflow({
+  name: "research-and-write",
+  description: "Research a topic and write content",
+  agents: {
+    researcher: AgentRoles.researcher(),
+    writer: AgentRoles.writer()
+  },
+  steps: {
+    research: { agent: 'researcher', nextSteps: ['write'] },
+    write: { agent: 'writer', nextSteps: [] }
+  },
+  startStep: 'research'
+})
+
+// Execute the workflow
+const result = await agent.executeWorkflow(
+  'research-and-write',
+  'Research and write about TypeScript best practices'
+)
+
+console.log('Final result:', result.finalResult)
+```
+
+## 🎯 **Why This 4-Layer Architecture?**
+
+### **✅ What You Get**
+- **Simplified APIs** at every level for common patterns
+- **Maximum flexibility** with easy component swapping
+- **Built-in reliability** with retry logic and error handling  
+- **Type safety** throughout the entire stack
+- **Real-time streaming** with workflow progress tracking
+- **Production ready** architecture with proper separation of concerns
+
+### **❌ What You Avoid**
+- Heavy framework dependencies and complexity
+- Manual error handling and retry logic
+- Complex multi-agent state management
+- Vendor lock-in to specific LLM providers
+- Boilerplate code for common patterns
+
+## 🔗 **Layer Integration Flow**
+
+```
+User Request
+    ↓
+🎯 QiAgent.executeWorkflow()
+    ↓ 
+🎭 AI Orchestra processes agent handoffs
+    ↓
+🎯 QiPrompt.generateText() with retry logic
+    ↓
+🌊 Vercel AI SDK streamText() 
+    ↓
+🤖 LLM Provider (Ollama/OpenAI/Anthropic)
+    ↓
+📤 Streaming Response back through all layers
+```
+
+**Each layer adds value without breaking the flow**
+
+## 🛠️ **Project Structure**
+
+```
+agent/                          # Project root
+├── docs/                       # 📚 This documentation
+│   ├── guides/                 # Architecture & tutorials
+│   ├── examples/               # Working examples
+│   └── api/                    # API reference
+├── lib/                        # 📦 Reusable library
+│   └── src/
+│       ├── qiagent/            # QiAgent: AI Orchestra wrapper
+│       ├── qiprompt/           # QiPrompt: Vercel AI SDK wrapper
+│       ├── agent/              # AI Orchestra integration (lower level)
+│       ├── mcp/                # Model Context Protocol tools
+│       └── prompt/             # Prompt engineering utilities
+└── app/                        # 🚀 Application examples
+    └── src/
+        ├── examples/           # Demo workflows and patterns
+        └── agents/             # Specific agent implementations
+```
+
+## 🎉 **What You've Achieved**
+
+✅ **4-layer architecture** with perfect separation of concerns  
+✅ **Simplified APIs** that hide complexity while preserving power  
+✅ **Production-ready reliability** with built-in error handling  
+✅ **Real-time streaming** throughout multi-agent workflows  
+✅ **Type safety** across the entire stack  
+✅ **Zero vendor lock-in** with easy provider switching  
+✅ **Highly scalable** from simple workflows to complex multi-agent systems  
+
+**Ready to build sophisticated AI workflows? Start with the [Architecture Guide](./guides/architecture.md)!** 🚀 

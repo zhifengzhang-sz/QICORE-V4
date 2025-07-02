@@ -1,0 +1,18 @@
+{
+  "timestamp": "2025-07-02T00:41:50.933Z",
+  "instructionId": "qierror-analysis",
+  "title": "QiError Semi-group Analysis",
+  "algebraicStructures": [
+    "Monad",
+    "Monoid",
+    "Semi-group",
+    "Category"
+  ],
+  "completenessScore": 40,
+  "inevitablePatterns": [
+    "Fluent Chaining"
+  ],
+  "gaps": [
+    "Missing mathematical laws identified"
+  ]
+}
