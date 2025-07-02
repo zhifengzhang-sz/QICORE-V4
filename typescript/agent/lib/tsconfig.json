@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"composite": false,
+		"strict": true,
+		"downlevelIteration": true,
+		"skipLibCheck": true,
+		"jsx": "react-jsx",
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": true,
+		"types": ["bun-types", "vitest/globals"],
+		"baseUrl": ".",
+		"paths": {
+			"@qi/core/base": ["./src/qicore/base/index.ts"],
+			"@qi/core/base/*": ["./src/qicore/base/*"],
+			"@qi/core": ["./src/qicore/index.ts"],
+			"@qi/core/*": ["./src/qicore/*"],
+			"@qi/mcp": ["./src/index.ts"],
+			"@qi/mcp/*": ["./src/*"]
+		}
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
+}
