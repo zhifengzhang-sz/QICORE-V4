@@ -13,9 +13,8 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { MCPClient, type MCPServerConfig } from "@qi/mcp/client.js";
-import { AnalysisFileManager, type AnalysisResult } from "@qi/mcp/tools/file.js";
-import { MathematicalOllamaAgent } from "./agents/ollama.js";
+import { MCPClient, type MCPServerConfig, AnalysisFileManager, type AnalysisResult } from "@qicore/agent-lib";
+import { MathematicalAnalysisAgent, type ModelConfig } from "./agents/ollama.ts";
 
 interface Logger {
 	info: (msg: string) => void;
@@ -26,12 +25,32 @@ interface Logger {
 export class MCPVerificationAgent {
 	private mcpClient: MCPClient;
 	private fileManager: AnalysisFileManager;
-	private ollamaAgent: MathematicalOllamaAgent;
+	private analysisAgent: MathematicalAnalysisAgent;
 
-	constructor(private logger: Logger) {
+	constructor(private logger: Logger, modelConfig?: ModelConfig) {
 		this.mcpClient = new MCPClient(logger);
 		this.fileManager = new AnalysisFileManager();
-		this.ollamaAgent = new MathematicalOllamaAgent();
+		
+		// Load model config from environment or use default
+		const config = modelConfig || this.loadModelConfig();
+		this.analysisAgent = new MathematicalAnalysisAgent(config);
+	}
+
+	/**
+	 * Load model configuration from environment variables or defaults
+	 */
+	private loadModelConfig(): ModelConfig {
+		const provider = process.env.AI_PROVIDER as ModelConfig["provider"] || "ollama";
+		const model = process.env.AI_MODEL || "qwen3:0.6b";
+		const baseURL = process.env.AI_BASE_URL || "http://localhost:11434";
+		const apiKey = process.env.AI_API_KEY;
+
+		return {
+			provider,
+			model,
+			baseURL,
+			apiKey
+		};
 	}
 
 	/**
@@ -102,7 +121,7 @@ export class MCPVerificationAgent {
 		this.logger.info("📖 Loading mathematical contracts...");
 
 		// Load contracts file
-		const contractsPath = join(process.cwd(), "../../../docs/qi/core/nl/qi.v4.class.contracts.md");
+		const contractsPath = "/home/zzhang/dev/qi/github/mcp-server/qicore-v4/typescript/docs/qi/core/qi.v4.class.contracts.md";
 		const contractsText = readFileSync(contractsPath, "utf-8");
 
 		this.logger.info(`   Contract length: ${contractsText.length} characters`);
@@ -144,8 +163,8 @@ export class MCPVerificationAgent {
 		algebraicType: string
 	): Promise<AnalysisResult | null> {
 		try {
-			// Run mathematical analysis using the Ollama agent
-			const analysisResult = await this.ollamaAgent.analyzeMathematicalContracts(
+			// Run mathematical analysis using the configurable AI agent
+			const analysisResult = await this.analysisAgent.analyzeMathematicalContracts(
 				component,
 				contractText,
 				{ domain: "algebraic_structures", complexity: "graduate" }
@@ -177,7 +196,7 @@ export class MCPVerificationAgent {
 				algebraicType === "Functor" ||
 				algebraicType === "Semi-group"
 			) {
-				const lawResult = await this.ollamaAgent.verifyAlgebraicLaws(contractText, algebraicType, [
+				const lawResult = await this.analysisAgent.verifyAlgebraicLaws(contractText, algebraicType, [
 					"Identity law",
 					"Associativity law",
 				]);

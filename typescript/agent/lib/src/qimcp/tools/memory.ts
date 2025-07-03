@@ -6,7 +6,7 @@
  * Provides high-level memory operations using MCP memory server
  */
 
-import type { MCPClient } from "../client.js";
+import type { MCPClient } from "../client.ts";
 
 // Type for JSON-serializable data used in MCP
 type MCPData = string | number | boolean | null | { [key: string]: MCPData } | MCPData[];

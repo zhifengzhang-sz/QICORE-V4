@@ -1,7 +1,7 @@
 {
 	"name": "@qicore/agent-app",
 	"version": "1.0.0",
-	"description": "QiCore Agent Application - Mathematical analysis with MCP integration",
+	"description": "QiCore Agent Application - Autonomous crypto trading with multi-agent orchestration",
 	"type": "module",
 	"main": "./src/index.ts",
 	"scripts": {
@@ -18,9 +18,14 @@
 		"check": "bun run typecheck && bun run test",
 		"dev": "bun run src/index.ts",
 		"start": "bun run src/index.ts",
-		"mcp:verify": "bun run src/mcp-verification-agent.ts"
+		"trading": "bun run src/index.ts trading",
+		"legacy": "bun run src/index.ts legacy",
+		"mcp:verify": "bun run src/mcp-verification-agent.ts",
+		"demo:crypto": "bun run src/crypto-agent-orchestrator.ts"
 	},
 	"dependencies": {
+		"@ai-sdk/anthropic": "^1.2.12",
+		"@ai-sdk/openai": "^1.3.22",
 		"@qicore/agent-lib": "workspace:*"
 	},
 	"devDependencies": {

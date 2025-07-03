@@ -1,190 +1,207 @@
 #!/usr/bin/env bun
 
 /**
- * Mathematical Analysis Agent
+ * Simple Mathematical Analysis Agent using QiAgent
  *
- * App-specific agent that extends BaseOllamaClient for mathematical contract analysis.
- * Uses the reusable Ollama library for core functionality.
+ * Demonstrates proper integration with QiAgent library for real AI analysis
+ * instead of just prompt generation.
  */
 
-import type { MathematicalAnalysisContext, MathematicalPromptManager } from "@qi/prompt";
-import { createMathematicalPromptManager } from "@qi/prompt";
+import { generateText } from "@qicore/agent-lib";
+
+export interface ModelConfig {
+  provider: "ollama" | "claude" | "openai" | "anthropic";
+  model: string;
+  baseURL?: string;
+  apiKey?: string;
+}
 
 /**
- * Mathematical Analysis Agent using Ollama
- *
- * Leverages QiPrompt v4.0 compatible prompt engineering for sophisticated mathematical analysis
+ * Model-agnostic Mathematical Analysis Agent using QiAgent integration
  */
+export class MathematicalAnalysisAgent {
+  private model: any;
+  private config: ModelConfig;
 
-/**
- * Mathematical Analysis Agent for Ollama
- *
- * Uses advanced mathematical prompt engineering with QiPrompt v4.0 patterns
- */
-export class MathematicalOllamaAgent {
-	private promptManager: MathematicalPromptManager;
+  constructor(config?: ModelConfig) {
+    // Default to local Ollama if no config provided
+    this.config = config || {
+      provider: "ollama",
+      model: "qwen3:0.6b",
+      baseURL: "http://localhost:11434"
+    };
+    
+    this.model = this.createModel(this.config);
+    
+    console.log(`🚀 Mathematical analysis agent initialized with ${this.config.provider}:${this.config.model}`);
+  }
 
-	constructor() {
-		this.promptManager = createMathematicalPromptManager();
-		console.log("🚀 Mathematical analysis agent initialized with QiPrompt integration");
-	}
+  private createModel(config: ModelConfig): any {
+    switch (config.provider) {
+      case "ollama": {
+        const { ollama } = require("ollama-ai-provider");
+        return ollama(config.model, {
+          baseURL: config.baseURL || "http://localhost:11434"
+        });
+      }
+      case "claude":
+      case "anthropic": {
+        const { createAnthropic } = require("@ai-sdk/anthropic");
+        const anthropic = createAnthropic({
+          apiKey: config.apiKey || process.env.ANTHROPIC_API_KEY
+        });
+        return anthropic(config.model);
+      }
+      case "openai": {
+        const { createOpenAI } = require("@ai-sdk/openai");
+        const openai = createOpenAI({
+          apiKey: config.apiKey || process.env.OPENAI_API_KEY
+        });
+        return openai(config.model);
+      }
+      default:
+        throw new Error(`Unsupported model provider: ${config.provider}`);
+    }
+  }
 
-	/**
-	 * Analyze mathematical contracts using advanced prompt engineering
-	 */
-	async analyzeMathematicalContracts(
-		component: string,
-		contractText: string,
-		options: {
-			domain?: "algebraic_structures" | "category_theory" | "formal_verification";
-			complexity?: "undergraduate" | "graduate" | "research";
-		} = {}
-	): Promise<string> {
-		const context: MathematicalAnalysisContext = {
-			component,
-			contractText,
-			domain: options.domain || "algebraic_structures",
-			complexity: options.complexity || "graduate",
-		};
+  /**
+   * Analyze mathematical contracts using real AI (not just prompt generation)
+   */
+  async analyzeMathematicalContracts(
+    component: string,
+    contractText: string,
+    options: {
+      domain?: "algebraic_structures" | "category_theory" | "formal_verification";
+      complexity?: "undergraduate" | "graduate" | "research";
+    } = {}
+  ): Promise<string> {
+    console.log("🔍 Starting real mathematical analysis with Ollama", {
+      component,
+      domain: options.domain || "algebraic_structures",
+      complexity: options.complexity || "graduate",
+      contractLength: contractText.length,
+    });
 
-		console.log("🔍 Starting mathematical analysis", {
-			component,
-			domain: context.domain,
-			complexity: context.complexity,
-			contractLength: contractText.length,
-		});
+    try {
+      const startTime = Date.now();
+      
+      // Actually call the AI model for real analysis
+      const result = await generateText({
+        model: this.model,
+        prompt: `Analyze this ${component} mathematical contract for algebraic properties:
 
-		try {
-			// Create sophisticated analysis prompt using QiPrompt v4.0 patterns
-			const templateResult = await this.promptManager.createAnalysisPrompt(context);
+Contract Text:
+${contractText.substring(0, 2000)}${contractText.length > 2000 ? "..." : ""}
 
-			if (templateResult._tag === "Left") {
-				console.error("❌ Failed to create analysis prompt:", templateResult.left.message);
-				throw templateResult.left;
-			}
+Domain: ${options.domain || "algebraic_structures"}
+Complexity: ${options.complexity || "graduate"}
 
-			const template = templateResult.right;
+Focus on:
+1. Algebraic structure identification
+2. Mathematical property verification  
+3. Implementation correctness
+4. Law compliance (identity, associativity, etc.)
 
-			// Render the prompt with context variables
-			const renderResult = await template.render({
-				component: context.component,
-				contractText: context.contractText,
-				domain: context.domain,
-				complexity: context.complexity,
-			});
+Provide a structured analysis with completeness score.`,
+        temperature: 0.1,
+        maxTokens: 1000,
+      });
 
-			if (renderResult._tag === "Left") {
-				console.error("❌ Failed to render prompt template:", renderResult.left.message);
-				throw renderResult.left;
-			}
+      const duration = Date.now() - startTime;
+      console.log(`✅ Real AI analysis completed in ${duration}ms`);
+      
+      return `✅ Real AI analysis completed for ${component}
 
-			const prompt = renderResult.right;
+${result.text}
 
-			console.log("✅ Generated sophisticated analysis prompt", {
-				promptLength: prompt.length,
-				templateId: template.id,
-			});
+---
+Analysis performed using:
+- QiAgent library with ${this.config.provider} integration
+- Model: ${this.config.model} 
+- Duration: ${duration}ms
+- This is ACTUAL AI output, not mock data!`;
 
-			// TODO: Integrate with actual Ollama execution when LLM integration is ready
-			// For now, return the generated prompt to demonstrate the sophisticated prompt engineering
-			return `[MATHEMATICAL ANALYSIS PROMPT GENERATED]
+    } catch (error) {
+      console.error("💥 Real mathematical analysis failed:", error);
+      throw error;
+    }
+  }
 
-Template ID: ${template.id}
-Category: ${template.metadata.category || "mathematical_analysis"}
-Complexity: ${template.metadata.complexity || "graduate"}
+  /**
+   * Verify algebraic laws using real AI verification
+   */
+  async verifyAlgebraicLaws(
+    implementation: string,
+    algebraicType: string,
+    laws: string[]
+  ): Promise<string> {
+    console.log("⚖️ Starting real algebraic law verification with Ollama", {
+      algebraicType,
+      lawCount: laws.length,
+      implementationLength: implementation.length,
+    });
 
-Generated Prompt:
-${prompt}
+    try {
+      const startTime = Date.now();
+      
+      // Actually call the AI model for real verification
+      const result = await generateText({
+        model: this.model,
+        prompt: `Verify these algebraic laws for ${algebraicType}:
 
-[This would be sent to Ollama for execution with chain-of-thought reasoning, role-playing as a mathematical software architect, and structured output formatting]`;
-		} catch (error) {
-			console.error("💥 Mathematical analysis failed:", error);
-			throw error;
-		}
-	}
+Implementation:
+${implementation.substring(0, 1000)}${implementation.length > 1000 ? "..." : ""}
 
-	/**
-	 * Verify algebraic laws using formal reasoning prompts
-	 */
-	async verifyAlgebraicLaws(
-		implementation: string,
-		algebraicType: string,
-		laws: string[]
-	): Promise<string> {
-		console.log("⚖️ Starting algebraic law verification", {
-			algebraicType,
-			lawCount: laws.length,
-			implementationLength: implementation.length,
-		});
+Laws to verify:
+${laws.map((law, i) => `${i + 1}. ${law}`).join("\n")}
 
-		try {
-			// Create formal verification prompt
-			const templateResult = await this.promptManager.createVerificationPrompt({
-				implementation,
-				algebraicType,
-				laws,
-			});
+Please verify each law and provide:
+1. Verification status (satisfied/violated)
+2. Evidence or counterexamples
+3. Implementation recommendations`,
+        temperature: 0.1,
+        maxTokens: 800,
+      });
 
-			if (templateResult._tag === "Left") {
-				console.error("❌ Failed to create verification prompt:", templateResult.left.message);
-				throw templateResult.left;
-			}
+      const duration = Date.now() - startTime;
+      console.log(`✅ Real AI verification completed in ${duration}ms`);
 
-			const template = templateResult.right;
+      return `✅ Real AI law verification completed for ${algebraicType}
 
-			// Render with verification context
-			const renderResult = await template.render({
-				implementation,
-				algebraicType,
-				laws: laws.join("\n"),
-				expectedBehavior: "",
-			});
+${result.text}
 
-			if (renderResult._tag === "Left") {
-				console.error("❌ Failed to render verification template:", renderResult.left.message);
-				throw renderResult.left;
-			}
+---
+Verification performed using:
+- QiAgent library with ${this.config.provider} integration
+- Model: ${this.config.model}
+- Duration: ${duration}ms
+- Laws verified: ${laws.length}
+- This is ACTUAL AI verification, not mock results!`;
 
-			const prompt = renderResult.right;
+    } catch (error) {
+      console.error("💥 Law verification failed:", error);
+      throw error;
+    }
+  }
 
-			console.log("✅ Generated formal verification prompt", {
-				promptLength: prompt.length,
-				templateId: template.id,
-				laws: laws.length,
-			});
+  /**
+   * Get agent statistics
+   */
+  getStats() {
+    return {
+      agent: "MathematicalAnalysisAgent",
+      library: `QiAgent + ${this.config.provider}`,
+      model: this.config.model,
+      provider: this.config.provider,
+      execution: "real_ai_generation",
+      baseURL: this.config.baseURL
+    };
+  }
 
-			// TODO: Integrate with actual Ollama execution
-			return `[ALGEBRAIC LAW VERIFICATION PROMPT GENERATED]
-
-Template ID: ${template.id}
-Algebraic Type: ${algebraicType}
-Laws to Verify: ${laws.length}
-
-Generated Verification Prompt:
-${prompt}
-
-[This would be sent to Ollama with few-shot examples, guided reasoning, and structured verification output]`;
-		} catch (error) {
-			console.error("💥 Law verification failed:", error);
-			throw error;
-		}
-	}
-
-	/**
-	 * Get agent and prompt manager statistics
-	 */
-	getStats() {
-		return {
-			agent: "MathematicalOllamaAgent",
-			promptManager: this.promptManager.getStats(),
-		};
-	}
-
-	/**
-	 * Reset agent state and prompt cache
-	 */
-	reset(): void {
-		this.promptManager.reset();
-		console.log("🔄 Agent state reset");
-	}
+  /**
+   * Reset agent state
+   */
+  reset(): void {
+    console.log("🔄 Agent state reset");
+  }
 }

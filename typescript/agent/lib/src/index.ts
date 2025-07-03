@@ -7,11 +7,11 @@
  */
 
 // Agent Workflows - QiAgent: Lightweight wrapper around AI Orchestra
-export * from "./qiagent/index.js";
+export * from "./qiagent/index.ts";
 // MCP Core
-export * from "./qimcp/client.js";
-export * from "./qimcp/tools/file.js";
-export * from "./qimcp/tools/memory.js";
+export * from "./qimcp/client.ts";
+export * from "./qimcp/tools/file.ts";
+export * from "./qimcp/tools/memory.ts";
 // Prompt Engineering - QiPrompt: Lightweight wrapper around Vercel AI SDK
-export * from "./qiprompt/index.js";
-export * from "./qiprompt/mathematical.js";
+export * from "./qiprompt/index.ts";
+export * from "./qiprompt/mathematical.ts";
